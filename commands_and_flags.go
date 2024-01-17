@@ -4,23 +4,28 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
+
+	"gopkg.in/yaml.v3"
 	// "gopkg.in/yaml.v3"
 )
 
 type Command struct {
-	name         string
-	values       []string
-	isValidValue func(string) error
+	name          string
+	values        []string
+	validateValue func(string) error
+	flags         []Flag
+	validateFlag  func(string, string) error
 }
 
 // define commands here
 var CLI_CMDS = []Command{
-	ADD_CMD,
+	ADD_CMD, CONFIG_CMD,
 }
 var (
 	ADD_CMD = Command{
 		name: "add",
-		isValidValue: func(path string) error {
+		validateValue: func(path string) error {
 			// check if exists
 			if _, err := os.Stat(path); os.IsNotExist(err) {
 				return fmt.Errorf("%s does not exist: %s", path, err.Error())
@@ -54,11 +59,27 @@ var (
 
 			return nil
 		},
+		validateFlag: func(flagName string, flagValue string) error {
+			if flagValue == "" {
+				return fmt.Errorf("missing argument for flag '%s'", flagName)
+			}
+
+			switch flagName {
+			case ALIGN_FLAG.name, ALIGN_FLAG.short:
+				return ALIGN_FLAG.validateValue(flagValue)
+			case OPACITY_FLAG.name, OPACITY_FLAG.short:
+				return OPACITY_FLAG.validateValue(flagValue)
+			case STRETCH_FLAG.name, STRETCH_FLAG.short:
+				return STRETCH_FLAG.validateValue(flagValue)
+			default:
+				return fmt.Errorf("invalid flag for 'add': '%s'", flagName)
+			}
+		},
 	}
 
 	CONFIG_CMD = Command{
 		name: "config",
-		isValidValue: func(s string) error {
+		validateValue: func(s string) error {
 			if s == "" || s == "default" {
 				return nil
 			}
@@ -80,9 +101,16 @@ var (
 				}
 
 				if !d.IsDir() && filepath.Ext(p) == ".yaml" {
-					// read file
-					// unmarshal yaml
-					fmt.Println("found:", d.Name())
+					yamlFile, err := os.ReadFile(s)
+					if err != nil {
+						return err
+					}
+
+					contents := Config{}
+					err = yaml.Unmarshal(yamlFile, &contents)
+					if err != nil {
+						return err
+					}
 					configCount++
 				}
 
@@ -101,6 +129,58 @@ var (
 			}
 
 			return nil
+		},
+	}
+)
+
+type Flag struct {
+	name          string
+	short         string
+	value         string
+	validateValue func(string) error
+}
+
+// define flags here
+var (
+	ALIGN_FLAG = Flag{
+		name:  "--alignment",
+		short: "-a",
+		validateValue: func(s string) error {
+			switch s {
+			case "top", "t", "top-right", "tr", "top-left", "tl", "center", "left", "right", "bottom", "b", "bottom-right", "br", "bottom-left", "bl":
+				return nil
+			default:
+				return fmt.Errorf("invalid value for --alignment: %s", s)
+			}
+		},
+	}
+
+	OPACITY_FLAG = Flag{
+		name:  "--opacity",
+		short: "-o",
+		validateValue: func(s string) error {
+			num, err := strconv.Atoi(s)
+			if err != nil {
+				return err
+			}
+
+			if num > 1 || num < 0 {
+				return fmt.Errorf("invalid value for --opacity: %s; must a float between 0-1", num)
+			}
+			return nil
+		},
+	}
+
+	STRETCH_FLAG = Flag{
+		name:  "--stretch",
+		short: "-s",
+		validateValue: func(s string) error {
+			switch s {
+			case "fill", "none", "uniform", "uniform-fill":
+				return nil
+			default:
+				return fmt.Errorf("invalid value for --stretch: %s", s)
+			}
 		},
 	}
 )
