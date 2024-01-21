@@ -24,18 +24,18 @@ type Command struct {
 	validateFlag  func(string, string) error
 }
 
-func (c Command) ValidateValue(s string) error {
+func (c *Command) ValidateValue(s string) error {
 	return c.validateValue(s)
 }
 
 // define commands here
-var CLI_CMDS = []Command{
+var CLI_CMDS = []*Command{
 	RUN_CMD,
 	ADD_CMD,
 	CONFIG_CMD,
 }
 var (
-	RUN_CMD = Command{
+	RUN_CMD = &Command{
 		name: "run",
 		validateValue: func(s string) error {
 			switch s {
@@ -64,7 +64,7 @@ var (
 		},
 	}
 
-	ADD_CMD = Command{
+	ADD_CMD = &Command{
 		name: "add",
 		validateValue: func(path string) error {
 			// check if exists
@@ -118,7 +118,7 @@ var (
 		},
 	}
 
-	CONFIG_CMD = Command{
+	CONFIG_CMD = &Command{
 		name: "config",
 		validateValue: func(s string) error {
 			if s == "" || s == "default" {
@@ -189,12 +189,12 @@ type Flag struct {
 	validateValue func(string) error
 }
 
-func (f Flag) ValidateValue(s string) error {
+func (f *Flag) ValidateValue(s string) error {
 	return f.validateValue(s)
 }
 
 // define flags here
-var CLI_FLAGS = []Flag{
+var CLI_FLAGS = []*Flag{
 	ALIGN_FLAG,
 	OPACITY_FLAG,
 	STRETCH_FLAG,
@@ -202,7 +202,7 @@ var CLI_FLAGS = []Flag{
 	INTERVAL_FLAG,
 }
 var (
-	ALIGN_FLAG = Flag{
+	ALIGN_FLAG = &Flag{
 		name:  "--alignment",
 		short: "-a",
 		validateValue: func(s string) error {
@@ -215,7 +215,7 @@ var (
 		},
 	}
 
-	OPACITY_FLAG = Flag{
+	OPACITY_FLAG = &Flag{
 		name:  "--opacity",
 		short: "-o",
 		validateValue: func(s string) error {
@@ -231,7 +231,7 @@ var (
 		},
 	}
 
-	STRETCH_FLAG = Flag{
+	STRETCH_FLAG = &Flag{
 		name:  "--stretch",
 		short: "-s",
 		validateValue: func(s string) error {
@@ -244,7 +244,7 @@ var (
 		},
 	}
 
-	TARGET_FLAG = Flag{
+	TARGET_FLAG = &Flag{
 		name:  "--target",
 		short: "-t",
 		validateValue: func(s string) error {
@@ -270,7 +270,7 @@ var (
 		},
 	}
 
-	INTERVAL_FLAG = Flag{
+	INTERVAL_FLAG = &Flag{
 		name:  "--interval",
 		short: "-i",
 		validateValue: func(f string) error {
@@ -286,7 +286,7 @@ var (
 		},
 	}
 
-	CREATE_FLAG = Flag{
+	CREATE_FLAG = &Flag{
 		name:  "--create",
 		short: "-c",
 		validateValue: func(s string) error {
