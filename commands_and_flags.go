@@ -5,25 +5,66 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 
 	"gopkg.in/yaml.v3"
-	// "gopkg.in/yaml.v3"
 )
+
+// common interface to allow slice of either Command/Flag in flags
+// since both Command and Flag can be a valid flag for a Command
+type CLI_Arg interface {
+	ValidateValue(string) error
+}
 
 type Command struct {
 	name          string
 	values        []string
 	validateValue func(string) error
-	flags         []Flag
+	flags         []CLI_Arg
 	validateFlag  func(string, string) error
 }
 
+func (c *Command) ValidateValue(s string) error {
+	return c.validateValue(s)
+}
+
 // define commands here
-var CLI_CMDS = []Command{
-	ADD_CMD, CONFIG_CMD,
+var CLI_CMDS = []*Command{
+	RUN_CMD,
+	ADD_CMD,
+	CONFIG_CMD,
 }
 var (
-	ADD_CMD = Command{
+	RUN_CMD = &Command{
+		name: "run",
+		validateValue: func(s string) error {
+			switch s {
+			case "":
+				return nil
+			default:
+				return fmt.Errorf("run takes no args. got '%s'", s)
+			}
+		},
+		validateFlag: func(flagName string, flagValue string) error {
+			if flagValue == "" {
+				return fmt.Errorf("missing argument for flag '%s'", flagName)
+			}
+
+			switch flagName {
+			case TARGET_FLAG.name, TARGET_FLAG.short:
+				return TARGET_FLAG.validateValue(flagValue)
+			case INTERVAL_FLAG.name, INTERVAL_FLAG.short:
+				return INTERVAL_FLAG.validateValue(flagValue)
+			case CONFIG_CMD.name:
+				return CONFIG_CMD.validateValue(flagValue)
+			default:
+				return fmt.Errorf("invalid flag for 'add': '%s'", flagName)
+			}
+
+		},
+	}
+
+	ADD_CMD = &Command{
 		name: "add",
 		validateValue: func(path string) error {
 			// check if exists
@@ -77,7 +118,7 @@ var (
 		},
 	}
 
-	CONFIG_CMD = Command{
+	CONFIG_CMD = &Command{
 		name: "config",
 		validateValue: func(s string) error {
 			if s == "" || s == "default" {
@@ -130,6 +171,14 @@ var (
 
 			return nil
 		},
+		validateFlag: func(flagName string, flagValue string) error {
+			switch flagName {
+			case CREATE_FLAG.name, CREATE_FLAG.short:
+				return CREATE_FLAG.validateValue(flagValue)
+			default:
+				return fmt.Errorf("invalid flag '%s' for config", flagName)
+			}
+		},
 	}
 )
 
@@ -140,7 +189,18 @@ type Flag struct {
 	validateValue func(string) error
 }
 
+func (f *Flag) ValidateValue(s string) error {
+	return f.validateValue(s)
+}
+
 // define flags here
+var CLI_FLAGS = []*Flag{
+	&ALIGN_FLAG,
+	&OPACITY_FLAG,
+	&STRETCH_FLAG,
+	&TARGET_FLAG,
+	&INTERVAL_FLAG,
+}
 var (
 	ALIGN_FLAG = Flag{
 		name:  "--alignment",
@@ -165,7 +225,7 @@ var (
 			}
 
 			if num > 1 || num < 0 {
-				return fmt.Errorf("invalid value for --opacity: %s; must a float between 0-1", num)
+				return fmt.Errorf("invalid value for --opacity: %d; must a float between 0-1", num)
 			}
 			return nil
 		},
@@ -183,13 +243,73 @@ var (
 			}
 		},
 	}
+
+	TARGET_FLAG = Flag{
+		name:  "--target",
+		short: "-t",
+		validateValue: func(s string) error {
+			if s == "default" {
+				return nil
+
+			} else if strings.HasPrefix(s, "list-") {
+				// check if list- is followed by number
+				numPart, _ := strings.CutPrefix(s, "list-")
+				if numPart == "" {
+					return fmt.Errorf("no number found after 'list-' for --target")
+				}
+
+				_, err := strconv.Atoi(numPart)
+				if err != nil {
+					return fmt.Errorf("invalid number '%s' after 'list-' for --target; error: %s", numPart, err.Error())
+				}
+				return nil
+
+			} else {
+				return fmt.Errorf("invalid value '%s' for --target", s)
+			}
+		},
+	}
+
+	INTERVAL_FLAG = Flag{
+		name:  "--interval",
+		short: "-i",
+		validateValue: func(f string) error {
+			if f == "" {
+				return fmt.Errorf("missing value for --interval")
+			}
+
+			_, err := strconv.ParseFloat(f, 64)
+			if err != nil {
+				return fmt.Errorf("invalid float value '%s' for --interval; error: %s", f, err.Error())
+			}
+			return nil
+		},
+	}
+
+	CREATE_FLAG = Flag{
+		name:  "--create",
+		short: "-c",
+		validateValue: func(s string) error {
+			switch s {
+			case "":
+				return nil
+			default:
+				return fmt.Errorf("--create takes no args. got '%s'", s)
+			}
+		},
+	}
 )
 
 func IsValidArgName(a string) bool {
-	for _, ARG := range CLI_CMDS {
-		if a != ARG.name {
-			return false
-		}
+	validNames := make(map[string]struct{})
+
+	for _, cmd := range CLI_CMDS {
+		validNames[cmd.name] = struct{}{}
 	}
-	return true
+	for _, flag := range CLI_FLAGS {
+		validNames[flag.name] = struct{}{}
+	}
+
+	_, exists := validNames[a]
+	return exists
 }
