@@ -18,7 +18,7 @@ type CLI_Arg interface {
 
 type Command struct {
 	name          string
-	values        []string
+	value         string
 	validateValue func(string) error
 	flags         []CLI_Arg
 	validateFlag  func(string, string) error
