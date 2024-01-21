@@ -189,6 +189,23 @@ type Flag struct {
 	validateValue func(string) error
 }
 
+func ToFlag(s string) (*Flag, error) {
+	switch s {
+	case ALIGN_FLAG.name, ALIGN_FLAG.short:
+		return ALIGN_FLAG, nil
+	case OPACITY_FLAG.name, OPACITY_FLAG.short:
+		return OPACITY_FLAG, nil
+	case STRETCH_FLAG.name, STRETCH_FLAG.short:
+		return STRETCH_FLAG, nil
+	case TARGET_FLAG.name, TARGET_FLAG.short:
+		return TARGET_FLAG, nil
+	case INTERVAL_FLAG.name, INTERVAL_FLAG.short:
+		return INTERVAL_FLAG, nil
+	default:
+		return &Flag{}, fmt.Errorf("'%s' is not a valid flag", s)
+	}
+}
+
 func (f *Flag) ValidateValue(s string) error {
 	return f.validateValue(s)
 }
