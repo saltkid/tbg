@@ -24,18 +24,18 @@ type Command struct {
 	validateFlag  func(string, string) error
 }
 
-func (c *Command) ValidateValue(s string) error {
+func (c Command) ValidateValue(s string) error {
 	return c.validateValue(s)
 }
 
 // define commands here
-var CLI_CMDS = []*Command{
+var CLI_CMDS = []Command{
 	RUN_CMD,
 	ADD_CMD,
 	CONFIG_CMD,
 }
 var (
-	RUN_CMD = &Command{
+	RUN_CMD = Command{
 		name: "run",
 		validateValue: func(s string) error {
 			switch s {
@@ -64,7 +64,7 @@ var (
 		},
 	}
 
-	ADD_CMD = &Command{
+	ADD_CMD = Command{
 		name: "add",
 		validateValue: func(path string) error {
 			// check if exists
@@ -118,7 +118,7 @@ var (
 		},
 	}
 
-	CONFIG_CMD = &Command{
+	CONFIG_CMD = Command{
 		name: "config",
 		validateValue: func(s string) error {
 			if s == "" || s == "default" {
@@ -189,17 +189,17 @@ type Flag struct {
 	validateValue func(string) error
 }
 
-func (f *Flag) ValidateValue(s string) error {
+func (f Flag) ValidateValue(s string) error {
 	return f.validateValue(s)
 }
 
 // define flags here
-var CLI_FLAGS = []*Flag{
-	&ALIGN_FLAG,
-	&OPACITY_FLAG,
-	&STRETCH_FLAG,
-	&TARGET_FLAG,
-	&INTERVAL_FLAG,
+var CLI_FLAGS = []Flag{
+	ALIGN_FLAG,
+	OPACITY_FLAG,
+	STRETCH_FLAG,
+	TARGET_FLAG,
+	INTERVAL_FLAG,
 }
 var (
 	ALIGN_FLAG = Flag{
