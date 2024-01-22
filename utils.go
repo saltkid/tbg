@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -36,4 +37,18 @@ func (f Natural) Less(i, j int) bool {
 }
 func (f Natural) Swap(i, j int) {
 	f[i], f[j] = f[j], f[i]
+}
+
+func LogParsedArgs(command *Command) {
+	log.Println("command: ", command.name)
+	log.Println("flags:")
+	for _, flag := range command.flags {
+		_, isFlag := flag.(*Flag)
+		_, isCommand := flag.(*Command)
+		if isFlag {
+			log.Println(flag.(*Flag).name, "=", flag.(*Flag).value)
+		} else if isCommand {
+			log.Println(flag.(*Command).name, "=", flag.(*Command).value)
+		}
+	}
 }
