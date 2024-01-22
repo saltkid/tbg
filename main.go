@@ -44,6 +44,14 @@ func Config(command *Command) {
 	var configPath string
 	if command.value == "default" {
 		configPath, _ = filepath.Abs("config.yaml")
+		if _, err := os.Stat(configPath); os.IsNotExist(err) {
+			// create default.yaml in that case
+			err := os.WriteFile(configPath, []byte(defaultConfig), 0666)
+			if err != nil {
+				log.Fatalln(err)
+			}
+		}
+
 	} else {
 		configPath, _ = filepath.Abs(command.value)
 	}
