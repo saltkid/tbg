@@ -160,7 +160,7 @@ var (
 						return err
 					}
 
-					contents := Config{}
+					contents := ConfigFile{}
 					err = yaml.Unmarshal(yamlFile, &contents)
 					if err != nil {
 						return err

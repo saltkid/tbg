@@ -13,6 +13,34 @@ func main() {
 	}
 
 	LogParsedArgs(command)
+	switch command.name {
+	case "run":
+		Run(command)
+	case "add":
+		Add(command)
+	case "config":
+		Config(command)
+	default:
+		log.Fatalln("invalid command")
+	}
+}
+
+func Run(command *Command) {
+	// TODO
+	log.Println("run")
+	return
+}
+
+func Add(command *Command) {
+	// TODO
+	log.Println("add")
+	return
+}
+
+func Config(command *Command) {
+	// TODO
+	log.Println("config")
+	return
 }
 
 func ParseArgs(args []string) (*Command, error) {
