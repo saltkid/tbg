@@ -34,9 +34,24 @@ var CLI_CMDS = []*Command{
 	ADD_CMD,
 	CONFIG_CMD,
 }
+
+func ToCommand(s string) (*Command, error) {
+	switch s {
+	case RUN_CMD.name:
+		return RUN_CMD, nil
+	case ADD_CMD.name:
+		return ADD_CMD, nil
+	case CONFIG_CMD.name:
+		return CONFIG_CMD, nil
+	default:
+		return &Command{}, fmt.Errorf("'%s' is not a valid command", s)
+	}
+}
+
 var (
 	RUN_CMD = &Command{
-		name: "run",
+		name:  "run",
+		value: "",
 		validateValue: func(s string) error {
 			switch s {
 			case "":
@@ -46,10 +61,6 @@ var (
 			}
 		},
 		validateFlag: func(flagName string, flagValue string) error {
-			if flagValue == "" {
-				return fmt.Errorf("missing argument for flag '%s'", flagName)
-			}
-
 			switch flagName {
 			case TARGET_FLAG.name, TARGET_FLAG.short:
 				return TARGET_FLAG.validateValue(flagValue)
@@ -58,14 +69,15 @@ var (
 			case CONFIG_CMD.name:
 				return CONFIG_CMD.validateValue(flagValue)
 			default:
-				return fmt.Errorf("invalid flag for 'add': '%s'", flagName)
+				return fmt.Errorf("invalid flag for 'run': '%s'", flagName)
 			}
 
 		},
 	}
 
 	ADD_CMD = &Command{
-		name: "add",
+		name:  "add",
+		value: "",
 		validateValue: func(path string) error {
 			// check if exists
 			if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -119,7 +131,8 @@ var (
 	}
 
 	CONFIG_CMD = &Command{
-		name: "config",
+		name:  "config",
+		value: "default",
 		validateValue: func(s string) error {
 			if s == "" || s == "default" {
 				return nil
@@ -176,7 +189,7 @@ var (
 			case CREATE_FLAG.name, CREATE_FLAG.short:
 				return CREATE_FLAG.validateValue(flagValue)
 			default:
-				return fmt.Errorf("invalid flag '%s' for config", flagName)
+				return fmt.Errorf("invalid flag '%s' for 'config'", flagName)
 			}
 		},
 	}
@@ -187,6 +200,20 @@ type Flag struct {
 	short         string
 	value         string
 	validateValue func(string) error
+}
+
+func (f *Flag) ValidateValue(s string) error {
+	return f.validateValue(s)
+}
+
+// define flags here
+var CLI_FLAGS = []*Flag{
+	ALIGN_FLAG,
+	OPACITY_FLAG,
+	STRETCH_FLAG,
+	TARGET_FLAG,
+	INTERVAL_FLAG,
+	CREATE_FLAG,
 }
 
 func ToFlag(s string) (*Flag, error) {
@@ -201,33 +228,26 @@ func ToFlag(s string) (*Flag, error) {
 		return TARGET_FLAG, nil
 	case INTERVAL_FLAG.name, INTERVAL_FLAG.short:
 		return INTERVAL_FLAG, nil
+	case CREATE_FLAG.name, CREATE_FLAG.short:
+		return CREATE_FLAG, nil
 	default:
 		return &Flag{}, fmt.Errorf("'%s' is not a valid flag", s)
 	}
 }
 
-func (f *Flag) ValidateValue(s string) error {
-	return f.validateValue(s)
-}
-
-// define flags here
-var CLI_FLAGS = []*Flag{
-	ALIGN_FLAG,
-	OPACITY_FLAG,
-	STRETCH_FLAG,
-	TARGET_FLAG,
-	INTERVAL_FLAG,
-}
 var (
 	ALIGN_FLAG = &Flag{
 		name:  "--alignment",
 		short: "-a",
+		value: "center",
 		validateValue: func(s string) error {
 			switch s {
 			case "top", "t", "top-right", "tr", "top-left", "tl", "center", "left", "right", "bottom", "b", "bottom-right", "br", "bottom-left", "bl":
 				return nil
+			case "":
+				return fmt.Errorf("missing value for --alignment")
 			default:
-				return fmt.Errorf("invalid value for --alignment: %s", s)
+				return fmt.Errorf("invalid value for --alignment: '%s'", s)
 			}
 		},
 	}
@@ -235,6 +255,7 @@ var (
 	OPACITY_FLAG = &Flag{
 		name:  "--opacity",
 		short: "-o",
+		value: "0.1",
 		validateValue: func(s string) error {
 			num, err := strconv.Atoi(s)
 			if err != nil {
@@ -251,12 +272,15 @@ var (
 	STRETCH_FLAG = &Flag{
 		name:  "--stretch",
 		short: "-s",
+		value: "uniform",
 		validateValue: func(s string) error {
 			switch s {
 			case "fill", "none", "uniform", "uniform-fill":
 				return nil
+			case "":
+				return fmt.Errorf("missing value for --stretch")
 			default:
-				return fmt.Errorf("invalid value for --stretch: %s", s)
+				return fmt.Errorf("invalid value for --stretch: '%s'", s)
 			}
 		},
 	}
@@ -264,6 +288,7 @@ var (
 	TARGET_FLAG = &Flag{
 		name:  "--target",
 		short: "-t",
+		value: "default",
 		validateValue: func(s string) error {
 			if s == "default" {
 				return nil
@@ -282,7 +307,7 @@ var (
 				return nil
 
 			} else {
-				return fmt.Errorf("invalid value '%s' for --target", s)
+				return fmt.Errorf("invalid value for --target: '%s'", s)
 			}
 		},
 	}
@@ -290,6 +315,7 @@ var (
 	INTERVAL_FLAG = &Flag{
 		name:  "--interval",
 		short: "-i",
+		value: "30",
 		validateValue: func(f string) error {
 			if f == "" {
 				return fmt.Errorf("missing value for --interval")
@@ -306,6 +332,7 @@ var (
 	CREATE_FLAG = &Flag{
 		name:  "--create",
 		short: "-c",
+		value: "",
 		validateValue: func(s string) error {
 			switch s {
 			case "":
