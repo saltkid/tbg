@@ -79,6 +79,10 @@ var (
 		name:  "add",
 		value: "",
 		validateValue: func(path string) error {
+			if path == "" {
+				return fmt.Errorf("no path provided for 'add'")
+			}
+
 			// check if exists
 			if _, err := os.Stat(path); os.IsNotExist(err) {
 				return fmt.Errorf("%s does not exist: %s", path, err.Error())
@@ -140,46 +144,23 @@ var (
 
 			// check if exists
 			if _, err := os.Stat(s); os.IsNotExist(err) {
-				return fmt.Errorf("%s does not exist: %s", s, err.Error())
+				return fmt.Errorf("'%s' does not exist: %s", s, err.Error())
 			}
 
-			// check if has a config file (.yaml)
-			configCount := 0
-			err := filepath.WalkDir(s, func(p string, d os.DirEntry, err error) error {
-				if err != nil {
-					return err
-				}
+			// check if .yaml file
+			if filepath.Ext(s) != ".yaml" {
+				return fmt.Errorf("'%s' is not a .yaml file", s)
+			}
 
-				if d.IsDir() && d.Name() != filepath.Base(s) {
-					return filepath.SkipDir
-				}
-
-				if !d.IsDir() && filepath.Ext(p) == ".yaml" {
-					yamlFile, err := os.ReadFile(s)
-					if err != nil {
-						return err
-					}
-
-					contents := ConfigFile{}
-					err = yaml.Unmarshal(yamlFile, &contents)
-					if err != nil {
-						return err
-					}
-					configCount++
-				}
-
-				return nil
-			})
-
+			// check if proper format
+			yamlFile, err := os.ReadFile(s)
 			if err != nil {
-				return fmt.Errorf("error reading %s: %s", s, err.Error())
+				return err
 			}
-
-			if configCount == 0 {
-				return fmt.Errorf("no config files found in %s", s)
-
-			} else if configCount > 1 {
-				return fmt.Errorf("multiple config files found in %s", s)
+			contents := ConfigFile{}
+			err = yaml.Unmarshal(yamlFile, &contents)
+			if err != nil {
+				return err
 			}
 
 			return nil
