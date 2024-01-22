@@ -317,16 +317,22 @@ var (
 	}
 )
 
-func IsValidArgName(a string) bool {
-	validNames := make(map[string]struct{})
-
+func IsValidCommandName(s string) bool {
+	validCommands := make(map[string]struct{})
 	for _, cmd := range CLI_CMDS {
-		validNames[cmd.name] = struct{}{}
-	}
-	for _, flag := range CLI_FLAGS {
-		validNames[flag.name] = struct{}{}
+		validCommands[cmd.name] = struct{}{}
 	}
 
-	_, exists := validNames[a]
+	_, exists := validCommands[s]
+	return exists
+}
+
+func IsValidFlagName(s string) bool {
+	validFlags := make(map[string]struct{})
+	for _, flag := range CLI_FLAGS {
+		validFlags[flag.name] = struct{}{}
+	}
+
+	_, exists := validFlags[s]
 	return exists
 }
