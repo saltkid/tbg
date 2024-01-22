@@ -4,6 +4,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
+
+	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -38,9 +41,21 @@ func Add(command *Command) {
 }
 
 func Config(command *Command) {
-	// TODO
-	log.Println("config")
-	return
+	var configPath string
+	if command.value == "default" {
+		configPath, _ = filepath.Abs("config.yaml")
+	} else {
+		configPath, _ = filepath.Abs(command.value)
+	}
+
+	yamlFile, _ := os.ReadFile(configPath)
+	contents := ConfigFile{}
+	err := yaml.Unmarshal(yamlFile, &contents)
+	if err != nil {
+		log.Fatalln(err)
+	}
+
+	LogConfig(contents, configPath)
 }
 
 func ParseArgs(args []string) (*Command, error) {
@@ -59,6 +74,8 @@ func ParseArgs(args []string) (*Command, error) {
 		switch tmp.name {
 		case "run":
 			return RUN_CMD, nil
+		case "config":
+			return CONFIG_CMD, nil
 		default:
 			return nil, fmt.Errorf("only 'run' command is allowed to be empty. got '%s'", args[0])
 		}
