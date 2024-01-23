@@ -20,7 +20,7 @@ type Command struct {
 	name          string
 	value         string
 	validateValue func(string) error
-	flags         []CLI_Arg
+	flags         map[string]CLI_Arg
 	validateFlag  func(string, string) error
 	run           func(*Command) error
 }
@@ -61,6 +61,7 @@ var (
 				return fmt.Errorf("run takes no args. got '%s'", s)
 			}
 		},
+		flags: make(map[string]CLI_Arg),
 		validateFlag: func(flagName string, flagValue string) error {
 			switch flagName {
 			case TARGET_FLAG.name, TARGET_FLAG.short:
@@ -117,6 +118,7 @@ var (
 
 			return nil
 		},
+		flags: make(map[string]CLI_Arg),
 		validateFlag: func(flagName string, flagValue string) error {
 			if flagValue == "" {
 				return fmt.Errorf("missing argument for flag '%s'", flagName)
@@ -132,6 +134,10 @@ var (
 			default:
 				return fmt.Errorf("invalid flag for 'add': '%s'", flagName)
 			}
+		},
+		run: func(c *Command) error {
+			// todo
+			return nil
 		},
 	}
 
@@ -175,12 +181,13 @@ var (
 
 			return nil
 		},
+		flags: make(map[string]CLI_Arg),
 		validateFlag: func(flagName string, flagValue string) error {
 			switch flagName {
-			case CREATE_FLAG.name, CREATE_FLAG.short:
-				return CREATE_FLAG.validateValue(flagValue)
+			case "":
+				return nil
 			default:
-				return fmt.Errorf("invalid flag '%s' for 'config'", flagName)
+				return fmt.Errorf("'config' has no flags. got '%s'", flagName)
 			}
 		},
 		run: func(cmd *Command) error {

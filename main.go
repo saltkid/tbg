@@ -135,11 +135,10 @@ func ParseArgs(args []string) (*Command, error) {
 
 		} else {
 			if IsValidFlagName(arg) {
-				_, isFlag := tmpArg.(*Flag)
-				_, isCommand := tmpArg.(*Command)
-				if isFlag && tmpValue != "" {
+				if _, isFlag := tmpArg.(*Flag); isFlag && tmpValue != "" {
 					tmpArg.(*Flag).value = tmpValue
-				} else if isCommand && tmpValue != "" {
+
+				} else if _, isCommand := tmpArg.(*Command); isCommand && tmpValue != "" {
 					tmpArg.(*Command).value = tmpValue
 				}
 
@@ -153,11 +152,9 @@ func ParseArgs(args []string) (*Command, error) {
 				tmpValue = ""
 
 			} else if IsValidCommandName(arg) {
-				_, isFlag := tmpArg.(*Flag)
-				_, isCommand := tmpArg.(*Command)
-				if isFlag && tmpValue != "" {
+				if _, isFlag := tmpArg.(*Flag); isFlag && tmpValue != "" {
 					tmpArg.(*Flag).value = tmpValue
-				} else if isCommand && tmpValue != "" {
+				} else if _, isCommand := tmpArg.(*Command); isCommand && tmpValue != "" {
 					tmpArg.(*Command).value = tmpValue
 				}
 
@@ -175,12 +172,11 @@ func ParseArgs(args []string) (*Command, error) {
 					tmpValue = arg
 
 				} else {
-					_, isFlag := tmpArg.(*Flag)
-					_, isCommand := tmpArg.(*Command)
 					var errCtx string
-					if isFlag {
+					if _, isFlag := tmpArg.(*Flag); isFlag {
 						errCtx = tmpArg.(*Flag).name
-					} else if isCommand {
+
+					} else if _, isCommand := tmpArg.(*Command); isCommand {
 						errCtx = tmpArg.(*Command).name
 					}
 
@@ -189,11 +185,10 @@ func ParseArgs(args []string) (*Command, error) {
 			}
 
 			if i+1 == len(flagArgs) {
-				_, isFlag := tmpArg.(*Flag)
-				_, isCommand := tmpArg.(*Command)
-				if isFlag && tmpValue != "" {
+				if _, isFlag := tmpArg.(*Flag); isFlag && tmpValue != "" {
 					tmpArg.(*Flag).value = tmpValue
-				} else if isCommand && tmpValue != "" {
+
+				} else if _, isCommand := tmpArg.(*Command); isCommand && tmpValue != "" {
 					tmpArg.(*Command).value = tmpValue
 				}
 
@@ -207,20 +202,31 @@ func ParseArgs(args []string) (*Command, error) {
 	// if any flag is a command, validate the following flags with the subcommand
 	subCMD := tmpCMD
 	for _, flag := range flags {
-		var err error
-		_, isFlag := flag.(*Flag)
-		_, isCommand := flag.(*Command)
-		if isFlag {
+		if _, isFlag := flag.(*Flag); isFlag {
 			err = subCMD.validateFlag(flag.(*Flag).name, flag.(*Flag).value)
-		} else if isCommand {
+			if err != nil {
+				return nil, err
+			}
+
+			_, ok := tmpCMD.flags[flag.(*Flag).name]
+			if ok {
+				return nil, fmt.Errorf("multiple flags with the same name: '%s'", flag.(*Flag).name)
+			}
+			tmpCMD.flags[flag.(*Flag).name] = flag
+
+		} else if _, isCommand := flag.(*Command); isCommand {
 			err = subCMD.validateFlag(flag.(*Command).name, flag.(*Command).value)
 			subCMD = flag.(*Command)
-		}
+			if err != nil {
+				return nil, err
+			}
 
-		if err != nil {
-			return nil, err
+			_, ok := tmpCMD.flags[flag.(*Command).name]
+			if ok {
+				return nil, fmt.Errorf("multiple flags with the same name: '%s'", flag.(*Command).name)
+			}
+			tmpCMD.flags[flag.(*Command).name] = flag
 		}
-		tmpCMD.flags = append(tmpCMD.flags, flag)
 	}
 	return tmpCMD, nil
 }
