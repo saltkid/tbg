@@ -125,7 +125,8 @@ default_opacity: 0.1
 }
 
 type Config interface {
-	Log(string)
+	Log(string) *Config
+	LogRemoved(string) *Config
 }
 
 type DefaultConfig struct {
@@ -139,7 +140,7 @@ type DefaultConfig struct {
 	Opacity       float64  `yaml:"default_opacity"`
 }
 
-func (c *DefaultConfig) Log(configPath string) {
+func (c *DefaultConfig) Log(configPath string) *DefaultConfig {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -155,6 +156,15 @@ func (c *DefaultConfig) Log(configPath string) {
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
 	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
+func (c *DefaultConfig) LogRemoved(path string) *DefaultConfig {
+	fmt.Printf("%-25s%s\n", "| removed:", path)
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
 }
 
 type UserConfig struct {
@@ -166,7 +176,7 @@ type UserConfig struct {
 	Opacity       float64  `yaml:"default_opacity"`
 }
 
-func (c *UserConfig) Log(configPath string) {
+func (c *UserConfig) Log(configPath string) *UserConfig {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -180,4 +190,13 @@ func (c *UserConfig) Log(configPath string) {
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
 	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
+func (c *UserConfig) LogRemoved(path string) *UserConfig {
+	fmt.Printf("%-25s%s\n", "| removed:", path)
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
 }
