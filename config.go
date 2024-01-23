@@ -30,9 +30,10 @@ func DefaultTemplate(absConfigPath string) *ConfigTemplate {
 		yamlContents: []byte(`image_col_paths: []
 interval: 30
 target: default
-alignment: center
-opacity: 0.1
-stretch: uniform
+
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
 `),
 		endDesc: []byte(`#------------------------------------------
 # Fields:
@@ -41,20 +42,28 @@ stretch: uniform
 #   user_config: path to the user config file
 #
 #   image_col_paths: list of image collection paths
-#      note: put directories that contain images, not image filepaths
+#      notes:
+#        - put directories that contain images, not image filepaths
+#        - can override default options for a specific path by putting a | after the path
+#          and putting "alignment", "stretch", and "opacity" after the |
+#          eg. abs/path/to/images/dir | right uniform 0.1
 #
-#   interval: time in minutes between each image change
+#   default_interval: time in minutes between each image change
 #
 #   target: target profile in Windows Terminal (default, list-0, list-1, etc.)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
 #
-#   alignment: image alignment in Windows Terminal (left, center, right)
+#   ---
+#   Below are default options which can be overriden on a per-path basis by putting a | after the path
+#   and putting "alignment", "stretch", and "opacity" values after the |
+#   ---
+#   default_alignment: image alignment in Windows Terminal (left, center, right)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
 #
-#   opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
+#   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
 #
-#   stretch: image stretch in Windows Terminal (uniform, fill)
+#   default_stretch: image stretch in Windows Terminal (uniform, fill)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #------------------------------------------
 `),
@@ -72,13 +81,13 @@ func UserTemplate(path string) *ConfigTemplate {
 #     - tbg config ` + path + `
 #------------------------------------------
 `),
-		yamlContents: []byte(`image_col_paths:
-- ""
+		yamlContents: []byte(`image_col_paths: []
 interval: 30
 target: default
-alignment: center
-opacity: 0.1
-stretch: uniform
+
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
 `),
 		endDesc: []byte(`#------------------------------------------
 # Fields:
@@ -87,20 +96,28 @@ stretch: uniform
 #   user_config: path to the user config file
 #
 #   image_col_paths: list of image collection paths
-#      note: put directories that contain images, not image filepaths
+#      notes:
+#        - put directories that contain images, not image filepaths
+#        - can override default options for a specific path by putting a | after the path
+#          and putting "alignment", "stretch", and "opacity" after the |
+#          eg. abs/path/to/images/dir | right uniform 0.1
 #
 #   interval: time in minutes between each image change
 #
 #   target: target profile in Windows Terminal (default, list-0, list-1, etc.)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
 #
-#   alignment: image alignment in Windows Terminal (left, center, right)
+#   ---
+#   Below are default options which can be overriden on a per-path basis by putting a | after the path
+#   and putting "alignment", "stretch", and "opacity" values after the |
+#   ---
+#   default_alignment: image alignment in Windows Terminal (left, center, right)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
 #
-#   opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
+#   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
 #
-#   stretch: image stretch in Windows Terminal (uniform, fill)
+#   default_stretch: image stretch in Windows Terminal (uniform, fill)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #------------------------------------------
 `),
@@ -117,50 +134,50 @@ type DefaultConfig struct {
 	ImageColPaths []string `yaml:"image_col_paths"`
 	Interval      int      `yaml:"interval"`
 	Target        string   `yaml:"target"`
-	Alignment     string   `yaml:"alignment"`
-	Opacity       float64  `yaml:"opacity"`
-	Stretch       string   `yaml:"stretch"`
+	Alignment     string   `yaml:"default_alignment"`
+	Stretch       string   `yaml:"default_stretch"`
+	Opacity       float64  `yaml:"default_opacity"`
 }
 
 func (c *DefaultConfig) Log(configPath string) {
-	fmt.Println("------------------------------------------")
+	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
-	fmt.Println("------------------------------------------")
-	fmt.Printf("%-20s%s\n", "| use_user_config:", strconv.FormatBool(c.UseUserConfig))
-	fmt.Printf("%-20s%s\n", "| user_config:", c.UserConfig)
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Printf("%-25s%s\n", "| use_user_config:", strconv.FormatBool(c.UseUserConfig))
+	fmt.Printf("%-25s%s\n", "| user_config:", c.UserConfig)
 	fmt.Println("| image_col_paths:")
 	for _, path := range c.ImageColPaths {
-		fmt.Printf("%-20s%s\n", "|", path)
+		fmt.Printf("%-25s%s\n", "|", path)
 	}
-	fmt.Printf("|\n%-20s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-20s%s\n", "| target:", c.Target)
-	fmt.Printf("%-20s%s\n", "| alignment:", c.Alignment)
-	fmt.Printf("%-20s%s\n", "| opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
-	fmt.Printf("%-20s%s\n", "| stretch:", c.Stretch)
-	fmt.Println("------------------------------------------")
+	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
+	fmt.Printf("%-25s%s\n", "| target:", c.Target)
+	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
+	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
+	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+	fmt.Println("------------------------------------------------------------------------------------")
 }
 
 type UserConfig struct {
 	ImageColPaths []string `yaml:"image_col_paths"`
 	Interval      int      `yaml:"interval"`
 	Target        string   `yaml:"target"`
-	Alignment     string   `yaml:"alignment"`
-	Opacity       float64  `yaml:"opacity"`
-	Stretch       string   `yaml:"stretch"`
+	Alignment     string   `yaml:"default_alignment"`
+	Stretch       string   `yaml:"default_stretch"`
+	Opacity       float64  `yaml:"default_opacity"`
 }
 
 func (c *UserConfig) Log(configPath string) {
-	fmt.Println("------------------------------------------")
+	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
-	fmt.Println("------------------------------------------")
+	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("| image_col_paths:")
 	for _, path := range c.ImageColPaths {
-		fmt.Printf("%-20s%s\n", "|", path)
+		fmt.Printf("%-25s%s\n", "|", path)
 	}
-	fmt.Printf("|\n%-20s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-20s%s\n", "| target:", c.Target)
-	fmt.Printf("%-20s%s\n", "| alignment:", c.Alignment)
-	fmt.Printf("%-20s%s\n", "| opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
-	fmt.Printf("%-20s%s\n", "| stretch:", c.Stretch)
-	fmt.Println("------------------------------------------")
+	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
+	fmt.Printf("%-25s%s\n", "| target:", c.Target)
+	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
+	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
+	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+	fmt.Println("------------------------------------------------------------------------------------")
 }
