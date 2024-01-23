@@ -22,6 +22,7 @@ type Command struct {
 	validateValue func(string) error
 	flags         []CLI_Arg
 	validateFlag  func(string, string) error
+	run           func(*Command) error
 }
 
 func (c *Command) ValidateValue(s string) error {
@@ -138,29 +139,38 @@ var (
 		name:  "config",
 		value: "default",
 		validateValue: func(s string) error {
+			// default config
 			if s == "" || s == "default" {
-				return nil
-			}
+				configPath, err := filepath.Abs("config.yaml")
+				if err != nil {
+					return err
+				}
+				// check if exists first, then create if needed
+				if _, err := os.Stat(configPath); os.IsNotExist(err) {
+					err := DefaultTemplate(configPath).WriteFile()
+					if err != nil {
+						return fmt.Errorf("error creating default config: %s", err.Error())
+					}
+				}
 
-			// check if exists
-			if _, err := os.Stat(s); os.IsNotExist(err) {
-				return fmt.Errorf("'%s' does not exist: %s", s, err.Error())
-			}
+			} else {
+				// user config
+				configPath, err := filepath.Abs(s)
+				if err != nil {
+					return err
+				}
+				if _, err := os.Stat(s); os.IsNotExist(err) {
+					// create parent dirs if needed first before writing to file
+					err := os.MkdirAll(filepath.Dir(configPath), os.ModePerm)
+					if err != nil {
+						return fmt.Errorf("error creating parent dirs of user config %s: %s", configPath, err.Error())
+					}
 
-			// check if .yaml file
-			if filepath.Ext(s) != ".yaml" {
-				return fmt.Errorf("'%s' is not a .yaml file", s)
-			}
-
-			// check if proper format
-			yamlFile, err := os.ReadFile(s)
-			if err != nil {
-				return err
-			}
-			contents := ConfigFile{}
-			err = yaml.Unmarshal(yamlFile, &contents)
-			if err != nil {
-				return err
+					err = UserTemplate(configPath).WriteFile()
+					if err != nil {
+						return fmt.Errorf("error creating default config: %s", err.Error())
+					}
+				}
 			}
 
 			return nil
@@ -172,6 +182,73 @@ var (
 			default:
 				return fmt.Errorf("invalid flag '%s' for 'config'", flagName)
 			}
+		},
+		run: func(cmd *Command) error {
+			var configPath string
+			if cmd.value == "default" {
+				// read default config
+				configPath, _ = filepath.Abs("config.yaml")
+				yamlFile, err := os.ReadFile(configPath)
+				if err != nil {
+					return err
+				}
+
+				contents := DefaultConfig{}
+				err = yaml.Unmarshal(yamlFile, &contents)
+				if err != nil {
+					return fmt.Errorf("error reading config: %s", err.Error())
+				}
+				contents.UseUserConfig = false
+
+				// log to console
+				contents.Log(configPath)
+
+				// update default config to use default config
+				template := DefaultTemplate(configPath)
+				template.yamlContents, _ = yaml.Marshal(contents)
+				err = template.WriteFile()
+				if err != nil {
+					return fmt.Errorf("error writing config: %s", err.Error())
+				}
+
+			} else {
+				// read config
+				configPath, _ = filepath.Abs(cmd.value)
+				yamlFile, err := os.ReadFile(configPath)
+				if err != nil {
+					return err
+				}
+
+				contents := UserConfig{}
+				err = yaml.Unmarshal(yamlFile, &contents)
+				if err != nil {
+					return fmt.Errorf("error reading config: %s", err.Error())
+				}
+
+				// log to console
+				contents.Log(configPath)
+
+				// edit default config to use user config
+				defaultContents := DefaultConfig{
+					UseUserConfig: true,
+					UserConfig:    configPath,
+					ImageColPaths: contents.ImageColPaths,
+					Interval:      contents.Interval,
+					Target:        contents.Target,
+					Alignment:     contents.Alignment,
+					Opacity:       contents.Opacity,
+					Stretch:       contents.Stretch,
+				}
+				defaultConfigPath, _ := filepath.Abs("config.yaml")
+				template := DefaultTemplate(defaultConfigPath)
+				template.yamlContents, _ = yaml.Marshal(defaultContents)
+				err = template.WriteFile()
+				if err != nil {
+					return fmt.Errorf("error writing config: %s", err.Error())
+				}
+			}
+
+			return nil
 		},
 	}
 )

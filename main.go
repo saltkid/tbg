@@ -4,9 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"path/filepath"
-
-	"gopkg.in/yaml.v3"
 )
 
 func main() {
@@ -22,7 +19,7 @@ func main() {
 	case "add":
 		Add(command)
 	case "config":
-		Config(command)
+		command.run(command)
 	default:
 		log.Fatalln("invalid command")
 	}
@@ -38,32 +35,6 @@ func Add(command *Command) {
 	// TODO
 	log.Println("add")
 	return
-}
-
-func Config(command *Command) {
-	var configPath string
-	if command.value == "default" {
-		configPath, _ = filepath.Abs("config.yaml")
-		if _, err := os.Stat(configPath); os.IsNotExist(err) {
-			// create default.yaml in that case
-			err := os.WriteFile(configPath, []byte(defaultConfig), 0666)
-			if err != nil {
-				log.Fatalln(err)
-			}
-		}
-
-	} else {
-		configPath, _ = filepath.Abs(command.value)
-	}
-
-	yamlFile, _ := os.ReadFile(configPath)
-	contents := ConfigFile{}
-	err := yaml.Unmarshal(yamlFile, &contents)
-	if err != nil {
-		log.Fatalln(err)
-	}
-
-	LogConfig(contents, configPath)
 }
 
 func ParseArgs(args []string) (*Command, error) {
