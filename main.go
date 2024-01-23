@@ -16,10 +16,11 @@ func main() {
 	switch command.name {
 	case "run":
 		Run(command)
-	case "add":
-		Add(command)
-	case "config":
-		command.run(command)
+	case "config", "add", "remove":
+		err := command.run(command)
+		if err != nil {
+			log.Fatalln(err)
+		}
 	default:
 		log.Fatalln("invalid command")
 	}
@@ -28,12 +29,6 @@ func main() {
 func Run(command *Command) {
 	// TODO
 	log.Println("run")
-	return
-}
-
-func Add(command *Command) {
-	// TODO
-	log.Println("add")
 	return
 }
 
@@ -54,6 +49,7 @@ func ParseArgs(args []string) (*Command, error) {
 		case "run":
 			return RUN_CMD, nil
 		case "config":
+			_ = CONFIG_CMD.validateValue("default") // to create default config.yaml if not created yet
 			return CONFIG_CMD, nil
 		default:
 			return nil, fmt.Errorf("command '%s' requires an argument. got none", args[0])
@@ -61,20 +57,9 @@ func ParseArgs(args []string) (*Command, error) {
 	}
 
 	// parse command name
-	tmpCMD := new(Command)
-	tmp, err := ToCommand(args[0])
+	tmpCMD, err := ToCommand(args[0])
 	if err != nil {
 		return nil, err
-	}
-	switch tmp.name {
-	case "run":
-		tmpCMD = RUN_CMD
-	case "add":
-		tmpCMD = ADD_CMD
-	case "config":
-		tmpCMD = CONFIG_CMD
-	default:
-		return nil, fmt.Errorf("start with invalid command: '%s'", args[0])
 	}
 
 	// parse command value

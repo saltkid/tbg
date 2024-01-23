@@ -33,6 +33,7 @@ func (c *Command) ValidateValue(s string) error {
 var CLI_CMDS = []*Command{
 	RUN_CMD,
 	ADD_CMD,
+	REMOVE_CMD,
 	CONFIG_CMD,
 }
 
@@ -42,6 +43,8 @@ func ToCommand(s string) (*Command, error) {
 		return RUN_CMD, nil
 	case ADD_CMD.name:
 		return ADD_CMD, nil
+	case REMOVE_CMD.name:
+		return REMOVE_CMD, nil
 	case CONFIG_CMD.name:
 		return CONFIG_CMD, nil
 	default:
@@ -86,18 +89,22 @@ var (
 			}
 
 			// check if exists
-			if _, err := os.Stat(path); os.IsNotExist(err) {
-				return fmt.Errorf("%s does not exist: %s", path, err.Error())
+			absPath, err := filepath.Abs(path)
+			if err != nil {
+				return err
+			}
+			if _, err := os.Stat(absPath); os.IsNotExist(err) {
+				return fmt.Errorf("%s does not exist: %s", absPath, err.Error())
 			}
 
 			// check if has any image files
 			imgFileCount := 0
-			err := filepath.WalkDir(path, func(p string, d os.DirEntry, err error) error {
+			err = filepath.WalkDir(absPath, func(p string, d os.DirEntry, err error) error {
 				if err != nil {
 					return err
 				}
 
-				if d.IsDir() && d.Name() != filepath.Base(path) {
+				if d.IsDir() && d.Name() != filepath.Base(absPath) {
 					return filepath.SkipDir
 				}
 
@@ -109,11 +116,11 @@ var (
 			})
 
 			if err != nil {
-				return fmt.Errorf("error reading %s: %s", path, err.Error())
+				return fmt.Errorf("error reading %s: %s", absPath, err.Error())
 			}
 
 			if imgFileCount < 1 {
-				return fmt.Errorf("no image files in %s", path)
+				return fmt.Errorf("no image files in %s", absPath)
 			}
 
 			return nil
@@ -136,7 +143,210 @@ var (
 			}
 		},
 		run: func(c *Command) error {
-			// todo
+			absPath, _ := filepath.Abs(strings.ToLower(c.value))
+
+			// get values of flags if set
+			alignment, ok := c.flags[ALIGN_FLAG.name].(*Flag)
+			var alignVal string
+			if ok {
+				alignVal = alignment.value
+			}
+			opacity, ok := c.flags[OPACITY_FLAG.name].(*Flag)
+			var opacityVal string
+			if ok {
+				opacityVal = opacity.value
+			}
+			stretch, ok := c.flags[STRETCH_FLAG.name].(*Flag)
+			var stretchVal string
+			if ok {
+				stretchVal = stretch.value
+			}
+
+			// only set flags after path if at least one is set
+			if alignVal != "" || opacityVal != "" || stretchVal != "" {
+				if stretchVal == "" {
+					stretchVal = "uniform"
+				}
+				if alignVal == "" {
+					alignVal = "center"
+				}
+				if opacityVal == "" {
+					opacityVal = "0.1"
+				}
+				absPath = fmt.Sprintf("%s | %s %s %s", absPath, alignVal, stretchVal, opacityVal)
+			}
+
+			// read config to determine whether to append these values to default config or user config
+			err := CONFIG_CMD.validateValue("default")
+			if err != nil {
+				return err
+			}
+			configPath, _ := filepath.Abs("config.yaml")
+			yamlFile, err := os.ReadFile(configPath)
+			if err != nil {
+				return err
+			}
+			contents := DefaultConfig{}
+			err = yaml.Unmarshal(yamlFile, &contents)
+			if err != nil {
+				return fmt.Errorf("error reading config: %s", err.Error())
+			}
+
+			if contents.UseUserConfig {
+				err := CONFIG_CMD.validateValue(contents.UserConfig)
+				if err != nil {
+					return err
+				}
+				userConfigPath, _ := filepath.Abs(contents.UserConfig)
+				yamlFile, err = os.ReadFile(userConfigPath)
+				if err != nil {
+					return err
+				}
+				contents := UserConfig{}
+				err = yaml.Unmarshal(yamlFile, &contents)
+				if err != nil {
+					return fmt.Errorf("error reading config: %s", err.Error())
+				}
+
+				// check if exists before appending
+				for _, path := range contents.ImageColPaths {
+					if path == absPath {
+						return fmt.Errorf("%s already exists in user config", absPath)
+					}
+				}
+				contents.ImageColPaths = append(contents.ImageColPaths, absPath)
+
+				template := UserTemplate(userConfigPath)
+				template.yamlContents, _ = yaml.Marshal(contents)
+				err = template.WriteFile()
+				if err != nil {
+					return fmt.Errorf("error writing config: %s", err.Error())
+				}
+				contents.Log(userConfigPath)
+
+			} else {
+				for _, path := range contents.ImageColPaths {
+					if path == absPath {
+						return fmt.Errorf("%s already exists in default config", absPath)
+					}
+				}
+				contents.ImageColPaths = append(contents.ImageColPaths, absPath)
+
+				template := DefaultTemplate(configPath)
+				template.yamlContents, _ = yaml.Marshal(contents)
+				err = template.WriteFile()
+				if err != nil {
+					return fmt.Errorf("error writing config: %s", err.Error())
+				}
+
+				contents.Log(configPath)
+			}
+
+			return nil
+		},
+	}
+
+	REMOVE_CMD = &Command{
+		name:  "remove",
+		value: "",
+		validateValue: func(path string) error {
+			if path == "" {
+				return fmt.Errorf("no path provided for 'remove'")
+			}
+
+			return nil
+		},
+		flags: make(map[string]CLI_Arg),
+		validateFlag: func(flagName string, flagValue string) error {
+			switch flagName {
+			case "":
+				return nil
+			default:
+				return fmt.Errorf("'remove' takes no flags. got '%s'", flagName)
+			}
+		},
+		run: func(c *Command) error {
+			absPath, _ := filepath.Abs(strings.ToLower(c.value))
+
+			// read config to determine whether to delete values on default config or user config
+			err := CONFIG_CMD.validateValue("default")
+			if err != nil {
+				return err
+			}
+			configPath, _ := filepath.Abs("config.yaml")
+			yamlFile, err := os.ReadFile(configPath)
+			if err != nil {
+				return err
+			}
+			contents := DefaultConfig{}
+			err = yaml.Unmarshal(yamlFile, &contents)
+			if err != nil {
+				return fmt.Errorf("error reading config: %s", err.Error())
+			}
+
+			if contents.UseUserConfig {
+				err := CONFIG_CMD.validateValue(contents.UserConfig)
+				if err != nil {
+					return err
+				}
+				userConfigPath, _ := filepath.Abs(contents.UserConfig)
+				yamlFile, err = os.ReadFile(userConfigPath)
+				if err != nil {
+					return err
+				}
+				contents := UserConfig{}
+				err = yaml.Unmarshal(yamlFile, &contents)
+				if err != nil {
+					return fmt.Errorf("error reading config: %s", err.Error())
+				}
+
+				// delete matched path
+				removedDir := ""
+				for i, path := range contents.ImageColPaths {
+					path = strings.TrimSpace(strings.Split(path, "|")[0])
+					if strings.EqualFold(path, absPath) {
+						removedDir = path
+						contents.ImageColPaths = append(contents.ImageColPaths[:i], contents.ImageColPaths[i+1:]...)
+						break
+					}
+				}
+				if removedDir == "" {
+					return fmt.Errorf("%s not found in user config", c.value)
+				}
+
+				template := UserTemplate(userConfigPath)
+				template.yamlContents, _ = yaml.Marshal(contents)
+				err = template.WriteFile()
+				if err != nil {
+					return fmt.Errorf("error writing config: %s", err.Error())
+				}
+				contents.Log(userConfigPath).LogRemoved(removedDir)
+
+			} else {
+				// delete matched path
+				removedDir := ""
+				for i, path := range contents.ImageColPaths {
+					path = strings.TrimSpace(strings.Split(path, "|")[0])
+					if strings.EqualFold(path, absPath) {
+						removedDir = path
+						contents.ImageColPaths = append(contents.ImageColPaths[:i], contents.ImageColPaths[i+1:]...)
+						break
+					}
+				}
+				if removedDir == "" {
+					return fmt.Errorf("%s not found in default config", c.value)
+				}
+
+				template := DefaultTemplate(configPath)
+				template.yamlContents, _ = yaml.Marshal(contents)
+				err = template.WriteFile()
+				if err != nil {
+					return fmt.Errorf("error writing config: %s", err.Error())
+				}
+
+				contents.Log(configPath).LogRemoved(removedDir)
+			}
+
 			return nil
 		},
 	}
@@ -359,13 +569,13 @@ var (
 		short: "-o",
 		value: "0.1",
 		validateValue: func(s string) error {
-			num, err := strconv.Atoi(s)
+			num, err := strconv.ParseFloat(s, 64)
 			if err != nil {
 				return err
 			}
 
 			if num > 1 || num < 0 {
-				return fmt.Errorf("invalid value for --opacity: %d; must a float between 0-1", num)
+				return fmt.Errorf("invalid value for --opacity: %v; must a float between 0-1", num)
 			}
 			return nil
 		},
@@ -460,6 +670,7 @@ func IsValidFlagName(s string) bool {
 	validFlags := make(map[string]struct{})
 	for _, flag := range CLI_FLAGS {
 		validFlags[flag.name] = struct{}{}
+		validFlags[flag.short] = struct{}{}
 	}
 
 	_, exists := validFlags[s]
