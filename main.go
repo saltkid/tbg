@@ -56,7 +56,7 @@ func ParseArgs(args []string) (*Command, error) {
 		case "config":
 			return CONFIG_CMD, nil
 		default:
-			return nil, fmt.Errorf("only 'run' command is allowed to be empty. got '%s'", args[0])
+			return nil, fmt.Errorf("command '%s' requires an argument. got none", args[0])
 		}
 	}
 

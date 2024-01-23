@@ -137,7 +137,7 @@ var (
 
 	CONFIG_CMD = &Command{
 		name:  "config",
-		value: "default",
+		value: "",
 		validateValue: func(s string) error {
 			// default config
 			if s == "" || s == "default" {
@@ -185,7 +185,44 @@ var (
 		},
 		run: func(cmd *Command) error {
 			var configPath string
-			if cmd.value == "default" {
+			if cmd.value == "" {
+				// print used config
+				configPath, _ = filepath.Abs("config.yaml")
+				yamlFile, err := os.ReadFile(configPath)
+				if err != nil {
+					return err
+				}
+
+				contents := DefaultConfig{}
+				err = yaml.Unmarshal(yamlFile, &contents)
+				if err != nil {
+					return fmt.Errorf("error reading config: %s", err.Error())
+				}
+
+				// print user config if set
+				if contents.UseUserConfig {
+					userConfigPath, err := filepath.Abs(contents.UserConfig)
+					if err != nil {
+						return err
+					}
+
+					yamlFile, err = os.ReadFile(userConfigPath)
+					if err != nil {
+						return err
+					}
+
+					contents := UserConfig{}
+					err = yaml.Unmarshal(yamlFile, &contents)
+					if err != nil {
+						return fmt.Errorf("error reading config: %s", err.Error())
+					}
+					contents.Log(userConfigPath)
+
+				} else {
+					contents.Log(configPath)
+				}
+
+			} else if cmd.value == "default" {
 				// read default config
 				configPath, _ = filepath.Abs("config.yaml")
 				yamlFile, err := os.ReadFile(configPath)
