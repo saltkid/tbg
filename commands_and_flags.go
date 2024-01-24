@@ -67,8 +67,8 @@ var (
 		flags: make(map[string]CLI_Arg),
 		validateFlag: func(flagName string, flagValue string) error {
 			switch flagName {
-			case TARGET_FLAG.name, TARGET_FLAG.short:
-				return TARGET_FLAG.validateValue(flagValue)
+			case PROFILE_FLAG.name, PROFILE_FLAG.short:
+				return PROFILE_FLAG.validateValue(flagValue)
 			case INTERVAL_FLAG.name, INTERVAL_FLAG.short:
 				return INTERVAL_FLAG.validateValue(flagValue)
 			case CONFIG_CMD.name:
@@ -488,7 +488,7 @@ var (
 					UserConfig:    configPath,
 					ImageColPaths: contents.ImageColPaths,
 					Interval:      contents.Interval,
-					Target:        contents.Target,
+					Profile:       contents.Profile,
 					Alignment:     contents.Alignment,
 					Opacity:       contents.Opacity,
 					Stretch:       contents.Stretch,
@@ -523,7 +523,7 @@ var CLI_FLAGS = []*Flag{
 	ALIGN_FLAG,
 	OPACITY_FLAG,
 	STRETCH_FLAG,
-	TARGET_FLAG,
+	PROFILE_FLAG,
 	INTERVAL_FLAG,
 	CREATE_FLAG,
 }
@@ -536,8 +536,8 @@ func ToFlag(s string) (*Flag, error) {
 		return OPACITY_FLAG, nil
 	case STRETCH_FLAG.name, STRETCH_FLAG.short:
 		return STRETCH_FLAG, nil
-	case TARGET_FLAG.name, TARGET_FLAG.short:
-		return TARGET_FLAG, nil
+	case PROFILE_FLAG.name, PROFILE_FLAG.short:
+		return PROFILE_FLAG, nil
 	case INTERVAL_FLAG.name, INTERVAL_FLAG.short:
 		return INTERVAL_FLAG, nil
 	case CREATE_FLAG.name, CREATE_FLAG.short:
@@ -597,9 +597,9 @@ var (
 		},
 	}
 
-	TARGET_FLAG = &Flag{
-		name:  "--target",
-		short: "-t",
+	PROFILE_FLAG = &Flag{
+		name:  "--profile",
+		short: "-p",
 		value: "default",
 		validateValue: func(s string) error {
 			if s == "default" {
@@ -609,17 +609,17 @@ var (
 				// check if list- is followed by number
 				numPart, _ := strings.CutPrefix(s, "list-")
 				if numPart == "" {
-					return fmt.Errorf("no number found after 'list-' for --target")
+					return fmt.Errorf("no number found after 'list-' for --profile")
 				}
 
 				_, err := strconv.Atoi(numPart)
 				if err != nil {
-					return fmt.Errorf("invalid number '%s' after 'list-' for --target; error: %s", numPart, err.Error())
+					return fmt.Errorf("invalid number '%s' after 'list-' for --profile; error: %s", numPart, err.Error())
 				}
 				return nil
 
 			} else {
-				return fmt.Errorf("invalid value for --target: '%s'", s)
+				return fmt.Errorf("invalid value for --profile: '%s'", s)
 			}
 		},
 	}

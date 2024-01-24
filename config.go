@@ -29,7 +29,7 @@ func DefaultTemplate(absConfigPath string) *ConfigTemplate {
 `),
 		yamlContents: []byte(`image_col_paths: []
 interval: 30
-target: default
+profile: default
 
 default_alignment: center
 default_stretch: uniform
@@ -50,7 +50,7 @@ default_opacity: 0.1
 #
 #   default_interval: time in minutes between each image change
 #
-#   target: target profile in Windows Terminal (default, list-0, list-1, etc.)
+#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc.)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
 #
 #   ---
@@ -83,7 +83,7 @@ func UserTemplate(path string) *ConfigTemplate {
 `),
 		yamlContents: []byte(`image_col_paths: []
 interval: 30
-target: default
+profile: default
 
 default_alignment: center
 default_stretch: uniform
@@ -104,7 +104,7 @@ default_opacity: 0.1
 #
 #   interval: time in minutes between each image change
 #
-#   target: target profile in Windows Terminal (default, list-0, list-1, etc.)
+#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc.)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
 #
 #   ---
@@ -134,7 +134,7 @@ type DefaultConfig struct {
 	UserConfig    string   `yaml:"user_config"`
 	ImageColPaths []string `yaml:"image_col_paths"`
 	Interval      int      `yaml:"interval"`
-	Target        string   `yaml:"target"`
+	Profile       string   `yaml:"profile"`
 	Alignment     string   `yaml:"default_alignment"`
 	Stretch       string   `yaml:"default_stretch"`
 	Opacity       float64  `yaml:"default_opacity"`
@@ -151,7 +151,7 @@ func (c *DefaultConfig) Log(configPath string) *DefaultConfig {
 		fmt.Printf("%-25s%s\n", "|", path)
 	}
 	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-25s%s\n", "| target:", c.Target)
+	fmt.Printf("%-25s%s\n", "| profile:", c.Profile)
 	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
@@ -170,7 +170,7 @@ func (c *DefaultConfig) LogRemoved(path string) *DefaultConfig {
 type UserConfig struct {
 	ImageColPaths []string `yaml:"image_col_paths"`
 	Interval      int      `yaml:"interval"`
-	Target        string   `yaml:"target"`
+	Profile       string   `yaml:"profile"`
 	Alignment     string   `yaml:"default_alignment"`
 	Stretch       string   `yaml:"default_stretch"`
 	Opacity       float64  `yaml:"default_opacity"`
@@ -185,7 +185,7 @@ func (c *UserConfig) Log(configPath string) *UserConfig {
 		fmt.Printf("%-25s%s\n", "|", path)
 	}
 	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-25s%s\n", "| target:", c.Target)
+	fmt.Printf("%-25s%s\n", "| profile:", c.Profile)
 	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
