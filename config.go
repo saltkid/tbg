@@ -125,8 +125,8 @@ default_opacity: 0.1
 }
 
 type Config interface {
-	Log(string) *Config
-	LogRemoved(string) *Config
+	Log(string) Config
+	LogRemoved(string) Config
 }
 
 type DefaultConfig struct {
@@ -140,7 +140,7 @@ type DefaultConfig struct {
 	Opacity       float64  `yaml:"default_opacity"`
 }
 
-func (c *DefaultConfig) Log(configPath string) *DefaultConfig {
+func (c *DefaultConfig) Log(configPath string) Config {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -160,7 +160,7 @@ func (c *DefaultConfig) Log(configPath string) *DefaultConfig {
 	return c
 }
 
-func (c *DefaultConfig) LogRemoved(path string) *DefaultConfig {
+func (c *DefaultConfig) LogRemoved(path string) Config {
 	fmt.Printf("%-25s%s\n", "| removed:", path)
 	fmt.Println("------------------------------------------------------------------------------------")
 
@@ -176,7 +176,7 @@ type UserConfig struct {
 	Opacity       float64  `yaml:"default_opacity"`
 }
 
-func (c *UserConfig) Log(configPath string) *UserConfig {
+func (c *UserConfig) Log(configPath string) Config {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -194,7 +194,7 @@ func (c *UserConfig) Log(configPath string) *UserConfig {
 	return c
 }
 
-func (c *UserConfig) LogRemoved(path string) *UserConfig {
+func (c *UserConfig) LogRemoved(path string) Config {
 	fmt.Printf("%-25s%s\n", "| removed:", path)
 	fmt.Println("------------------------------------------------------------------------------------")
 
