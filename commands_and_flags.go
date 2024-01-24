@@ -525,7 +525,6 @@ var CLI_FLAGS = []*Flag{
 	STRETCH_FLAG,
 	PROFILE_FLAG,
 	INTERVAL_FLAG,
-	CREATE_FLAG,
 }
 
 func ToFlag(s string) (*Flag, error) {
@@ -540,8 +539,6 @@ func ToFlag(s string) (*Flag, error) {
 		return PROFILE_FLAG, nil
 	case INTERVAL_FLAG.name, INTERVAL_FLAG.short:
 		return INTERVAL_FLAG, nil
-	case CREATE_FLAG.name, CREATE_FLAG.short:
-		return CREATE_FLAG, nil
 	default:
 		return &Flag{}, fmt.Errorf("'%s' is not a valid flag", s)
 	}
@@ -638,20 +635,6 @@ var (
 				return fmt.Errorf("invalid float value '%s' for --interval; error: %s", f, err.Error())
 			}
 			return nil
-		},
-	}
-
-	CREATE_FLAG = &Flag{
-		name:  "--create",
-		short: "-c",
-		value: "",
-		validateValue: func(s string) error {
-			switch s {
-			case "":
-				return nil
-			default:
-				return fmt.Errorf("--create takes no args. got '%s'", s)
-			}
 		},
 	}
 )
