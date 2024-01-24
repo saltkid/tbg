@@ -138,6 +138,11 @@ var (
 				return OPACITY_FLAG.validateValue(flagValue)
 			case STRETCH_FLAG.name, STRETCH_FLAG.short:
 				return STRETCH_FLAG.validateValue(flagValue)
+			case CONFIG_CMD.name:
+				if flagValue == "" {
+					return fmt.Errorf("no config provided for 'add'. please remove empty 'config' flag to use currently set config")
+				}
+				return CONFIG_CMD.validateValue(flagValue)
 			default:
 				return fmt.Errorf("invalid flag for 'add': '%s'", flagName)
 			}
@@ -161,7 +166,6 @@ var (
 			if ok {
 				stretchVal = stretch.value
 			}
-
 			// only set flags after path if at least one is set
 			if alignVal != "" || opacityVal != "" || stretchVal != "" {
 				if stretchVal == "" {
@@ -176,70 +180,153 @@ var (
 				absPath = fmt.Sprintf("%s | %s %s %s", absPath, alignVal, stretchVal, opacityVal)
 			}
 
-			// read config to determine whether to append these values to default config or user config
-			err := CONFIG_CMD.validateValue("default")
-			if err != nil {
-				return err
+			// check if config flag is set to determine whether to delete from:
+			// default config, user config (if set)
+			// currently set config (if not set)
+			var configPath string
+			var contents Config
+			configFlag, hasConfigFlag := c.flags[CONFIG_CMD.name].(*Command)
+			if hasConfigFlag {
+				if configFlag.value == "default" {
+					configPath, _ = filepath.Abs("config.yaml")
+					contents = &DefaultConfig{}
+				} else {
+					configPath, _ = filepath.Abs(configFlag.value)
+					contents = &UserConfig{}
+				}
+			} else {
+				configPath, _ = filepath.Abs("config.yaml")
+				contents = &DefaultConfig{}
 			}
-			configPath, _ := filepath.Abs("config.yaml")
+
 			yamlFile, err := os.ReadFile(configPath)
 			if err != nil {
 				return err
 			}
-			contents := DefaultConfig{}
-			err = yaml.Unmarshal(yamlFile, &contents)
-			if err != nil {
-				return fmt.Errorf("error reading config: %s", err.Error())
-			}
 
-			if contents.UseUserConfig {
-				err := CONFIG_CMD.validateValue(contents.UserConfig)
-				if err != nil {
-					return err
-				}
-				userConfigPath, _ := filepath.Abs(contents.UserConfig)
-				yamlFile, err = os.ReadFile(userConfigPath)
-				if err != nil {
-					return err
-				}
-				contents := UserConfig{}
-				err = yaml.Unmarshal(yamlFile, &contents)
+			// process differently based on type of config
+			userContents, IsUserConfig := contents.(*UserConfig)
+			defaultContents, IsDefaultConfig := contents.(*DefaultConfig)
+			if IsUserConfig {
+				// write directly to a user config
+				err = yaml.Unmarshal(yamlFile, &userContents)
 				if err != nil {
 					return fmt.Errorf("error reading config: %s", err.Error())
 				}
-
 				// check if exists before appending
-				for _, path := range contents.ImageColPaths {
-					if path == absPath {
+				for _, path := range userContents.ImageColPaths {
+					pureAbsPath, _, _ := strings.Cut(path, "|")
+					pureAbsPath = strings.TrimSpace(pureAbsPath)
+					purePath, _, _ := strings.Cut(absPath, "|")
+					purePath = strings.TrimSpace(purePath)
+
+					if strings.EqualFold(pureAbsPath, purePath) {
 						return fmt.Errorf("%s already exists in user config", absPath)
 					}
 				}
-				contents.ImageColPaths = append(contents.ImageColPaths, absPath)
+				userContents.ImageColPaths = append(userContents.ImageColPaths, absPath)
 
-				template := UserTemplate(userConfigPath)
+				template := UserTemplate(configPath)
 				template.yamlContents, _ = yaml.Marshal(contents)
 				err = template.WriteFile()
 				if err != nil {
-					return fmt.Errorf("error writing config: %s", err.Error())
+					return fmt.Errorf("error writing to user config: %s", err.Error())
 				}
-				contents.Log(userConfigPath)
+				contents.Log(configPath)
 
-			} else {
-				for _, path := range contents.ImageColPaths {
-					if path == absPath {
+			} else if IsDefaultConfig && hasConfigFlag {
+				// write directly to default config
+				err = yaml.Unmarshal(yamlFile, &defaultContents)
+				if err != nil {
+					return fmt.Errorf("error reading default config: %s", err.Error())
+				}
+				// check if exists before appending
+				for _, path := range defaultContents.ImageColPaths {
+					pureAbsPath, _, _ := strings.Cut(path, "|")
+					pureAbsPath = strings.TrimSpace(pureAbsPath)
+					purePath, _, _ := strings.Cut(absPath, "|")
+					purePath = strings.TrimSpace(purePath)
+
+					if strings.EqualFold(pureAbsPath, purePath) {
 						return fmt.Errorf("%s already exists in default config", absPath)
 					}
 				}
-				contents.ImageColPaths = append(contents.ImageColPaths, absPath)
+				defaultContents.ImageColPaths = append(defaultContents.ImageColPaths, absPath)
 
 				template := DefaultTemplate(configPath)
-				template.yamlContents, _ = yaml.Marshal(contents)
-				err = template.WriteFile()
+				template.yamlContents, _ = yaml.Marshal(defaultContents)
+				err := template.WriteFile()
 				if err != nil {
-					return fmt.Errorf("error writing config: %s", err.Error())
+					return fmt.Errorf("error writing to default config: %s", err.Error())
 				}
 
 				contents.Log(configPath)
+
+			} else {
+				// read config to determine whether to append these values to default config or user config
+				err = yaml.Unmarshal(yamlFile, &defaultContents)
+				if err != nil {
+					return fmt.Errorf("error reading config: %s", err.Error())
+				}
+				if defaultContents.UseUserConfig {
+					err = CONFIG_CMD.validateValue(defaultContents.UserConfig)
+					if err != nil {
+						return err
+					}
+					userConfigPath, _ := filepath.Abs(defaultContents.UserConfig)
+					yamlFile, err := os.ReadFile(userConfigPath)
+					if err != nil {
+						return err
+					}
+					contents := UserConfig{}
+					err = yaml.Unmarshal(yamlFile, &contents)
+					if err != nil {
+						return fmt.Errorf("error reading config: %s", err.Error())
+					}
+					// check if exists before appending
+					for _, path := range contents.ImageColPaths {
+						pureAbsPath, _, _ := strings.Cut(path, "|")
+						pureAbsPath = strings.TrimSpace(pureAbsPath)
+						purePath, _, _ := strings.Cut(absPath, "|")
+						purePath = strings.TrimSpace(purePath)
+
+						if strings.EqualFold(pureAbsPath, purePath) {
+							return fmt.Errorf("%s already exists in user config", absPath)
+						}
+					}
+					contents.ImageColPaths = append(contents.ImageColPaths, absPath)
+
+					template := UserTemplate(userConfigPath)
+					template.yamlContents, _ = yaml.Marshal(contents)
+					err = template.WriteFile()
+					if err != nil {
+						return fmt.Errorf("error writing to user config: %s", err.Error())
+					}
+					contents.Log(userConfigPath)
+
+				} else {
+					// check if exists before appending
+					for _, path := range defaultContents.ImageColPaths {
+						pureAbsPath, _, _ := strings.Cut(path, "|")
+						pureAbsPath = strings.TrimSpace(pureAbsPath)
+						purePath, _, _ := strings.Cut(absPath, "|")
+						purePath = strings.TrimSpace(purePath)
+
+						if strings.EqualFold(pureAbsPath, purePath) {
+							return fmt.Errorf("%s already exists in default config", absPath)
+						}
+					}
+					defaultContents.ImageColPaths = append(defaultContents.ImageColPaths, absPath)
+
+					template := DefaultTemplate(configPath)
+					template.yamlContents, _ = yaml.Marshal(defaultContents)
+					err := template.WriteFile()
+					if err != nil {
+						return fmt.Errorf("error writing to default config: %s", err.Error())
+					}
+
+					contents.Log(configPath)
+				}
 			}
 
 			return nil
@@ -273,11 +360,12 @@ var (
 		run: func(c *Command) error {
 			absPath, _ := filepath.Abs(strings.ToLower(c.value))
 
-			// read config to determine whether to delete values on default config or user config
+			// check if config flag is set to determine whether to delete from:
+			// default config, user config (if set)
+			// currently set config (if not set)
 			var configPath string
 			var contents Config
 			configFlag, hasConfigFlag := c.flags[CONFIG_CMD.name].(*Command)
-
 			if hasConfigFlag {
 				if configFlag.value == "default" {
 					configPath, _ = filepath.Abs("config.yaml")
@@ -339,7 +427,6 @@ var (
 				removedDir := ""
 				for i, path := range defaultContents.ImageColPaths {
 					path = strings.TrimSpace(strings.Split(path, "|")[0])
-					println(path)
 					if strings.EqualFold(path, absPath) {
 						removedDir = path
 						defaultContents.ImageColPaths = append(defaultContents.ImageColPaths[:i], defaultContents.ImageColPaths[i+1:]...)
@@ -421,7 +508,7 @@ var (
 					}
 
 					template := DefaultTemplate(configPath)
-					template.yamlContents, _ = yaml.Marshal(contents)
+					template.yamlContents, _ = yaml.Marshal(defaultContents)
 					err = template.WriteFile()
 					if err != nil {
 						return fmt.Errorf("error writing config: %s", err.Error())
