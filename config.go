@@ -167,11 +167,15 @@ func (c *DefaultConfig) Log(configPath string) Config {
 func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
 	fmt.Println("| edited: ")
 	fmt.Println("------------------------------------------------------------------------------------")
-	for old, new := range editedPaths {
-		if old != new {
-			fmt.Printf("%-25s%s\n", "| old:", old)
-			fmt.Printf("%-25s%s\n", "| new:", new)
-			fmt.Println("|")
+	if _, ok := editedPaths["no changes made"]; ok {
+		fmt.Println("| no changes made")
+	} else {
+		for old, new := range editedPaths {
+			if old != new {
+				fmt.Printf("%-25s%s\n", "| old:", old)
+				fmt.Printf("%-25s%s\n", "| new:", new)
+				fmt.Println("|")
+			}
 		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -216,11 +220,15 @@ func (c *UserConfig) Log(configPath string) Config {
 func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {
 	fmt.Println("| edited: ")
 	fmt.Println("------------------------------------------------------------------------------------")
-	for old, new := range editedPaths {
-		if old != new {
-			fmt.Printf("%-25s%s\n", "| old:", old)
-			fmt.Printf("%-25s%s\n", "| new:", new)
-			fmt.Println("|")
+	if _, ok := editedPaths["no changes made"]; ok {
+		fmt.Println("| no changes made")
+	} else {
+		for old, new := range editedPaths {
+			if old != new {
+				fmt.Printf("%-25s%s\n", "| old:", old)
+				fmt.Printf("%-25s%s\n", "| new:", new)
+				fmt.Println("|")
+			}
 		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")

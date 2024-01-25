@@ -616,8 +616,8 @@ var (
 			// process differently based on type of config
 			userContents, IsUserConfig := contents.(*UserConfig)
 			defaultContents, IsDefaultConfig := contents.(*DefaultConfig)
-			// edited := make([]string, 0)
 			edited := make(map[string]string, 0)
+			editedPaths := 0
 
 			if IsUserConfig {
 				// edit a user config directly
@@ -686,6 +686,7 @@ var (
 								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 							}
 							edited[path] = userContents.ImageColPaths[i]
+							editedPaths++
 
 						} else {
 							opts = strings.TrimSpace(opts)
@@ -715,6 +716,7 @@ var (
 								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 							}
 							edited[path] = userContents.ImageColPaths[i]
+							editedPaths++
 						}
 						// stop editing if not all dirs
 						if c.value != "all-dirs" {
@@ -723,15 +725,15 @@ var (
 					}
 				}
 
-				if len(edited) == 0 {
-					return fmt.Errorf("no changes made")
-				}
-
 				template := UserTemplate(configPath)
 				template.yamlContents, _ = yaml.Marshal(userContents)
 				err = template.WriteFile()
 				if err != nil {
 					return fmt.Errorf("error writing to user config: %s", err.Error())
+				}
+
+				if len(edited) == 0 || editedPaths == 0 {
+					edited["no changes made"] = ""
 				}
 				userContents.Log(configPath).LogEdited(edited)
 
@@ -801,6 +803,7 @@ var (
 								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 							}
 							edited[path] = defaultContents.ImageColPaths[i]
+							editedPaths++
 
 						} else {
 							opts = strings.TrimSpace(opts)
@@ -830,6 +833,7 @@ var (
 								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 							}
 							edited[path] = defaultContents.ImageColPaths[i]
+							editedPaths++
 						}
 					}
 				}
@@ -841,6 +845,9 @@ var (
 					return fmt.Errorf("error writing to default config: %s", err.Error())
 				}
 
+				if len(edited) == 0 || editedPaths == 0 {
+					edited["no changes made"] = ""
+				}
 				defaultContents.Log(configPath).LogEdited(edited)
 
 			} else {
@@ -924,6 +931,7 @@ var (
 									userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 								}
 								edited[path] = userContents.ImageColPaths[i]
+								editedPaths++
 
 							} else {
 								opts = strings.TrimSpace(opts)
@@ -953,6 +961,7 @@ var (
 									userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 								}
 								edited[path] = userContents.ImageColPaths[i]
+								editedPaths++
 							}
 
 							// stop editing if not all dirs
@@ -967,6 +976,10 @@ var (
 					err = template.WriteFile()
 					if err != nil {
 						return fmt.Errorf("error writing to user config: %s", err.Error())
+					}
+
+					if len(edited) == 0 || editedPaths == 0 {
+						edited["no changes made"] = ""
 					}
 					userContents.Log(userConfigPath).LogEdited(edited)
 
@@ -1030,6 +1043,7 @@ var (
 									defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 								}
 								edited[path] = defaultContents.ImageColPaths[i]
+								editedPaths++
 
 							} else {
 								opts = strings.TrimSpace(opts)
@@ -1059,6 +1073,7 @@ var (
 									defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 								}
 								edited[path] = defaultContents.ImageColPaths[i]
+								editedPaths++
 							}
 						}
 					}
@@ -1070,6 +1085,9 @@ var (
 						return fmt.Errorf("error writing to default config: %s", err.Error())
 					}
 
+					if len(edited) == 0 || editedPaths == 0 {
+						edited["no changes made"] = ""
+					}
 					defaultContents.Log(configPath).LogEdited(edited)
 				}
 			}
