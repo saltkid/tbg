@@ -390,6 +390,7 @@ var (
 
 			userContents, IsUserConfig := contents.(*UserConfig)
 			defaultContents, IsDefaultConfig := contents.(*DefaultConfig)
+			removed := make(map[string]struct{}, 0)
 			if IsUserConfig {
 				// remove in user config
 				err = yaml.Unmarshal(yamlFile, &userContents)
@@ -398,27 +399,25 @@ var (
 				}
 
 				// delete matched path
-				removedDir := ""
 				for i, path := range userContents.ImageColPaths {
 					path = strings.TrimSpace(strings.Split(path, "|")[0])
 					if strings.EqualFold(path, absPath) {
-						removedDir = path
+						removed[fmt.Sprintf(`"%s" in user config %s`, path, configPath)] = struct{}{}
 						userContents.ImageColPaths = append(userContents.ImageColPaths[:i], userContents.ImageColPaths[i+1:]...)
 						break
 					}
 				}
-				if removedDir == "" {
-					return fmt.Errorf("%s not found in user config %s", absPath, configPath)
-				}
-				removedDir = fmt.Sprintf(`"%s" in user config %s`, removedDir, configPath)
-
 				template := UserTemplate(configPath)
 				template.yamlContents, _ = yaml.Marshal(contents)
 				err = template.WriteFile()
 				if err != nil {
 					return fmt.Errorf("error writing config: %s", err.Error())
 				}
-				contents.Log(configPath).LogRemoved(removedDir)
+
+				if len(removed) == 0 {
+					removed["no changes made"] = struct{}{}
+				}
+				contents.Log(configPath).LogRemoved(removed)
 
 			} else if IsDefaultConfig && hasConfigFlag {
 				// remove in default config
@@ -427,20 +426,14 @@ var (
 					return fmt.Errorf("error reading config: %s", err.Error())
 				}
 				// delete matched path
-				removedDir := ""
 				for i, path := range defaultContents.ImageColPaths {
 					path = strings.TrimSpace(strings.Split(path, "|")[0])
 					if strings.EqualFold(path, absPath) {
-						removedDir = path
+						removed[fmt.Sprintf(`"%s" in default config %s`, path, configPath)] = struct{}{}
 						defaultContents.ImageColPaths = append(defaultContents.ImageColPaths[:i], defaultContents.ImageColPaths[i+1:]...)
 						break
 					}
 				}
-				if removedDir == "" {
-					return fmt.Errorf("%s not found in default config", c.value)
-				}
-				removedDir = fmt.Sprintf(`"%s" in default config`, removedDir)
-
 				template := DefaultTemplate(configPath)
 				template.yamlContents, _ = yaml.Marshal(defaultContents)
 				err = template.WriteFile()
@@ -448,7 +441,10 @@ var (
 					return fmt.Errorf("error writing config: %s", err.Error())
 				}
 
-				contents.Log(configPath).LogRemoved(removedDir)
+				if len(removed) == 0 {
+					removed["no changes made"] = struct{}{}
+				}
+				contents.Log(configPath).LogRemoved(removed)
 
 			} else {
 				// removed in currently used config (can be default or user)
@@ -474,42 +470,36 @@ var (
 					}
 
 					// delete matched path
-					removedDir := ""
 					for i, path := range contents.ImageColPaths {
 						path = strings.TrimSpace(strings.Split(path, "|")[0])
 						if strings.EqualFold(path, absPath) {
-							removedDir = path
+							removed[fmt.Sprintf(`"%s" in user config %s`, path, userConfigPath)] = struct{}{}
 							contents.ImageColPaths = append(contents.ImageColPaths[:i], contents.ImageColPaths[i+1:]...)
 							break
 						}
 					}
-					if removedDir == "" {
-						return fmt.Errorf("%s not found in user config", c.value)
-					}
-
 					template := UserTemplate(userConfigPath)
 					template.yamlContents, _ = yaml.Marshal(contents)
 					err = template.WriteFile()
 					if err != nil {
 						return fmt.Errorf("error writing config: %s", err.Error())
 					}
-					contents.Log(userConfigPath).LogRemoved(removedDir)
+
+					if len(removed) == 0 {
+						removed["no changes made"] = struct{}{}
+					}
+					contents.Log(userConfigPath).LogRemoved(removed)
 
 				} else {
 					// delete matched path
-					removedDir := ""
 					for i, path := range defaultContents.ImageColPaths {
 						path = strings.TrimSpace(strings.Split(path, "|")[0])
 						if strings.EqualFold(path, absPath) {
-							removedDir = path
+							removed[fmt.Sprintf(`"%s" in default config %s`, path, configPath)] = struct{}{}
 							defaultContents.ImageColPaths = append(defaultContents.ImageColPaths[:i], defaultContents.ImageColPaths[i+1:]...)
 							break
 						}
 					}
-					if removedDir == "" {
-						return fmt.Errorf("%s not found in default config", c.value)
-					}
-
 					template := DefaultTemplate(configPath)
 					template.yamlContents, _ = yaml.Marshal(defaultContents)
 					err = template.WriteFile()
@@ -517,7 +507,10 @@ var (
 						return fmt.Errorf("error writing config: %s", err.Error())
 					}
 
-					contents.Log(configPath).LogRemoved(removedDir)
+					if len(removed) == 0 {
+						removed["no changes made"] = struct{}{}
+					}
+					contents.Log(configPath).LogRemoved(removed)
 				}
 			}
 
@@ -685,8 +678,10 @@ var (
 							} else {
 								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 							}
-							edited[path] = userContents.ImageColPaths[i]
-							editedPaths++
+							if path != userContents.ImageColPaths[i] {
+								edited[userContents.ImageColPaths[i]] = path
+								editedPaths++
+							}
 
 						} else {
 							opts = strings.TrimSpace(opts)
@@ -715,8 +710,10 @@ var (
 							} else {
 								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 							}
-							edited[path] = userContents.ImageColPaths[i]
-							editedPaths++
+							if path != userContents.ImageColPaths[i] {
+								edited[path] = userContents.ImageColPaths[i]
+								editedPaths++
+							}
 						}
 						// stop editing if not all dirs
 						if c.value != "all-dirs" {
@@ -724,7 +721,6 @@ var (
 						}
 					}
 				}
-
 				template := UserTemplate(configPath)
 				template.yamlContents, _ = yaml.Marshal(userContents)
 				err = template.WriteFile()
@@ -802,8 +798,10 @@ var (
 							} else {
 								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 							}
-							edited[path] = defaultContents.ImageColPaths[i]
-							editedPaths++
+							if path != defaultContents.ImageColPaths[i] {
+								edited[path] = defaultContents.ImageColPaths[i]
+								editedPaths++
+							}
 
 						} else {
 							opts = strings.TrimSpace(opts)
@@ -832,12 +830,13 @@ var (
 							} else {
 								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 							}
-							edited[path] = defaultContents.ImageColPaths[i]
-							editedPaths++
+							if path != defaultContents.ImageColPaths[i] {
+								edited[path] = defaultContents.ImageColPaths[i]
+								editedPaths++
+							}
 						}
 					}
 				}
-
 				template := DefaultTemplate(configPath)
 				template.yamlContents, _ = yaml.Marshal(defaultContents)
 				err := template.WriteFile()
@@ -930,8 +929,11 @@ var (
 								} else {
 									userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 								}
-								edited[path] = userContents.ImageColPaths[i]
-								editedPaths++
+
+								if path != userContents.ImageColPaths[i] {
+									edited[path] = userContents.ImageColPaths[i]
+									editedPaths++
+								}
 
 							} else {
 								opts = strings.TrimSpace(opts)
@@ -960,8 +962,10 @@ var (
 								} else {
 									userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 								}
-								edited[path] = userContents.ImageColPaths[i]
-								editedPaths++
+								if path != userContents.ImageColPaths[i] {
+									edited[path] = userContents.ImageColPaths[i]
+									editedPaths++
+								}
 							}
 
 							// stop editing if not all dirs
@@ -1042,8 +1046,10 @@ var (
 								} else {
 									defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
 								}
-								edited[path] = defaultContents.ImageColPaths[i]
-								editedPaths++
+								if path != defaultContents.ImageColPaths[i] {
+									edited[path] = defaultContents.ImageColPaths[i]
+									editedPaths++
+								}
 
 							} else {
 								opts = strings.TrimSpace(opts)
@@ -1072,12 +1078,13 @@ var (
 								} else {
 									defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
 								}
-								edited[path] = defaultContents.ImageColPaths[i]
-								editedPaths++
+								if path != defaultContents.ImageColPaths[i] {
+									edited[path] = defaultContents.ImageColPaths[i]
+									editedPaths++
+								}
 							}
 						}
 					}
-
 					template := DefaultTemplate(configPath)
 					template.yamlContents, _ = yaml.Marshal(defaultContents)
 					err := template.WriteFile()

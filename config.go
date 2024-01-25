@@ -129,7 +129,7 @@ default_opacity: 0.1
 
 type Config interface {
 	Log(string) Config
-	LogRemoved(string) Config
+	LogRemoved(map[string]struct{}) Config // struct for smaller size; only need unique keys
 	LogEdited(map[string]string) Config
 }
 
@@ -170,10 +170,10 @@ func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
 	if _, ok := editedPaths["no changes made"]; ok {
 		fmt.Println("| no changes made")
 	} else {
-		for old, new := range editedPaths {
-			if old != new {
+		for old, edited := range editedPaths {
+			if old != edited {
 				fmt.Printf("%-25s%s\n", "| old:", old)
-				fmt.Printf("%-25s%s\n", "| new:", new)
+				fmt.Printf("%-25s%s\n", "| new:", edited)
 				fmt.Println("|")
 			}
 		}
@@ -183,8 +183,15 @@ func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
 	return c
 }
 
-func (c *DefaultConfig) LogRemoved(path string) Config {
-	fmt.Printf("%-25s%s\n", "| removed:", path)
+func (c *DefaultConfig) LogRemoved(path map[string]struct{}) Config {
+	fmt.Println("| removed: ")
+	if _, ok := path["no changes made"]; ok {
+		fmt.Println("| no changes made")
+	} else {
+		for path := range path {
+			fmt.Println("|", path)
+		}
+	}
 	fmt.Println("------------------------------------------------------------------------------------")
 
 	return c
@@ -223,10 +230,10 @@ func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {
 	if _, ok := editedPaths["no changes made"]; ok {
 		fmt.Println("| no changes made")
 	} else {
-		for old, new := range editedPaths {
-			if old != new {
+		for old, edited := range editedPaths {
+			if old != edited {
 				fmt.Printf("%-25s%s\n", "| old:", old)
-				fmt.Printf("%-25s%s\n", "| new:", new)
+				fmt.Printf("%-25s%s\n", "| new:", edited)
 				fmt.Println("|")
 			}
 		}
@@ -236,8 +243,15 @@ func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {
 	return c
 }
 
-func (c *UserConfig) LogRemoved(path string) Config {
-	fmt.Printf("%-25s%s\n", "| removed:", path)
+func (c *UserConfig) LogRemoved(path map[string]struct{}) Config {
+	fmt.Print("| removed: ")
+	if _, ok := path["no changes made"]; ok {
+		fmt.Println("no changes made")
+	} else {
+		for path := range path {
+			fmt.Println(path)
+		}
+	}
 	fmt.Println("------------------------------------------------------------------------------------")
 
 	return c
