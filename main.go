@@ -183,12 +183,9 @@ func ParseArgs(args []string) (*Command, error) {
 	}
 
 	// validate flags
-
-	// if any flag is a command, validate the following flags with the subcommand
-	subCMD := tmpCMD
 	for _, flag := range flags {
 		if _, isFlag := flag.(*Flag); isFlag {
-			err = subCMD.validateFlag(flag.(*Flag).name, flag.(*Flag).value)
+			err = tmpCMD.validateFlag(flag.(*Flag).name, flag.(*Flag).value)
 			if err != nil {
 				return nil, err
 			}
@@ -200,8 +197,7 @@ func ParseArgs(args []string) (*Command, error) {
 			tmpCMD.flags[flag.(*Flag).name] = flag
 
 		} else if _, isCommand := flag.(*Command); isCommand {
-			err = subCMD.validateFlag(flag.(*Command).name, flag.(*Command).value)
-			subCMD = flag.(*Command)
+			err = tmpCMD.validateFlag(flag.(*Command).name, flag.(*Command).value)
 			if err != nil {
 				return nil, err
 			}
