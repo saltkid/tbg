@@ -523,7 +523,7 @@ var (
 		value: "",
 		validateValue: func(s string) error {
 			switch s {
-			case "all-dirs", "fields":
+			case "all", "fields":
 				return nil
 			case "":
 				return fmt.Errorf("no path provided for 'edit'")
@@ -651,9 +651,9 @@ var (
 						purePath, opts, hasOpts := strings.Cut(path, "|")
 						purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
 
-						// edit all dirs if all-dirs
+						// edit all dirs if all
 						// otherwise only edit the specified dir
-						if c.value != "all-dirs" && !strings.EqualFold(absPath, purePath) {
+						if c.value != "all" && !strings.EqualFold(absPath, purePath) {
 							continue
 						}
 
@@ -716,7 +716,7 @@ var (
 							}
 						}
 						// stop editing if not all dirs
-						if c.value != "all-dirs" {
+						if c.value != "all" {
 							break
 						}
 					}
@@ -771,9 +771,9 @@ var (
 						purePath, opts, hasOpts := strings.Cut(path, "|")
 						purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
 
-						// edit all dirs if all-dirs
+						// edit all dirs if all
 						// otherwise only edit the specified dir
-						if c.value != "all-dirs" && !strings.EqualFold(absPath, purePath) {
+						if c.value != "all" && !strings.EqualFold(absPath, purePath) {
 							continue
 						}
 
@@ -902,9 +902,9 @@ var (
 							purePath, opts, hasOpts := strings.Cut(path, "|")
 							purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
 
-							// edit all dirs if all-dirs
+							// edit all dirs if all
 							// otherwise only edit the specified dir
-							if c.value != "all-dirs" && !strings.EqualFold(absPath, purePath) {
+							if c.value != "all" && !strings.EqualFold(absPath, purePath) {
 								continue
 							}
 
@@ -969,7 +969,7 @@ var (
 							}
 
 							// stop editing if not all dirs
-							if c.value != "all-dirs" {
+							if c.value != "all" {
 								break
 							}
 						}
@@ -1019,9 +1019,9 @@ var (
 							purePath, opts, hasOpts := strings.Cut(path, "|")
 							purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
 
-							// edit all dirs if all-dirs
+							// edit all dirs if all
 							// otherwise only edit the specified dir
-							if c.value != "all-dirs" && !strings.EqualFold(absPath, purePath) {
+							if c.value != "all" && !strings.EqualFold(absPath, purePath) {
 								continue
 							}
 
