@@ -165,16 +165,14 @@ func (c *DefaultConfig) Log(configPath string) Config {
 }
 
 func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
-	if _, ok := editedPaths["fields"]; ok {
-		fmt.Printf("%-25s%s\n", "| edited:", "fields")
-		fmt.Println("------------------------------------------------------------------------------------")
-	}
-
 	fmt.Println("| edited: ")
 	fmt.Println("------------------------------------------------------------------------------------")
 	for old, new := range editedPaths {
-		fmt.Printf("%-25s%s\n", "| old:", old)
-		fmt.Printf("%-25s%s\n\n", "| new:", new)
+		if old != new {
+			fmt.Printf("%-25s%s\n", "| old:", old)
+			fmt.Printf("%-25s%s\n", "| new:", new)
+			fmt.Println("|")
+		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")
 
@@ -216,18 +214,14 @@ func (c *UserConfig) Log(configPath string) Config {
 }
 
 func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {
-	fmt.Println("------------------------------------------------------------------------------------")
-	if _, ok := editedPaths["fields"]; ok {
-		fmt.Printf("%-25s%s\n", "| edited:", "fields")
-		fmt.Println("------------------------------------------------------------------------------------")
-		return c
-	}
-
 	fmt.Println("| edited: ")
 	fmt.Println("------------------------------------------------------------------------------------")
 	for old, new := range editedPaths {
-		fmt.Printf("%-25s%s\n", "| old:", old)
-		fmt.Printf("%-25s%s\n\n", "| new:", new)
+		if old != new {
+			fmt.Printf("%-25s%s\n", "| old:", old)
+			fmt.Printf("%-25s%s\n", "| new:", new)
+			fmt.Println("|")
+		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")
 

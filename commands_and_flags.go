@@ -628,23 +628,27 @@ var (
 				if c.value == "fields" {
 					// edit just the fields
 					if profileVal != "" {
+						edited[userContents.Profile] = profileVal
 						userContents.Profile = profileVal
 					}
 					if intervalVal != "" {
+						edited[strconv.Itoa(userContents.Interval)] = intervalVal
 						intervalIntVal, _ := strconv.Atoi(intervalVal)
 						userContents.Interval = intervalIntVal
 					}
 					if alignVal != "" {
+						edited[userContents.Alignment] = alignVal
 						userContents.Alignment = alignVal
 					}
 					if stretchVal != "" {
+						edited[userContents.Stretch] = stretchVal
 						userContents.Stretch = stretchVal
 					}
 					if opacityVal != "" {
+						edited[strconv.FormatFloat(userContents.Opacity, 'f', -1, 64)] = opacityVal
 						opacityFloatVal, _ := strconv.ParseFloat(opacityVal, 64)
 						userContents.Opacity = opacityFloatVal
 					}
-					edited["fields"] = ""
 
 				} else {
 					// edit/add flags to either all dirs or a specified dir
@@ -669,7 +673,16 @@ var (
 							if stretchVal == "" {
 								stretchVal = userContents.Stretch
 							}
-							userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+							// before writing, check if matches defaults set in config
+							// if so, just remove the options after |
+							isDefaultAlign := strings.EqualFold(alignVal, userContents.Alignment)
+							isDefaultStretch := strings.EqualFold(stretchVal, userContents.Stretch)
+							isDefaultOpacity := strings.EqualFold(opacityVal, strconv.FormatFloat(userContents.Opacity, 'f', -1, 64))
+							if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+								userContents.ImageColPaths[i] = purePath
+							} else {
+								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+							}
 							edited[path] = userContents.ImageColPaths[i]
 
 						} else {
@@ -689,8 +702,16 @@ var (
 							if stretchVal != "" {
 								currentStretch = stretchVal
 							}
-
-							userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+							// before writing, check if matches defaults set in config
+							// if so, just remove the options after |
+							isDefaultAlign := strings.EqualFold(currentAlign, userContents.Alignment)
+							isDefaultStretch := strings.EqualFold(currentStretch, userContents.Stretch)
+							isDefaultOpacity := strings.EqualFold(currentOpacity, strconv.FormatFloat(userContents.Opacity, 'f', -1, 64))
+							if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+								userContents.ImageColPaths[i] = purePath
+							} else {
+								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+							}
 							edited[path] = userContents.ImageColPaths[i]
 						}
 						// stop editing if not all dirs
@@ -721,19 +742,24 @@ var (
 				if c.value == "fields" {
 					// edit just the fields
 					if profileVal != "" {
+						edited[defaultContents.Profile] = profileVal
 						defaultContents.Profile = profileVal
 					}
 					if intervalVal != "" {
+						edited[strconv.Itoa(defaultContents.Interval)] = intervalVal
 						intervalIntVal, _ := strconv.Atoi(intervalVal)
 						defaultContents.Interval = intervalIntVal
 					}
 					if alignVal != "" {
+						edited[defaultContents.Alignment] = alignVal
 						defaultContents.Alignment = alignVal
 					}
 					if stretchVal != "" {
+						edited[defaultContents.Stretch] = stretchVal
 						defaultContents.Stretch = stretchVal
 					}
 					if opacityVal != "" {
+						edited[strconv.FormatFloat(defaultContents.Opacity, 'f', -1, 64)] = opacityVal
 						opacityFloatVal, _ := strconv.ParseFloat(opacityVal, 64)
 						defaultContents.Opacity = opacityFloatVal
 					}
@@ -760,7 +786,16 @@ var (
 							if stretchVal == "" {
 								stretchVal = defaultContents.Stretch
 							}
-							defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+							// before writing, check if matches defaults set in config
+							// if so, just remove the options after |
+							isDefaultAlign := strings.EqualFold(alignVal, defaultContents.Alignment)
+							isDefaultStretch := strings.EqualFold(stretchVal, defaultContents.Stretch)
+							isDefaultOpacity := strings.EqualFold(opacityVal, strconv.FormatFloat(defaultContents.Opacity, 'f', -1, 64))
+							if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+								defaultContents.ImageColPaths[i] = purePath
+							} else {
+								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+							}
 							edited[path] = defaultContents.ImageColPaths[i]
 
 						} else {
@@ -780,8 +815,16 @@ var (
 							if stretchVal != "" {
 								currentStretch = stretchVal
 							}
-
-							defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+							// before writing, check if matches defaults set in config
+							// if so, just remove the options after |
+							isDefaultAlign := strings.EqualFold(currentAlign, defaultContents.Alignment)
+							isDefaultStretch := strings.EqualFold(currentStretch, defaultContents.Stretch)
+							isDefaultOpacity := strings.EqualFold(currentOpacity, strconv.FormatFloat(defaultContents.Opacity, 'f', -1, 64))
+							if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+								defaultContents.ImageColPaths[i] = purePath
+							} else {
+								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+							}
 							edited[path] = defaultContents.ImageColPaths[i]
 						}
 					}
@@ -820,19 +863,24 @@ var (
 					if c.value == "fields" {
 						// edit just the fields
 						if profileVal != "" {
+							edited[contents.Profile] = profileVal
 							userContents.Profile = profileVal
 						}
 						if intervalVal != "" {
+							edited[strconv.Itoa(contents.Interval)] = intervalVal
 							intervalIntVal, _ := strconv.Atoi(intervalVal)
 							userContents.Interval = intervalIntVal
 						}
 						if alignVal != "" {
+							edited[userContents.Alignment] = alignVal
 							userContents.Alignment = alignVal
 						}
 						if stretchVal != "" {
+							edited[userContents.Stretch] = stretchVal
 							userContents.Stretch = stretchVal
 						}
 						if opacityVal != "" {
+							edited[strconv.FormatFloat(userContents.Opacity, 'f', -1, 64)] = opacityVal
 							opacityFloatVal, _ := strconv.ParseFloat(opacityVal, 64)
 							userContents.Opacity = opacityFloatVal
 						}
@@ -859,7 +907,16 @@ var (
 								if stretchVal == "" {
 									stretchVal = userContents.Stretch
 								}
-								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+								// before writing, check if matches defaults set in config
+								// if so, just remove the options after |
+								isDefaultAlign := strings.EqualFold(alignVal, userContents.Alignment)
+								isDefaultStretch := strings.EqualFold(stretchVal, userContents.Stretch)
+								isDefaultOpacity := strings.EqualFold(opacityVal, strconv.FormatFloat(userContents.Opacity, 'f', -1, 64))
+								if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+									userContents.ImageColPaths[i] = purePath
+								} else {
+									userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+								}
 								edited[path] = userContents.ImageColPaths[i]
 
 							} else {
@@ -879,8 +936,16 @@ var (
 								if stretchVal != "" {
 									currentStretch = stretchVal
 								}
-
-								userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+								// before writing, check if matches defaults set in config
+								// if so, just remove the options after |
+								isDefaultAlign := strings.EqualFold(currentAlign, userContents.Alignment)
+								isDefaultStretch := strings.EqualFold(currentStretch, userContents.Stretch)
+								isDefaultOpacity := strings.EqualFold(currentOpacity, strconv.FormatFloat(userContents.Opacity, 'f', -1, 64))
+								if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+									userContents.ImageColPaths[i] = purePath
+								} else {
+									userContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+								}
 								edited[path] = userContents.ImageColPaths[i]
 							}
 
@@ -903,19 +968,24 @@ var (
 					if c.value == "fields" {
 						// edit just the fields
 						if profileVal != "" {
+							edited[defaultContents.Profile] = profileVal
 							defaultContents.Profile = profileVal
 						}
 						if intervalVal != "" {
+							edited[strconv.Itoa(defaultContents.Interval)] = intervalVal
 							intervalIntVal, _ := strconv.Atoi(intervalVal)
 							defaultContents.Interval = intervalIntVal
 						}
 						if alignVal != "" {
+							edited[defaultContents.Alignment] = alignVal
 							defaultContents.Alignment = alignVal
 						}
 						if stretchVal != "" {
+							edited[defaultContents.Stretch] = stretchVal
 							defaultContents.Stretch = stretchVal
 						}
 						if opacityVal != "" {
+							edited[strconv.FormatFloat(defaultContents.Opacity, 'f', -1, 64)] = opacityVal
 							opacityFloatVal, _ := strconv.ParseFloat(opacityVal, 64)
 							defaultContents.Opacity = opacityFloatVal
 						}
@@ -942,7 +1012,16 @@ var (
 								if stretchVal == "" {
 									stretchVal = defaultContents.Stretch
 								}
-								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+								// before writing, check if matches defaults set in config
+								// if so, just remove the options after |
+								isDefaultAlign := strings.EqualFold(alignVal, defaultContents.Alignment)
+								isDefaultStretch := strings.EqualFold(stretchVal, defaultContents.Stretch)
+								isDefaultOpacity := strings.EqualFold(opacityVal, strconv.FormatFloat(defaultContents.Opacity, 'f', -1, 64))
+								if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+									defaultContents.ImageColPaths[i] = purePath
+								} else {
+									defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, alignVal, stretchVal, opacityVal)
+								}
 								edited[path] = defaultContents.ImageColPaths[i]
 
 							} else {
@@ -962,8 +1041,16 @@ var (
 								if stretchVal != "" {
 									currentStretch = stretchVal
 								}
-
-								defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+								// before writing, check if matches defaults set in config
+								// if so, just remove the options after |
+								isDefaultAlign := strings.EqualFold(currentAlign, defaultContents.Alignment)
+								isDefaultStretch := strings.EqualFold(currentStretch, defaultContents.Stretch)
+								isDefaultOpacity := strings.EqualFold(currentOpacity, strconv.FormatFloat(defaultContents.Opacity, 'f', -1, 64))
+								if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+									defaultContents.ImageColPaths[i] = purePath
+								} else {
+									defaultContents.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, currentAlign, currentStretch, currentOpacity)
+								}
 								edited[path] = defaultContents.ImageColPaths[i]
 							}
 						}
