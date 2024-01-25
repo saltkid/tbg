@@ -27,7 +27,10 @@ func DefaultTemplate(absConfigPath string) *ConfigTemplate {
 #  2. edit this file: set use_user_config to true and set user_config to the path to your config file
 #------------------------------------------
 `),
-		yamlContents: []byte(`image_col_paths: []
+		yamlContents: []byte(`use_user_config: false
+user_config:
+
+image_col_paths: []
 interval: 30
 profile: default
 
@@ -48,22 +51,22 @@ default_opacity: 0.1
 #          and putting "alignment", "stretch", and "opacity" after the |
 #          eg. abs/path/to/images/dir | right uniform 0.1
 #
-#   default_interval: time in minutes between each image change
+#   interval: time in minutes between each image change
 #
-#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc.)
+#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc...)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
 #
 #   ---
 #   Below are default options which can be overriden on a per-path basis by putting a | after the path
 #   and putting "alignment", "stretch", and "opacity" values after the |
 #   ---
-#   default_alignment: image alignment in Windows Terminal (left, center, right)
+#   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
 #
 #   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
 #
-#   default_stretch: image stretch in Windows Terminal (uniform, fill)
+#   default_stretch: image stretch in Windows Terminal (uniform, fill, etc...)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #------------------------------------------
 `),
@@ -104,20 +107,20 @@ default_opacity: 0.1
 #
 #   interval: time in minutes between each image change
 #
-#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc.)
+#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc...)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
 #
 #   ---
 #   Below are default options which can be overriden on a per-path basis by putting a | after the path
 #   and putting "alignment", "stretch", and "opacity" values after the |
 #   ---
-#   default_alignment: image alignment in Windows Terminal (left, center, right)
+#   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
 #
 #   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
 #
-#   default_stretch: image stretch in Windows Terminal (uniform, fill)
+#   default_stretch: image stretch in Windows Terminal (uniform, fill, etc...)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #------------------------------------------
 `),
