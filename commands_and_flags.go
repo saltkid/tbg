@@ -625,17 +625,19 @@ var (
 				if err != nil {
 					return fmt.Errorf("error reading config: %s", err.Error())
 				}
+				// edit these two on a per-config level
+				if profileVal != "" {
+					edited[userContents.Profile] = profileVal
+					userContents.Profile = profileVal
+				}
+				if intervalVal != "" {
+					edited[strconv.Itoa(userContents.Interval)] = intervalVal
+					intervalIntVal, _ := strconv.Atoi(intervalVal)
+					userContents.Interval = intervalIntVal
+				}
+
 				if c.value == "fields" {
 					// edit just the fields
-					if profileVal != "" {
-						edited[userContents.Profile] = profileVal
-						userContents.Profile = profileVal
-					}
-					if intervalVal != "" {
-						edited[strconv.Itoa(userContents.Interval)] = intervalVal
-						intervalIntVal, _ := strconv.Atoi(intervalVal)
-						userContents.Interval = intervalIntVal
-					}
 					if alignVal != "" {
 						edited[userContents.Alignment] = alignVal
 						userContents.Alignment = alignVal
@@ -726,12 +728,12 @@ var (
 				}
 
 				template := UserTemplate(configPath)
-				template.yamlContents, _ = yaml.Marshal(contents)
+				template.yamlContents, _ = yaml.Marshal(userContents)
 				err = template.WriteFile()
 				if err != nil {
 					return fmt.Errorf("error writing to user config: %s", err.Error())
 				}
-				contents.Log(configPath).LogEdited(edited)
+				userContents.Log(configPath).LogEdited(edited)
 
 			} else if IsDefaultConfig && hasConfigFlag {
 				// write directly to default config
@@ -739,17 +741,19 @@ var (
 				if err != nil {
 					return fmt.Errorf("error reading default config: %s", err.Error())
 				}
+				// edit these two on a per-config level
+				if profileVal != "" {
+					edited[defaultContents.Profile] = profileVal
+					defaultContents.Profile = profileVal
+				}
+				if intervalVal != "" {
+					edited[strconv.Itoa(defaultContents.Interval)] = intervalVal
+					intervalIntVal, _ := strconv.Atoi(intervalVal)
+					defaultContents.Interval = intervalIntVal
+				}
+
 				if c.value == "fields" {
 					// edit just the fields
-					if profileVal != "" {
-						edited[defaultContents.Profile] = profileVal
-						defaultContents.Profile = profileVal
-					}
-					if intervalVal != "" {
-						edited[strconv.Itoa(defaultContents.Interval)] = intervalVal
-						intervalIntVal, _ := strconv.Atoi(intervalVal)
-						defaultContents.Interval = intervalIntVal
-					}
 					if alignVal != "" {
 						edited[defaultContents.Alignment] = alignVal
 						defaultContents.Alignment = alignVal
@@ -837,7 +841,7 @@ var (
 					return fmt.Errorf("error writing to default config: %s", err.Error())
 				}
 
-				contents.Log(configPath).LogEdited(edited)
+				defaultContents.Log(configPath).LogEdited(edited)
 
 			} else {
 				// read config to determine whether to append these values to default config or user config
@@ -855,22 +859,24 @@ var (
 					if err != nil {
 						return err
 					}
-					contents := UserConfig{}
-					err = yaml.Unmarshal(yamlFile, &contents)
+					userContents := UserConfig{}
+					err = yaml.Unmarshal(yamlFile, &userContents)
 					if err != nil {
 						return fmt.Errorf("error reading config: %s", err.Error())
 					}
+					// edit these two on a per-config level
+					if profileVal != "" {
+						edited[userContents.Profile] = profileVal
+						userContents.Profile = profileVal
+					}
+					if intervalVal != "" {
+						edited[strconv.Itoa(userContents.Interval)] = intervalVal
+						intervalIntVal, _ := strconv.Atoi(intervalVal)
+						userContents.Interval = intervalIntVal
+					}
+
 					if c.value == "fields" {
 						// edit just the fields
-						if profileVal != "" {
-							edited[contents.Profile] = profileVal
-							userContents.Profile = profileVal
-						}
-						if intervalVal != "" {
-							edited[strconv.Itoa(contents.Interval)] = intervalVal
-							intervalIntVal, _ := strconv.Atoi(intervalVal)
-							userContents.Interval = intervalIntVal
-						}
 						if alignVal != "" {
 							edited[userContents.Alignment] = alignVal
 							userContents.Alignment = alignVal
@@ -957,25 +963,26 @@ var (
 					}
 
 					template := UserTemplate(userConfigPath)
-					template.yamlContents, _ = yaml.Marshal(contents)
+					template.yamlContents, _ = yaml.Marshal(userContents)
 					err = template.WriteFile()
 					if err != nil {
 						return fmt.Errorf("error writing to user config: %s", err.Error())
 					}
-					contents.Log(userConfigPath)
+					userContents.Log(userConfigPath).LogEdited(edited)
 
 				} else {
+					if profileVal != "" {
+						edited[defaultContents.Profile] = profileVal
+						defaultContents.Profile = profileVal
+					}
+					if intervalVal != "" {
+						edited[strconv.Itoa(defaultContents.Interval)] = intervalVal
+						intervalIntVal, _ := strconv.Atoi(intervalVal)
+						defaultContents.Interval = intervalIntVal
+					}
+
 					if c.value == "fields" {
 						// edit just the fields
-						if profileVal != "" {
-							edited[defaultContents.Profile] = profileVal
-							defaultContents.Profile = profileVal
-						}
-						if intervalVal != "" {
-							edited[strconv.Itoa(defaultContents.Interval)] = intervalVal
-							intervalIntVal, _ := strconv.Atoi(intervalVal)
-							defaultContents.Interval = intervalIntVal
-						}
 						if alignVal != "" {
 							edited[defaultContents.Alignment] = alignVal
 							defaultContents.Alignment = alignVal
@@ -1063,7 +1070,7 @@ var (
 						return fmt.Errorf("error writing to default config: %s", err.Error())
 					}
 
-					contents.Log(configPath).LogEdited(edited)
+					defaultContents.Log(configPath).LogEdited(edited)
 				}
 			}
 
