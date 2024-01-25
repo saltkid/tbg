@@ -130,6 +130,7 @@ default_opacity: 0.1
 type Config interface {
 	Log(string) Config
 	LogRemoved(string) Config
+	LogEdited(map[string]string) Config
 }
 
 type DefaultConfig struct {
@@ -158,6 +159,23 @@ func (c *DefaultConfig) Log(configPath string) Config {
 	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
+func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
+	if _, ok := editedPaths["fields"]; ok {
+		fmt.Printf("%-25s%s\n", "| edited:", "fields")
+		fmt.Println("------------------------------------------------------------------------------------")
+	}
+
+	fmt.Println("| edited: ")
+	fmt.Println("------------------------------------------------------------------------------------")
+	for old, new := range editedPaths {
+		fmt.Printf("%-25s%s\n", "| old:", old)
+		fmt.Printf("%-25s%s\n\n", "| new:", new)
+	}
 	fmt.Println("------------------------------------------------------------------------------------")
 
 	return c
@@ -192,6 +210,25 @@ func (c *UserConfig) Log(configPath string) Config {
 	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
+func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {
+	fmt.Println("------------------------------------------------------------------------------------")
+	if _, ok := editedPaths["fields"]; ok {
+		fmt.Printf("%-25s%s\n", "| edited:", "fields")
+		fmt.Println("------------------------------------------------------------------------------------")
+		return c
+	}
+
+	fmt.Println("| edited: ")
+	fmt.Println("------------------------------------------------------------------------------------")
+	for old, new := range editedPaths {
+		fmt.Printf("%-25s%s\n", "| old:", old)
+		fmt.Printf("%-25s%s\n\n", "| new:", new)
+	}
 	fmt.Println("------------------------------------------------------------------------------------")
 
 	return c

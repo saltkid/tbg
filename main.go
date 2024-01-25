@@ -16,7 +16,7 @@ func main() {
 	switch command.name {
 	case "run":
 		Run(command)
-	case "config", "add", "remove":
+	case "config", "add", "remove", "edit":
 		err := command.run(command)
 		if err != nil {
 			log.Fatalln(err)
