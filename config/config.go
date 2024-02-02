@@ -4,8 +4,18 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"os"
+	"path/filepath"
 	"strconv"
 )
+
+func DefaultConfigPath() string {
+	e, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s/config.yaml", filepath.Dir(e))
+}
 
 type ConfigTemplate struct {
 	Path         string

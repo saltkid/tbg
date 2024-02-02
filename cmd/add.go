@@ -82,7 +82,7 @@ func AddExecute(c *Cmd) error {
 	var configPath string
 	var configContents config.Config
 	if specifiedConfig == "default" || specifiedConfig == "" {
-		configPath, _ = filepath.Abs("config.yaml")
+		configPath, _ = filepath.Abs(config.DefaultConfigPath())
 		configContents = &config.DefaultConfig{}
 	} else {
 		configPath, _ = filepath.Abs(specifiedConfig)
@@ -121,8 +121,7 @@ func AddExecute(c *Cmd) error {
 
 		} else {
 			// recheck if user config path in default config is valid
-			// TODO
-			err = nil // ConfigValidateValue(defaultContents.UserConfig)
+			err = ConfigValidateValue(defaultContents.UserConfig)
 			if err != nil {
 				return err
 			}

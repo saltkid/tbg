@@ -8,7 +8,8 @@ import (
 type CmdType uint8
 
 const (
-	Run CmdType = iota
+	_ CmdType = iota
+	Run
 	Config
 	Add
 	Remove
