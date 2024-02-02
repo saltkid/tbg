@@ -128,6 +128,9 @@ default_opacity: 0.1
 }
 
 type Config interface {
+	IsDefaultConfig() bool
+	IsUserConfig() bool
+
 	Log(string) Config
 	LogRemoved(map[string]struct{}) Config // struct for smaller size; only need unique keys
 	LogEdited(map[string]string) Config
@@ -142,6 +145,14 @@ type DefaultConfig struct {
 	Alignment     string   `yaml:"default_alignment"`
 	Stretch       string   `yaml:"default_stretch"`
 	Opacity       float64  `yaml:"default_opacity"`
+}
+
+func (c *DefaultConfig) IsDefaultConfig() bool {
+	return true
+}
+
+func (c *DefaultConfig) IsUserConfig() bool {
+	return false
 }
 
 func (c *DefaultConfig) Log(configPath string) Config {
@@ -204,6 +215,14 @@ type UserConfig struct {
 	Alignment     string   `yaml:"default_alignment"`
 	Stretch       string   `yaml:"default_stretch"`
 	Opacity       float64  `yaml:"default_opacity"`
+}
+
+func (c *UserConfig) IsDefaultConfig() bool {
+	return false
+}
+
+func (c *UserConfig) IsUserConfig() bool {
+	return true
 }
 
 func (c *UserConfig) Log(configPath string) Config {
