@@ -80,9 +80,9 @@ func (c *Cmd) ValidateValue(val string) error {
 	case Run:
 		return nil
 	case Config:
-		return nil
+		return ConfigValidateValue(val)
 	case Add:
-		return nil
+		return AddValidateValue(val)
 	case Remove:
 		return nil
 	case Edit:
@@ -102,9 +102,9 @@ func (c *Cmd) ValidateFlag(f flag.Flag) error {
 	case Run:
 		return nil
 	case Config:
-		return nil
+		return ConfigValidateFlag(f)
 	case Add:
-		return nil
+		return AddValidateFlag(f)
 	case Remove:
 		return nil
 	case Edit:
@@ -124,9 +124,9 @@ func (c *Cmd) Execute() error {
 	case Run:
 		return nil
 	case Config:
-		return nil
+		return ConfigExecute(c)
 	case Add:
-		return nil
+		return AddExecute(c)
 	case Remove:
 		return nil
 	case Edit:
