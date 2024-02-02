@@ -1,4 +1,4 @@
-package main
+package config
 
 import (
 	"fmt"
@@ -7,27 +7,27 @@ import (
 )
 
 type ConfigTemplate struct {
-	path         string
-	beginDesc    []byte
-	yamlContents []byte
-	endDesc      []byte
+	Path         string
+	BeginDesc    []byte
+	YamlContents []byte
+	EndDesc      []byte
 }
 
 func (c *ConfigTemplate) WriteFile() error {
-	toWrite := append(append(c.beginDesc, c.yamlContents...), c.endDesc...)
-	return os.WriteFile(c.path, toWrite, 0666)
+	toWrite := append(append(c.BeginDesc, c.YamlContents...), c.EndDesc...)
+	return os.WriteFile(c.Path, toWrite, 0666)
 }
 
 func DefaultTemplate(absConfigPath string) *ConfigTemplate {
 	return &ConfigTemplate{
-		path: absConfigPath,
-		beginDesc: []byte(`#------------------------------------------
+		Path: absConfigPath,
+		BeginDesc: []byte(`#------------------------------------------
 # this is the default config. you can edit this or use your own config file by doing any of the following:
 #  1. run 'tbg config <path/to/config.yaml>'
 #  2. edit this file: set use_user_config to true and set user_config to the path to your config file
 #------------------------------------------
 `),
-		yamlContents: []byte(`use_user_config: false
+		YamlContents: []byte(`use_user_config: false
 user_config:
 
 image_col_paths: []
@@ -38,7 +38,7 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 `),
-		endDesc: []byte(`#------------------------------------------
+		EndDesc: []byte(`#------------------------------------------
 # Fields:
 #   use_user_config: whether to use the user config set in user_config
 #
@@ -76,15 +76,15 @@ default_opacity: 0.1
 
 func UserTemplate(path string) *ConfigTemplate {
 	return &ConfigTemplate{
-		path: path,
-		beginDesc: []byte(`#------------------------------------------
+		Path: path,
+		BeginDesc: []byte(`#------------------------------------------
 # this is the user config.
 # Notes:
 #  1. to update the default config's "user_config" field to point to this file
 #     - tbg config ` + path + `
 #------------------------------------------
 `),
-		yamlContents: []byte(`image_col_paths: []
+		YamlContents: []byte(`image_col_paths: []
 interval: 30
 profile: default
 
@@ -92,7 +92,7 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 `),
-		endDesc: []byte(`#------------------------------------------
+		EndDesc: []byte(`#------------------------------------------
 # Fields:
 #   use_user_config: whether to use the user config set in user_config
 #
