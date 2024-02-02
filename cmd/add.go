@@ -78,14 +78,14 @@ func AddExecute(c *Cmd) error {
 	}
 
 	// check if config subcommand is set by user
-	usedConfig := ExtractSubCmdValue(Config, c.SubCmds)
+	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
 	var configPath string
 	var configContents config.Config
-	if usedConfig == "default" || usedConfig == "" {
+	if specifiedConfig == "default" || specifiedConfig == "" {
 		configPath, _ = filepath.Abs("config.yaml")
 		configContents = &config.DefaultConfig{}
 	} else {
-		configPath, _ = filepath.Abs(usedConfig)
+		configPath, _ = filepath.Abs(specifiedConfig)
 		configContents = &config.UserConfig{}
 	}
 
@@ -98,13 +98,13 @@ func AddExecute(c *Cmd) error {
 		return err
 	}
 
-	if configContents.IsDefaultConfig() && usedConfig == "" {
-		err = AddToUserConfig(configContents, absPath, configPath)
+	if configContents.IsDefaultConfig() && specifiedConfig == "default" {
+		err = AddToDefaultConfig(configContents, absPath, configPath)
 		if err != nil {
 			return err
 		}
 	} else if configContents.IsUserConfig() {
-		err = AddToDefaultConfig(configContents, absPath, configPath)
+		err = AddToUserConfig(configContents, absPath, configPath)
 		if err != nil {
 			return err
 		}
