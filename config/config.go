@@ -2,6 +2,7 @@ package config
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
 	"strconv"
 )
@@ -27,8 +28,7 @@ func DefaultTemplate(absConfigPath string) *ConfigTemplate {
 #  2. edit this file: set use_user_config to true and set user_config to the path to your config file
 #------------------------------------------
 `),
-		YamlContents: []byte(`use_user_config: false
-user_config:
+		YamlContents: []byte(`user_config:
 
 image_col_paths: []
 interval: 30
@@ -40,8 +40,6 @@ default_opacity: 0.1
 `),
 		EndDesc: []byte(`#------------------------------------------
 # Fields:
-#   use_user_config: whether to use the user config set in user_config
-#
 #   user_config: path to the user config file
 #
 #   image_col_paths: list of image collection paths
@@ -131,13 +129,14 @@ type Config interface {
 	IsDefaultConfig() bool
 	IsUserConfig() bool
 
+	Unmarshal([]byte) error
+
 	Log(string) Config
 	LogRemoved(map[string]struct{}) Config // struct for smaller size; only need unique keys
 	LogEdited(map[string]string) Config
 }
 
 type DefaultConfig struct {
-	UseUserConfig bool     `yaml:"use_user_config"`
 	UserConfig    string   `yaml:"user_config"`
 	ImageColPaths []string `yaml:"image_col_paths"`
 	Interval      int      `yaml:"interval"`
@@ -155,11 +154,18 @@ func (c *DefaultConfig) IsUserConfig() bool {
 	return false
 }
 
+func (c *DefaultConfig) Unmarshal(data []byte) error {
+	err := yaml.Unmarshal(data, c)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal default config: %s", err)
+	}
+	return nil
+}
+
 func (c *DefaultConfig) Log(configPath string) Config {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
-	fmt.Printf("%-25s%s\n", "| use_user_config:", strconv.FormatBool(c.UseUserConfig))
 	fmt.Printf("%-25s%s\n", "| user_config:", c.UserConfig)
 	fmt.Println("| image_col_paths:")
 	for _, path := range c.ImageColPaths {
@@ -223,6 +229,14 @@ func (c *UserConfig) IsDefaultConfig() bool {
 
 func (c *UserConfig) IsUserConfig() bool {
 	return true
+}
+
+func (c *UserConfig) Unmarshal(data []byte) error {
+	err := yaml.Unmarshal(data, c)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal user config: %s", err)
+	}
+	return nil
 }
 
 func (c *UserConfig) Log(configPath string) Config {
