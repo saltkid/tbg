@@ -8,6 +8,7 @@ type Config interface {
 
 	AddPath(string, string) error
 	RemovePath(string, string) error
+	EditPath(string, string, string, string, string, string, string) error
 
 	Log(string) Config
 	LogRemoved(map[string]struct{}) Config // struct for smaller size; only need unique keys

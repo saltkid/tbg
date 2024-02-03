@@ -93,6 +93,113 @@ func (c *DefaultConfig) RemovePath(absPath string, configPath string) error {
 	return nil
 }
 
+func (c *DefaultConfig) EditPath(arg string, configPath string, profile string, interval string, align string, stretch string, opacity string) error {
+	// key:val = old:new
+	edited := make(map[string]string, 0)
+
+	// edit these two on a config level
+	if profile != "" {
+		edited[c.Profile] = profile
+		c.Profile = profile
+	}
+	if interval != "" {
+		edited[strconv.Itoa(c.Interval)] = interval
+		intervalInt, _ := strconv.Atoi(interval)
+		c.Interval = intervalInt
+	}
+
+	if arg == "fields" {
+		// edit the rest of the fields on a config level too
+		if align != "" {
+			edited[c.Alignment] = align
+			c.Alignment = align
+		}
+		if stretch != "" {
+			edited[c.Stretch] = stretch
+			c.Stretch = stretch
+		}
+		if opacity != "" {
+			edited[strconv.FormatFloat(c.Opacity, 'f', -1, 64)] = opacity
+			opacityFloat, _ := strconv.ParseFloat(opacity, 64)
+			c.Opacity = opacityFloat
+		}
+
+	} else {
+		// edit the rest of the fields on a per path basis
+		for i, path := range c.ImageColPaths {
+			purePath, opts, hasOpts := strings.Cut(path, "|")
+			purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
+
+			// if arg is specific path, skip non equal paths
+			if arg != "all" && !strings.EqualFold(arg, purePath) {
+				continue
+			}
+
+			if hasOpts {
+				// use options already present if not set
+				optSlice := strings.Split(opts, " ")
+				if len(optSlice) != 3 {
+					return fmt.Errorf("invalid options for %s: %s", purePath, opts)
+				}
+
+				currAlign, currStretch, currOpacity := strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
+				if align == "" {
+					align = currAlign
+				}
+				if stretch == "" {
+					stretch = currStretch
+				}
+				if opacity == "" {
+					opacity = currOpacity
+				}
+			} else {
+				// use default values if not set
+				if align == "" {
+					align = c.Alignment
+				}
+				if stretch == "" {
+					stretch = c.Stretch
+				}
+				if opacity == "" {
+					opacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+				}
+
+			}
+
+			// if all opts are equal to the defaults set in the config, just remove the options
+			isDefaultAlign := strings.EqualFold(align, c.Alignment)
+			isDefaultStretch := strings.EqualFold(stretch, c.Stretch)
+			isDefaultOpacity := strings.EqualFold(opacity, strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+			if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
+				c.ImageColPaths[i] = purePath // removed opts after | and just kept the path
+			} else {
+				c.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, align, stretch, opacity)
+			}
+
+			// check if path was edited for logging purposes
+			if path != c.ImageColPaths[i] {
+				edited[path] = c.ImageColPaths[i]
+			}
+
+			// stop editing if only editing one path
+			if arg != "all" {
+				break
+			}
+		}
+	}
+	template := DefaultTemplate(configPath)
+	template.YamlContents, _ = yaml.Marshal(c)
+	err := template.WriteFile()
+	if err != nil {
+		return fmt.Errorf("error writing to default config: %s", err.Error())
+	}
+	if len(edited) == 0 {
+		edited["no changes made"] = ""
+	}
+	c.Log(configPath).LogEdited(edited)
+	return nil
+}
+
 func (c *DefaultConfig) Log(configPath string) Config {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
