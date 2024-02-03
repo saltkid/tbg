@@ -83,13 +83,13 @@ func EditExecute(c *Cmd) error {
 
 		if defaultContents.UserConfig == "" {
 			// using default config
-			err = defaultContents.EditPath(toEdit, configPath, profile, interval, alignment, opacity, stretch)
+			err = defaultContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
 		} else {
 			// using user config
-			err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, opacity, stretch)
+			err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
 		}
 	} else {
-		err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, opacity, stretch)
+		err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
 	}
 
 	if err != nil {

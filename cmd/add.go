@@ -84,7 +84,7 @@ func AddExecute(c *Cmd) error {
 		if stretch == "" {
 			stretch = "uniform"
 		}
-		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, opacity, stretch)
+		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, stretch, opacity)
 	}
 
 	// check if config subcommand is set by user
