@@ -58,11 +58,6 @@ func ToFlag(s string) (*Flag, error) {
 	}
 }
 
-func IsValidFlag(s string) bool {
-	_, err := ToFlag(s)
-	return err == nil
-}
-
 func (f *Flag) ValidateValue(val string) error {
 	switch f.Type {
 	case Profile:
