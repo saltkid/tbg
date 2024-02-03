@@ -76,9 +76,12 @@ func ValidateProfile(val string) error {
 }
 
 func ValidateInterval(val string) error {
-	_, err := strconv.Atoi(val)
+	num, err := strconv.Atoi(val)
 	if err != nil {
 		return fmt.Errorf("invalid arg '%s' for --interval: %s", val, err.Error())
+	}
+	if num < 1 {
+		return fmt.Errorf("invalid arg '%s' for --interval: must be greater than 0", val)
 	}
 	return nil
 }
