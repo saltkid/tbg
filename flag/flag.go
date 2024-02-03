@@ -9,7 +9,8 @@ import (
 type FlagType uint8
 
 const (
-	Profile FlagType = iota
+	None FlagType = iota
+	Profile
 	Interval
 	Alignment
 	Opacity

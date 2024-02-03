@@ -28,7 +28,7 @@ func AddValidateValue(val string) error {
 			return err
 		}
 		// only search depth 1
-		if d.IsDir() {
+		if d.IsDir() && d.Name() != filepath.Base(absPath) {
 			return filepath.SkipDir
 		}
 		// find at least one
@@ -47,12 +47,21 @@ func AddValidateValue(val string) error {
 	return nil
 }
 
-func AddValidateFlag(f flag.Flag) error {
-	switch f.Type {
+func AddValidateFlag(t flag.FlagType) error {
+	switch t {
 	case flag.Alignment, flag.Opacity, flag.Stretch:
 		return nil
 	default:
-		return fmt.Errorf("unexpected error: unknown flag: %d", f.Type)
+		return fmt.Errorf("unexpected error: unknown flag: %d", t)
+	}
+}
+
+func AddValidateSubCmd(t CmdType) error {
+	switch t {
+	case Config:
+		return nil
+	default:
+		return fmt.Errorf("unexpected error: unknown sub command type: %d", t)
 	}
 }
 
@@ -109,7 +118,7 @@ func AddExecute(c *Cmd) error {
 			return err
 		}
 	} else {
-		// read default config to check if using user config or not
+		// read default config to check if using user config or default
 		defaultContents, _ := configContents.(*config.DefaultConfig)
 
 		// using default config

@@ -8,7 +8,7 @@ import (
 type CmdType uint8
 
 const (
-	_ CmdType = iota
+	None CmdType = iota
 	Run
 	Config
 	Add
@@ -96,15 +96,15 @@ func (c *Cmd) ValidateValue(val string) error {
 	}
 }
 
-func (c *Cmd) ValidateFlag(f flag.Flag) error {
+func (c *Cmd) ValidateFlag(t flag.FlagType) error {
 	// TODO
 	switch c.Type {
 	case Run:
 		return nil
 	case Config:
-		return ConfigValidateFlag(f)
+		return ConfigValidateFlag(t)
 	case Add:
-		return AddValidateFlag(f)
+		return AddValidateFlag(t)
 	case Remove:
 		return nil
 	case Edit:
@@ -115,6 +115,28 @@ func (c *Cmd) ValidateFlag(f flag.Flag) error {
 		return nil
 	default:
 		return fmt.Errorf("unexpected error: unknown command type: %d", c.Type)
+	}
+}
+
+func (c *Cmd) ValidateSubCmd(t CmdType) error {
+	// TODO
+	switch t {
+	case Run:
+		return nil
+	case Config:
+		return nil
+	case Add:
+		return nil
+	case Remove:
+		return nil
+	case Edit:
+		return nil
+	case Help:
+		return nil
+	case Version:
+		return nil
+	default:
+		return fmt.Errorf("unexpected error: unknown command type: %d", t)
 	}
 }
 
