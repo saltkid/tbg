@@ -18,6 +18,27 @@ const (
 	Version
 )
 
+func (c CmdType) String() string {
+	switch c {
+	case Run:
+		return "run"
+	case Config:
+		return "config"
+	case Add:
+		return "add"
+	case Remove:
+		return "remove"
+	case Edit:
+		return "edit"
+	case Help:
+		return "help"
+	case Version:
+		return "version"
+	default:
+		return ""
+	}
+}
+
 type Cmd struct {
 	Type    CmdType
 	Value   string

@@ -17,6 +17,25 @@ const (
 	Stretch
 )
 
+func (f FlagType) String() string {
+	switch f {
+	case None:
+		return "none"
+	case Profile:
+		return "--profile"
+	case Interval:
+		return "--interval"
+	case Alignment:
+		return "--alignment"
+	case Opacity:
+		return "--opacity"
+	case Stretch:
+		return "--stretch"
+	default:
+		return "unknown"
+	}
+}
+
 type Flag struct {
 	Type  FlagType
 	Value string
@@ -24,15 +43,15 @@ type Flag struct {
 
 func ToFlag(s string) (*Flag, error) {
 	switch s {
-	case "profile":
+	case "--profile", "-p":
 		return &Flag{Type: Profile}, nil
-	case "interval":
+	case "--interval", "-i":
 		return &Flag{Type: Interval}, nil
-	case "alignment":
+	case "--alignment", "-a":
 		return &Flag{Type: Alignment}, nil
-	case "opacity":
+	case "--opacity", "-o":
 		return &Flag{Type: Opacity}, nil
-	case "stretch":
+	case "--stretch", "-s":
 		return &Flag{Type: Stretch}, nil
 	default:
 		return nil, fmt.Errorf("unknown flag: %s", s)
