@@ -14,15 +14,16 @@ func main() {
 		fmt.Println(err)
 		return
 	}
+	LogTokens(tokens)
+	fmt.Println("done tokenizing")
 
-	fmt.Println("Tokens:")
-	for _, token := range tokens {
-		if token.isCmd {
-			fmt.Println(cmd.CmdType(token.id).String(), token.value)
-		} else if token.isFlag {
-			fmt.Println(flag.FlagType(token.id).String(), token.value)
-		}
+	cmd, err := ParseArgs(tokens)
+	if err != nil {
+		fmt.Println(err)
+		return
 	}
+	LogArgs(cmd)
+	fmt.Println("done parsing")
 }
 
 type Token struct {
@@ -94,4 +95,47 @@ func TokenizeArgs(args []string) ([]Token, error) {
 		}
 	}
 	return tokens, nil
+}
+
+func ParseArgs(tokens []Token) (*cmd.Cmd, error) {
+	mainCommand := cmd.Cmd{
+		Type:    cmd.None,
+		SubCmds: make(map[cmd.CmdType]*cmd.Cmd, 0),
+		Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+	}
+
+	for _, tok := range tokens {
+		if mainCommand.IsNone() {
+			mainCommand.Type = cmd.CmdType(tok.id)
+			err := mainCommand.ValidateValue(tok.value)
+			if err != nil {
+				return nil, err
+			}
+			mainCommand.Value = tok.value
+
+		} else {
+			if tok.isCmd {
+				subCmd := &cmd.Cmd{
+					Type:  cmd.CmdType(tok.id),
+					Value: tok.value,
+				}
+				err := mainCommand.ValidateSubCmd(subCmd)
+				if err != nil {
+					return nil, err
+				}
+				mainCommand.SubCmds[subCmd.Type] = subCmd
+			} else if tok.isFlag {
+				flag := &flag.Flag{
+					Type:  flag.FlagType(tok.id),
+					Value: tok.value,
+				}
+				err := mainCommand.ValidateFlag(flag)
+				if err != nil {
+					return nil, err
+				}
+				mainCommand.Flags[flag.Type] = flag
+			}
+		}
+	}
+	return &mainCommand, nil
 }
