@@ -27,7 +27,7 @@ func RemoveValidateFlag(f *flag.Flag) error {
 	case flag.None:
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("'remove' takes no flags. got type: %d", f.Type)
+		return fmt.Errorf("'remove' takes no flags. got: '%s'", f.Type.ToString())
 	}
 }
 
@@ -39,7 +39,7 @@ func RemoveValidateSubCmd(c *Cmd) error {
 		}
 		return c.ValidateValue(c.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown sub command type: %d", c.Type)
+		return fmt.Errorf("unexpected error: unknown sub command type: '%s'", c.Type.ToString())
 	}
 }
 

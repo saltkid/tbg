@@ -18,7 +18,7 @@ const (
 	Version
 )
 
-func (c CmdType) String() string {
+func (c CmdType) ToString() string {
 	switch c {
 	case Run:
 		return "run"
@@ -42,8 +42,8 @@ func (c CmdType) String() string {
 type Cmd struct {
 	Type    CmdType
 	Value   string
-	SubCmds map[CmdType]Cmd
-	Flags   map[flag.FlagType]flag.Flag
+	SubCmds map[CmdType]*Cmd
+	Flags   map[flag.FlagType]*flag.Flag
 }
 
 func ToCommand(s string) (*Cmd, error) {
@@ -51,48 +51,52 @@ func ToCommand(s string) (*Cmd, error) {
 	case "run":
 		return &Cmd{
 			Type:    Run,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	case "config":
 		return &Cmd{
 			Type:    Config,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	case "add":
 		return &Cmd{
 			Type:    Add,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	case "remove":
 		return &Cmd{
 			Type:    Remove,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	case "edit":
 		return &Cmd{
 			Type:    Edit,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	case "help":
 		return &Cmd{
 			Type:    Help,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	case "version":
 		return &Cmd{
 			Type:    Version,
-			SubCmds: make(map[CmdType]Cmd, 0),
-			Flags:   make(map[flag.FlagType]flag.Flag, 0),
+			SubCmds: make(map[CmdType]*Cmd, 0),
+			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown command: %s", s)
 	}
+}
+
+func (c *Cmd) IsNone() bool {
+	return c.Type == None
 }
 
 func (c *Cmd) ValidateValue(val string) error {

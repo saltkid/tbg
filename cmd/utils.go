@@ -15,7 +15,7 @@ func isImageFile(f string) bool {
 }
 
 // returns empty string if not found in map of flags
-func ExtractFlagValue(val flag.FlagType, flags map[flag.FlagType]flag.Flag) string {
+func ExtractFlagValue(val flag.FlagType, flags map[flag.FlagType]*flag.Flag) string {
 	flag, ok := flags[val]
 	if !ok {
 		return ""
@@ -24,7 +24,7 @@ func ExtractFlagValue(val flag.FlagType, flags map[flag.FlagType]flag.Flag) stri
 }
 
 // returns empty string if not found in map of subcommands
-func ExtractSubCmdValue(val CmdType, subCmds map[CmdType]Cmd) string {
+func ExtractSubCmdValue(val CmdType, subCmds map[CmdType]*Cmd) string {
 	subCmd, ok := subCmds[val]
 	if !ok {
 		return ""

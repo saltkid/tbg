@@ -17,7 +17,7 @@ const (
 	Stretch
 )
 
-func (f FlagType) String() string {
+func (f FlagType) ToString() string {
 	switch f {
 	case None:
 		return "none"
@@ -56,6 +56,10 @@ func ToFlag(s string) (*Flag, error) {
 	default:
 		return nil, fmt.Errorf("unknown flag: %s", s)
 	}
+}
+
+func (f *Flag) IsNone() bool {
+	return f.Type == None
 }
 
 func (f *Flag) ValidateValue(val string) error {

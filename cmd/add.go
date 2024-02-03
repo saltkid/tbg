@@ -50,7 +50,7 @@ func AddValidateFlag(f *flag.Flag) error {
 	case flag.Alignment, flag.Opacity, flag.Stretch:
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown flag: %d", f.Type)
+		return fmt.Errorf("unexpected error: unknown flag: '%s'", f.Type.ToString())
 	}
 }
 
@@ -62,7 +62,7 @@ func AddValidateSubCmd(c *Cmd) error {
 		}
 		return c.ValidateValue(c.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown sub command type: %d", c.Type)
+		return fmt.Errorf("unexpected error: unknown sub command: '%s'", c.Type.ToString())
 	}
 }
 

@@ -51,7 +51,7 @@ func ConfigValidateFlag(f *flag.Flag) error {
 	case flag.None:
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("'config' takes no flags. got type %d", f.Type)
+		return fmt.Errorf("'config' takes no flags. got: '%s'", f.Type.ToString())
 	}
 }
 
@@ -60,7 +60,7 @@ func ConfigValidateSubCmd(c *Cmd) error {
 	case None:
 		return nil
 	default:
-		return fmt.Errorf("'config' takes no sub commands. got type %d", c.Type)
+		return fmt.Errorf("'config' takes no sub commands. got: '%s'", c.Type.ToString())
 	}
 }
 
