@@ -22,21 +22,24 @@ func RemoveValidateValue(val string) error {
 	return nil
 }
 
-func RemoveValidateFlag(t flag.FlagType) error {
-	switch t {
+func RemoveValidateFlag(f *flag.Flag) error {
+	switch f.Type {
 	case flag.None:
-		return nil
+		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("'remove' takes no flags. got type: %d", t)
+		return fmt.Errorf("'remove' takes no flags. got type: %d", f.Type)
 	}
 }
 
-func RemoveValidateSubCmd(t CmdType) error {
-	switch t {
-	case None:
-		return nil
+func RemoveValidateSubCmd(c *Cmd) error {
+	switch c.Type {
+	case Config:
+		if c.Value == "" {
+			return fmt.Errorf("'config' subcommand requires a config file path")
+		}
+		return c.ValidateValue(c.Value)
 	default:
-		return fmt.Errorf("'remove' takes no sub commands. got type: %d", t)
+		return fmt.Errorf("unexpected error: unknown sub command type: %d", c.Type)
 	}
 }
 

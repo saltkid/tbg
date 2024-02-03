@@ -3,6 +3,8 @@ package cmd
 import (
 	"path/filepath"
 	"strings"
+
+	"github.com/saltkid/tbg/flag"
 )
 
 func isImageFile(f string) bool {

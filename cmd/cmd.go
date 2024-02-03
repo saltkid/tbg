@@ -96,19 +96,19 @@ func (c *Cmd) ValidateValue(val string) error {
 	}
 }
 
-func (c *Cmd) ValidateFlag(t flag.FlagType) error {
+func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 	// TODO
 	switch c.Type {
 	case Run:
 		return nil
 	case Config:
-		return ConfigValidateFlag(t)
+		return ConfigValidateFlag(f)
 	case Add:
-		return AddValidateFlag(t)
+		return AddValidateFlag(f)
 	case Remove:
-		return nil
+		return RemoveValidateFlag(f)
 	case Edit:
-		return nil
+		return EditValidateFlag(f)
 	case Help:
 		return nil
 	case Version:
@@ -118,25 +118,25 @@ func (c *Cmd) ValidateFlag(t flag.FlagType) error {
 	}
 }
 
-func (c *Cmd) ValidateSubCmd(t CmdType) error {
+func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 	// TODO
-	switch t {
+	switch sc.Type {
 	case Run:
 		return nil
 	case Config:
-		return nil
+		return ConfigValidateSubCmd(sc)
 	case Add:
-		return nil
+		return AddValidateSubCmd(sc)
 	case Remove:
-		return nil
+		return RemoveValidateSubCmd(sc)
 	case Edit:
-		return nil
+		return EditValidateSubCmd(sc)
 	case Help:
 		return nil
 	case Version:
 		return nil
 	default:
-		return fmt.Errorf("unexpected error: unknown command type: %d", t)
+		return fmt.Errorf("unexpected error: unknown command type: %d", sc)
 	}
 }
 
@@ -150,9 +150,9 @@ func (c *Cmd) Execute() error {
 	case Add:
 		return AddExecute(c)
 	case Remove:
-		return nil
+		return RemoveExecute(c)
 	case Edit:
-		return nil
+		return EditExecute(c)
 	case Help:
 		return nil
 	case Version:

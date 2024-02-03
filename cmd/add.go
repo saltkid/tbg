@@ -45,21 +45,24 @@ func AddValidateValue(val string) error {
 	return nil
 }
 
-func AddValidateFlag(t flag.FlagType) error {
-	switch t {
+func AddValidateFlag(f *flag.Flag) error {
+	switch f.Type {
 	case flag.Alignment, flag.Opacity, flag.Stretch:
-		return nil
+		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown flag: %d", t)
+		return fmt.Errorf("unexpected error: unknown flag: %d", f.Type)
 	}
 }
 
-func AddValidateSubCmd(t CmdType) error {
-	switch t {
+func AddValidateSubCmd(c *Cmd) error {
+	switch c.Type {
 	case Config:
-		return nil
+		if c.Value == "" {
+			return fmt.Errorf("'config' subcommand requires a config file path")
+		}
+		return c.ValidateValue(c.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown sub command type: %d", t)
+		return fmt.Errorf("unexpected error: unknown sub command type: %d", c.Type)
 	}
 }
 

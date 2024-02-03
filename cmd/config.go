@@ -46,21 +46,21 @@ func ConfigValidateValue(val string) error {
 	return nil
 }
 
-func ConfigValidateFlag(t flag.FlagType) error {
-	switch t {
+func ConfigValidateFlag(f *flag.Flag) error {
+	switch f.Type {
 	case flag.None:
-		return nil
+		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("'config' takes no flags. got type %d", t)
+		return fmt.Errorf("'config' takes no flags. got type %d", f.Type)
 	}
 }
 
-func ConfigValidateSubCmd(t CmdType) error {
-	switch t {
+func ConfigValidateSubCmd(c *Cmd) error {
+	switch c.Type {
 	case None:
 		return nil
 	default:
-		return fmt.Errorf("'config' takes no sub commands. got type %d", t)
+		return fmt.Errorf("'config' takes no sub commands. got type %d", c.Type)
 	}
 }
 
