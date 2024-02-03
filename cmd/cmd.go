@@ -145,7 +145,7 @@ func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 
 func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 	// TODO
-	switch sc.Type {
+	switch c.Type {
 	case Run:
 		return nil
 	case Config:
