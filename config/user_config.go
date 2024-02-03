@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"gopkg.in/yaml.v3"
 	"strconv"
+	"strings"
 )
 
 type UserConfig struct {
@@ -47,6 +48,55 @@ func (c *UserConfig) Log(configPath string) Config {
 	fmt.Println("------------------------------------------------------------------------------------")
 
 	return c
+}
+
+func (c *UserConfig) AddPath(absPath string, configPath string) error {
+	for _, path := range c.ImageColPaths {
+		pureAbsPath, _, _ := strings.Cut(absPath, "|")
+		pureAbsPath = strings.TrimSpace(pureAbsPath)
+		purePath, _, _ := strings.Cut(path, "|")
+
+		if pureAbsPath == purePath {
+			return fmt.Errorf("%s already in user config", absPath)
+		}
+	}
+	c.ImageColPaths = append(c.ImageColPaths, absPath)
+
+	template := UserTemplate(configPath)
+	template.YamlContents, _ = yaml.Marshal(c)
+	err := template.WriteFile()
+	if err != nil {
+		return fmt.Errorf("error writing to user config: %s", err.Error())
+	}
+
+	c.Log(configPath)
+	return nil
+}
+
+func (c *UserConfig) RemovePath(absPath string, configPath string) error {
+	removed := make(map[string]struct{})
+	for i, path := range c.ImageColPaths {
+		purePath, _, _ := strings.Cut(path, "|")
+		purePath = strings.TrimSpace(purePath)
+
+		if strings.EqualFold(absPath, purePath) {
+			removed[absPath] = struct{}{}
+			c.ImageColPaths = append(c.ImageColPaths[:i], c.ImageColPaths[i+1:]...)
+			break
+		}
+	}
+	template := UserTemplate(configPath)
+	template.YamlContents, _ = yaml.Marshal(c)
+	err := template.WriteFile()
+	if err != nil {
+		return fmt.Errorf("error writing to user config: %s", err.Error())
+	}
+	if len(removed) == 0 {
+		removed["no changes made"] = struct{}{}
+	}
+
+	c.Log(configPath).LogRemoved(removed)
+	return nil
 }
 
 func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {

@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 )
 
 func DefaultConfigPath() string {
@@ -40,6 +41,55 @@ func (c *DefaultConfig) Unmarshal(data []byte) error {
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal default config: %s", err)
 	}
+	return nil
+}
+
+func (c *DefaultConfig) AddPath(absPath string, configPath string) error {
+	for _, path := range c.ImageColPaths {
+		pureAbsPath, _, _ := strings.Cut(absPath, "|")
+		pureAbsPath = strings.TrimSpace(pureAbsPath)
+		purePath, _, _ := strings.Cut(path, "|")
+
+		if pureAbsPath == purePath {
+			return fmt.Errorf("%s already in user config", absPath)
+		}
+	}
+	c.ImageColPaths = append(c.ImageColPaths, absPath)
+
+	template := DefaultTemplate(configPath)
+	template.YamlContents, _ = yaml.Marshal(c)
+	err := template.WriteFile()
+	if err != nil {
+		return fmt.Errorf("error writing to user config: %s", err.Error())
+	}
+
+	c.Log(configPath)
+	return nil
+}
+
+func (c *DefaultConfig) RemovePath(absPath string, configPath string) error {
+	removed := make(map[string]struct{})
+	for i, path := range c.ImageColPaths {
+		purePath, _, _ := strings.Cut(path, "|")
+		purePath = strings.TrimSpace(purePath)
+
+		if strings.EqualFold(absPath, purePath) {
+			removed[absPath] = struct{}{}
+			c.ImageColPaths = append(c.ImageColPaths[:i], c.ImageColPaths[i+1:]...)
+			break
+		}
+	}
+	template := DefaultTemplate(configPath)
+	template.YamlContents, _ = yaml.Marshal(c)
+	err := template.WriteFile()
+	if err != nil {
+		return fmt.Errorf("error writing to default config: %s", err.Error())
+	}
+	if len(removed) == 0 {
+		removed["no changes made"] = struct{}{}
+	}
+
+	c.Log(configPath).LogRemoved(removed)
 	return nil
 }
 

@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/saltkid/tbg/config"
 	"github.com/saltkid/tbg/flag"
-	"gopkg.in/yaml.v3"
 )
 
 func AddValidateValue(val string) error {
@@ -66,7 +64,7 @@ func AddValidateSubCmd(t CmdType) error {
 }
 
 func AddExecute(c *Cmd) error {
-	absPath, _ := filepath.Abs(c.Value)
+	toAdd, _ := filepath.Abs(c.Value)
 
 	// check if flags are set by user
 	align := ExtractFlagValue(flag.Alignment, c.Flags)
@@ -83,7 +81,7 @@ func AddExecute(c *Cmd) error {
 		if stretch == "" {
 			stretch = "uniform"
 		}
-		absPath = fmt.Sprintf("%s | %s %s %s", absPath, align, opacity, stretch)
+		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, opacity, stretch)
 	}
 
 	// check if config subcommand is set by user
@@ -107,105 +105,22 @@ func AddExecute(c *Cmd) error {
 		return err
 	}
 
-	if configContents.IsDefaultConfig() && specifiedConfig == "default" {
-		err = AddToDefaultConfig(configContents, absPath, configPath)
-		if err != nil {
-			return err
-		}
-	} else if configContents.IsUserConfig() {
-		err = AddToUserConfig(configContents, absPath, configPath)
-		if err != nil {
-			return err
-		}
-	} else {
+	if specifiedConfig == "" {
 		// read default config to check if using user config or default
 		defaultContents, _ := configContents.(*config.DefaultConfig)
 
 		// using default config
 		if defaultContents.UserConfig == "" {
-			err = AddToUserConfig(configContents, absPath, configPath)
-			if err != nil {
-				return err
-			}
-
+			err = defaultContents.AddPath(toAdd, configPath)
 		} else {
-			// recheck if user config path in default config is valid
-			err = ConfigValidateValue(defaultContents.UserConfig)
-			if err != nil {
-				return err
-			}
-
-			userConfigPath, _ := filepath.Abs(defaultContents.UserConfig)
-			yamlFile, err = os.ReadFile(userConfigPath)
-			if err != nil {
-				return fmt.Errorf("Failed to read user config file %s: %s", userConfigPath, err)
-			}
-			contents := &config.UserConfig{}
-			err = contents.Unmarshal(yamlFile)
-			if err != nil {
-				return err
-			}
-			err = AddToUserConfig(contents, absPath, userConfigPath)
-			if err != nil {
-				return err
-			}
+			err = defaultContents.AddPath(toAdd, defaultContents.UserConfig)
 		}
-
+	} else {
+		err = configContents.AddPath(toAdd, configPath)
 	}
 
-	return nil
-}
-
-func AddToUserConfig(contents config.Config, absPath string, configPath string) error {
-	userContents, ok := contents.(*config.UserConfig)
-	if !ok {
-		return fmt.Errorf("unexpected error: contents is not a user config")
-	}
-
-	for _, path := range userContents.ImageColPaths {
-		pureAbsPath, _, _ := strings.Cut(absPath, "|")
-		pureAbsPath = strings.TrimSpace(pureAbsPath)
-		purePath, _, _ := strings.Cut(path, "|")
-
-		if pureAbsPath == purePath {
-			return fmt.Errorf("%s already in user config", absPath)
-		}
-	}
-	userContents.ImageColPaths = append(userContents.ImageColPaths, absPath)
-
-	template := config.DefaultTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(userContents)
-	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to user config: %s", err.Error())
+		return err
 	}
-	userContents.Log(configPath)
-	return nil
-}
-
-func AddToDefaultConfig(contents config.Config, absPath string, configPath string) error {
-	defaultContents, ok := contents.(*config.DefaultConfig)
-	if !ok {
-		return fmt.Errorf("unexpected error: contents is not a default config")
-	}
-
-	for _, path := range defaultContents.ImageColPaths {
-		pureAbsPath, _, _ := strings.Cut(absPath, "|")
-		pureAbsPath = strings.TrimSpace(pureAbsPath)
-		purePath, _, _ := strings.Cut(path, "|")
-
-		if pureAbsPath == purePath {
-			return fmt.Errorf("%s already in default config", absPath)
-		}
-	}
-	defaultContents.ImageColPaths = append(defaultContents.ImageColPaths, absPath)
-
-	template := config.DefaultTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(defaultContents)
-	err := template.WriteFile()
-	if err != nil {
-		return fmt.Errorf("error writing to default config: %s", err.Error())
-	}
-	defaultContents.Log(configPath)
 	return nil
 }

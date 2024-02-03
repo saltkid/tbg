@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/saltkid/tbg/config"
 	"github.com/saltkid/tbg/flag"
-	"gopkg.in/yaml.v3"
 )
 
 func RemoveValidateValue(val string) error {
@@ -43,7 +41,7 @@ func RemoveValidateSubCmd(t CmdType) error {
 }
 
 func RemoveExecute(c *Cmd) error {
-	absPath, _ := filepath.Abs(c.Value)
+	toRemove, _ := filepath.Abs(c.Value)
 
 	// check if config subcommand is set by user
 	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
@@ -66,107 +64,22 @@ func RemoveExecute(c *Cmd) error {
 		return err
 	}
 
-	if configContents.IsDefaultConfig() && specifiedConfig == "default" {
-		err = RemoveFromDefaultConfig(configContents, absPath, configPath)
-		if err != nil {
-			return err
-		}
-	} else if configContents.IsUserConfig() {
-		err = RemoveFromUserConfig(configContents, absPath, configPath)
-		if err != nil {
-			return err
-		}
-	} else {
-		// read default config if using user config or default
+	if specifiedConfig == "" {
+		// read default config to check if using user config or default
 		defaultContents, _ := configContents.(*config.DefaultConfig)
 
 		// using default config
 		if defaultContents.UserConfig == "" {
-			err = RemoveFromDefaultConfig(configContents, absPath, configPath)
-			if err != nil {
-				return err
-			}
+			err = defaultContents.RemovePath(toRemove, configPath)
 		} else {
-			// recheck if user config path in default config is valid
-			err = ConfigValidateValue(defaultContents.UserConfig)
-			if err != nil {
-				return err
-			}
-
-			userConfigPath, _ := filepath.Abs(defaultContents.UserConfig)
-			yamlFile, err := os.ReadFile(userConfigPath)
-			if err != nil {
-				return fmt.Errorf("Failed to read user config: %s", err)
-			}
-			userContents := &config.UserConfig{}
-			err = userContents.Unmarshal(yamlFile)
-			if err != nil {
-				return err
-			}
-			err = RemoveFromUserConfig(userContents, absPath, userConfigPath)
-			if err != nil {
-				return err
-			}
+			err = defaultContents.RemovePath(toRemove, defaultContents.UserConfig)
 		}
+	} else {
+		err = configContents.RemovePath(toRemove, configPath)
 	}
 
-	return nil
-}
-
-func RemoveFromUserConfig(contents config.Config, absPath string, configPath string) error {
-	userContents, ok := contents.(*config.UserConfig)
-	if !ok {
-		return fmt.Errorf("unexpected error: contents is not a user config")
-	}
-	removed := make(map[string]struct{})
-	for i, path := range userContents.ImageColPaths {
-		purePath, _, _ := strings.Cut(path, "|")
-		purePath = strings.TrimSpace(purePath)
-
-		if strings.EqualFold(absPath, purePath) {
-			removed[absPath] = struct{}{}
-			userContents.ImageColPaths = append(userContents.ImageColPaths[:i], userContents.ImageColPaths[i+1:]...)
-			break
-		}
-	}
-	template := config.UserTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(userContents)
-	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to user config: %s", err.Error())
+		return err
 	}
-	if len(removed) == 0 {
-		removed["no changes made"] = struct{}{}
-	}
-	userContents.Log(configPath).LogRemoved(removed)
-	return nil
-}
-
-func RemoveFromDefaultConfig(contents config.Config, absPath string, configPath string) error {
-	defaultContents, ok := contents.(*config.DefaultConfig)
-	if !ok {
-		return fmt.Errorf("unexpected error: contents is not a default config")
-	}
-	removed := make(map[string]struct{})
-	for i, path := range defaultContents.ImageColPaths {
-		purePath, _, _ := strings.Cut(path, "|")
-		purePath = strings.TrimSpace(purePath)
-
-		if strings.EqualFold(absPath, purePath) {
-			removed[absPath] = struct{}{}
-			defaultContents.ImageColPaths = append(defaultContents.ImageColPaths[:i], defaultContents.ImageColPaths[i+1:]...)
-			break
-		}
-	}
-	template := config.DefaultTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(defaultContents)
-	err := template.WriteFile()
-	if err != nil {
-		return fmt.Errorf("error writing to default config: %s", err.Error())
-	}
-	if len(removed) == 0 {
-		removed["no changes made"] = struct{}{}
-	}
-	defaultContents.Log(configPath).LogRemoved(removed)
 	return nil
 }
