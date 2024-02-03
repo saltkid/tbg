@@ -24,6 +24,12 @@ func main() {
 	}
 	LogArgs(cmd)
 	fmt.Println("done parsing")
+
+	err = cmd.Execute()
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 }
 
 type Token struct {
@@ -104,7 +110,11 @@ func ParseArgs(tokens []Token) (*cmd.Cmd, error) {
 		Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 	}
 
-	for _, tok := range tokens {
+	for i, tok := range tokens {
+		if i == 0 && tok.isFlag {
+			return nil, fmt.Errorf("must start with a valid command. got flag: '%s'", flag.FlagType(tok.id).ToString())
+		}
+
 		if mainCommand.IsNone() {
 			mainCommand.Type = cmd.CmdType(tok.id)
 			err := mainCommand.ValidateValue(tok.value)
