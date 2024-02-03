@@ -50,7 +50,7 @@ func (c *DefaultConfig) AddPath(absPath string, configPath string) error {
 		pureAbsPath = strings.TrimSpace(pureAbsPath)
 		purePath, _, _ := strings.Cut(path, "|")
 
-		if pureAbsPath == purePath {
+		if strings.EqualFold(pureAbsPath, purePath) {
 			return fmt.Errorf("%s already in user config", absPath)
 		}
 	}
