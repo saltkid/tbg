@@ -33,6 +33,10 @@ func ConfigValidateValue(val string) error {
 	if err != nil {
 		return fmt.Errorf("Failed to get absolute path of %s: %s", val, err)
 	}
+	if filepath.Ext(configPath) != ".yaml" && filepath.Ext(configPath) != ".yml" {
+		configPath = configPath + ".yaml"
+		fmt.Printf("Creating \"%s\" instead because \"%s\" does not have .yaml or .yml extension.\n", configPath, val)
+	}
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		err := os.MkdirAll(filepath.Dir(configPath), os.ModePerm)
 		if err != nil {
