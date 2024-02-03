@@ -1,17 +1,17 @@
 # Table of Contents
-- [What is tbg?](#what-is-tbg)
+- [tbg](#tbg-Terminal-Background-Gallery)
 - [Installation](#installation)
 - [Usage](#usage)
     - [Default Config](#default-config)
     - [User Config](#user-config)
     - [Commands](#commands)
     - [Flags](#flags)
-# What is tbg?
-**tbg** (*Terminal Background Gallery*) allows the user to have and manage multiple background images that rotate at a set amount of time for Windows Terminal
+# tbg (Terminal Background Gallery)
+**tbg** (*teabag*) allows the user to have and manage multiple background images that rotate at a set amount of time for Windows Terminal
 
 This edits the `settings.json` used by *Windows Terminal*; specifically, the `backgroundImage` on the default profile by default but user can override it. It overwrites the `backgroundImage` value every 30 minutes by default but the user can override that to
 
-## Installation
+# Installation
 Download the latest release of [tbg](https://github.com/saltkid/tbg/releases)
 or build it from source
 - clone the repo
@@ -24,15 +24,14 @@ cd tbg && go build
 ```
 **Optionally** add the `tbg` executable to your path
 
-## Usage
-On initial execution of **tbg**, it will create a `config.yaml` in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands)
+# Usage
+On initial execution of **tbg**, it will create a `config.yaml` in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) for input validation
 ```
 #------------------------------------------
 # this is the default config. you can edit this or use your own config file by doing any of the following:
 #  1. run 'tbg config <path/to/config.yaml>'
 #  2. edit this file: set use_user_config to true and set user_config to the path to your config file
 #------------------------------------------
-use_user_config: false
 user_config:
 
 image_col_paths: []
@@ -44,8 +43,6 @@ default_stretch: uniform
 default_opacity: 0.1
 #------------------------------------------
 # Fields:
-#   use_user_config: whether to use the user config set in user_config
-#
 #   user_config: path to the user config file
 #
 #   image_col_paths: list of image collection paths
@@ -74,13 +71,12 @@ default_opacity: 0.1
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #------------------------------------------
 ```
-### Default Config
+## Default Config
 This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. It also keeps track of the currently used config, whether it is this default config or a user config.
-#### Fields
+### Fields
 | Field | Valid Values | Description |
 | --- | --- | --- |
-| `use_user_config` | `true`, `false` | This determines whether **tbg** uses this default config or the config in `user_config`. If you want to use what is set in `user_config`, you have to set this to false. |
-| `user_config` | `""`, `path/to/config.yaml` | path to the user config file. Must be absolute path |
+| `user_config` | `""`, `path/to/config.yaml` | path to the user config file. Must be absolute path<br><br>If empty, currently used config will be the default config. If not empty, currently used config will be the value |
 | `image_col_paths` | `[]`<br>`- path/to/dir1`<br>`- path/to/dir2 \| center uniform 0.1` | list of image collection paths. Must be directories containing images, not image paths |
 | `interval` | any positive integer | time in minutes between each image change. |
 | `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*. To change background images in user created profiles, set `profile` to `list-<n>` where n is the index used by *Windows Terminal* to identify the profile |
@@ -88,19 +84,16 @@ This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* u
 | `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
 | `default_opacity` | inclusive between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
 
-### User Config
-The default config will keep track of what config file you want to use so having many user config files are okay as long as you set these two in the default config:
-- `use_user_config: true`
-- `user_config: /abs/path/to/user-config-name.yaml`.
+## User Config
+The default config will keep track of what config file you want to use so having many user config files are okay as long as you set `user_config` with a value.
 
-#### Fields
+### Fields
 Other than not having `use_user_config` and `user_config` fields, User Config fields are exactly the same as Default Config
 
-### Commands
+## Commands
 The commands other than `run` are used to safely edit the currently used config with input validation. If your currently used config is a user config, it will automatically edit the default config as well appropriately.
 
-*Note: Flags of commands can either be a Flag or another Command*
-| Command | Valid Args | Flags | Description |
+| Command | Valid Args | Valid Flags/Subcommands | Description |
 | --- | --- | --- | --- |
 | `run` | none | `config`, `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch` | edit `settings.json` used by *Windows Terminal* using settings from the currently used config (may be default or a user config).<br><br>If `config` is specified, it will use that instead of the currently used config.<br><br>If any of the `--`flags are specified, it will use those values in editing `settings.json` instead of what's specified in the currently used config|
 | `config` | `path/to/user-config-name.yaml` `default` | none | If no arg is given to `config`, it will print out the currently used config to console.<br><br>If an arg is given, it will set the arg as the currently used config after validation.<br><br>If used as a flag, it will let the parent command use te config specified instead of the currently set config|
@@ -108,12 +101,7 @@ The commands other than `run` are used to safely edit the currently used config 
 | `remove` | `path/to/dir` | `config` | Remove a dir from the currently used config.<br><br>If `config` is specified, it will remove the dir in the specific config instead. |
 
 ### Flags
-Flags override, not edit, [field entries](#default-config) in the currently used config. 
-
-Specifically for `add` command, flags are added to a per-dir level, after `|`,  which individually can override the fields in their respective config
-
-Specifically for `edit` command, it edits flag on a per-dir level after the `|`, same as `add`. If `--profile` or `--interval` is specified, it will edit that on a per-config level.
-
+Flags modify the [field entries](#default-config) in the currently used config. 
 | Flag | Field Overriden |
 | --- | --- |
 | `--profile`<br>`-p` | `profile` |
@@ -122,3 +110,130 @@ Specifically for `edit` command, it edits flag on a per-dir level after the `|`,
 | `--opacity`<br>`-o` | `default_opacity` |
 | `--stretch`<br>`-s` | `default_stretch` |
 
+---
+For `run`, flags override field values in the currently used config, not edit them. These values will be used in editing `settings.json` of *Windows Terminal*
+
+**example:**
+
+start
+```
+# config.yaml
+
+image_col_paths:
+- /path/to/dir1
+- /path/to/dir2
+
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `run` command, it will use the default values in the config to edit `settings.json` using images in `image_col_paths`
+
+When `run --alignment top --stretch none --opacity 0.2` is called, it will use the values specified in the flags to edit `settings.json` **BUT** not edit the config.yaml file itself
+
+---
+For `add`, flags are added to a per-dir level, after `|`,  which individually can override the fields in their respective config. When that specific path is read during execution of `run` command, it will use the flags specific to that path, not the config-level default flags
+
+**example:**
+
+start
+```
+image_col_paths: []
+
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `add /path/to/dir1`, it will add `path/to/dir1` to `image_col_paths`
+```
+image_col_paths:
+- /path/to/dir1
+
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `add /path/to/dir2 --alignment top`, it will add `path/to/dir2 | center uniform 0.1` to `image_col_paths`. When not all 3 flags are specified (`--alignment`, `stretch`, `opacity`), the omitted flags will inherit from the default fields
+```
+image_col_paths:
+- /path/to/dir1
+- /path/to/dir2 | top uniform 0.1
+
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `add /path/to/dir3 --alignment center`, it will add only `path/to/dir3` to `image_col_paths` because the `default_alignment` is already center and no other flags were specified so it will be using the default values anyway. This is why no flags were added to `path/to/dir3` even though `--alignment` was specified.
+```
+image_col_paths:
+- /path/to/dir1
+- /path/to/dir2 | top uniform 0.1
+- /path/to/dir3
+
+profile: default
+interval: 30
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+
+---
+For `edit`, it edits flag on a per-dir level after the `|`, same as `add`. If `--profile` or `--interval` is specified, it will edit that on a per-config level.
+
+**example:**
+
+start
+```
+image_col_paths:
+- /path/to/dir1
+
+profile: default
+interval: 30
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `edit --profile list-1 --interval 10`, it will edit the `profile` field to `default` and `interval` to `10`. These two fields specifically are set on a config-level and cannot be specified in a per-path level
+```
+image_col_paths:
+- /path/to/dir1
+
+profile: list-1
+interval: 10
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `edit /path/to/dir1 --alignment top`, it will edit the `/path/to/dir1` entry to have flags: `/path/to/dir1 | top uniform 0.1`. Since only alignment is specified, the rest of the flags will be inherited from the defaults
+```
+image_col_paths:
+- /path/to/dir1 | top uniform 0.1
+
+profile: list-1
+interval: 10
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `edit /path/to/dir1 --alignment center`, it will edit the `/path/to/dir1 | top uniform 0.1` entry to: `/path/to/dir1`. `default_alignment` is already center and no other flags were specified so `path/to/dir1` will be using default values anyway so it was removed.
+```
+image_col_paths:
+- /path/to/dir1
+
+profile: list-1
+interval: 10
+default_alignment: center
+default_stretch: uniform
+default_opacity: 0.1
+```
+When tbg is ran with `edit fields --alignment right --opacity 0.5 --stretch none`, it will edit the default fields since `fields` was the argument for `edit`. The individual paths will remain unchanged
+```
+image_col_paths:
+- /path/to/dir1
+
+profile: list-1
+interval: 10
+default_alignment: right
+default_stretch: none
+default_opacity: 0.5
+```
