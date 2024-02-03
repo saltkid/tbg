@@ -74,6 +74,11 @@ func ToCommand(s string) (*Cmd, error) {
 	}
 }
 
+func IsValidCommand(s string) bool {
+	_, err := ToCommand(s)
+	return err == nil
+}
+
 func (c *Cmd) ValidateValue(val string) error {
 	// TODO
 	switch c.Type {
