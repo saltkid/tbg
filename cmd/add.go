@@ -112,10 +112,11 @@ func AddExecute(c *Cmd) error {
 		// read default config to check if using user config or default
 		defaultContents, _ := configContents.(*config.DefaultConfig)
 
-		// using default config
 		if defaultContents.UserConfig == "" {
+			// using default config
 			err = defaultContents.AddPath(toAdd, configPath)
 		} else {
+			// using user config
 			err = defaultContents.AddPath(toAdd, defaultContents.UserConfig)
 		}
 	} else {

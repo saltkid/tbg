@@ -71,10 +71,11 @@ func RemoveExecute(c *Cmd) error {
 		// read default config to check if using user config or default
 		defaultContents, _ := configContents.(*config.DefaultConfig)
 
-		// using default config
 		if defaultContents.UserConfig == "" {
+			// using default config
 			err = defaultContents.RemovePath(toRemove, configPath)
 		} else {
+			// using user config
 			err = defaultContents.RemovePath(toRemove, defaultContents.UserConfig)
 		}
 	} else {
