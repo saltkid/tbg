@@ -6,7 +6,7 @@ type Config interface {
 
 	Unmarshal([]byte) error
 
-	AddPath(string, string) error
+	AddPath(string, string, string, string, string) error
 	RemovePath(string, string) error
 	EditPath(string, string, string, string, string, string, string) error
 
