@@ -111,7 +111,7 @@ func ValidateInterval(val string) error {
 
 func ValidateAlignment(val string) error {
 	switch val {
-	case "top-right", "tr", "top-left", "tl", "top", "t", "left", "l", "center", "c", "right", "r", "bottom-right", "br", "bottom-left", "bl", "bottom", "b":
+	case "topLeft", "top", "topRight", "left", "center", "right", "bottomLeft", "bottom", "bottomRight":
 		return nil
 	default:
 		return fmt.Errorf("invalid arg '%s' for --alignment: unknown alignment", val)
@@ -131,7 +131,7 @@ func ValidateOpacity(val string) error {
 
 func ValidateStretch(val string) error {
 	switch val {
-	case "none", "fill", "uniform", "uniform-fill":
+	case "none", "fill", "uniform", "uniformToFill":
 		return nil
 	default:
 		return fmt.Errorf("invalid arg '%s' for --stretch: unknown stretch", val)
