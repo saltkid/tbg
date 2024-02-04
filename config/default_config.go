@@ -56,7 +56,14 @@ func (c *DefaultConfig) AddPath(toAdd string, configPath string, align string, s
 		if opacity == "" {
 			opacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
 		}
-		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, stretch, opacity)
+
+		isDefaultAlign := strings.EqualFold(align, c.Alignment)
+		isDefaultStretch := strings.EqualFold(stretch, c.Stretch)
+		isDefaultOpacity := strings.EqualFold(opacity, strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+		// only add flags if all are not the default values
+		if !(isDefaultAlign && isDefaultStretch && isDefaultOpacity) {
+			toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, stretch, opacity)
+		}
 	}
 
 	for _, path := range c.ImageColPaths {
