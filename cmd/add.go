@@ -73,19 +73,6 @@ func AddExecute(c *Cmd) error {
 	align := ExtractFlagValue(flag.Alignment, c.Flags)
 	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
 	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
-	// set flags after path only if at least one is set
-	if align != "" || opacity != "" || stretch != "" {
-		if align == "" {
-			align = "center"
-		}
-		if opacity == "" {
-			opacity = "0.1"
-		}
-		if stretch == "" {
-			stretch = "uniform"
-		}
-		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, stretch, opacity)
-	}
 
 	// check if config subcommand is set by user
 	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
@@ -114,13 +101,13 @@ func AddExecute(c *Cmd) error {
 
 		if defaultContents.UserConfig == "" {
 			// using default config
-			err = defaultContents.AddPath(toAdd, configPath)
+			err = defaultContents.AddPath(toAdd, configPath, align, stretch, opacity)
 		} else {
 			// using user config
-			err = defaultContents.AddPath(toAdd, defaultContents.UserConfig)
+			err = defaultContents.AddPath(toAdd, defaultContents.UserConfig, align, stretch, opacity)
 		}
 	} else {
-		err = configContents.AddPath(toAdd, configPath)
+		err = configContents.AddPath(toAdd, configPath, align, stretch, opacity)
 	}
 
 	if err != nil {

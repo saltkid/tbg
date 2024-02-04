@@ -44,17 +44,32 @@ func (c *DefaultConfig) Unmarshal(data []byte) error {
 	return nil
 }
 
-func (c *DefaultConfig) AddPath(absPath string, configPath string) error {
+func (c *DefaultConfig) AddPath(toAdd string, configPath string, align string, stretch string, opacity string) error {
+	// set flags after path only if at least one is set
+	if align != "" || opacity != "" || stretch != "" {
+		if align == "" {
+			align = c.Alignment
+		}
+		if stretch == "" {
+			stretch = c.Stretch
+		}
+		if opacity == "" {
+			opacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+		}
+		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, stretch, opacity)
+	}
+
 	for _, path := range c.ImageColPaths {
-		pureAbsPath, _, _ := strings.Cut(absPath, "|")
+		pureAbsPath, _, _ := strings.Cut(toAdd, "|")
 		pureAbsPath = strings.TrimSpace(pureAbsPath)
 		purePath, _, _ := strings.Cut(path, "|")
+		purePath = strings.TrimSpace(purePath)
 
 		if strings.EqualFold(pureAbsPath, purePath) {
-			return fmt.Errorf("%s already in user config", absPath)
+			return fmt.Errorf("%s already in user config", toAdd)
 		}
 	}
-	c.ImageColPaths = append(c.ImageColPaths, absPath)
+	c.ImageColPaths = append(c.ImageColPaths, toAdd)
 
 	template := DefaultTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(c)
