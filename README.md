@@ -9,7 +9,7 @@
 # tbg (Terminal Background Gallery)
 **tbg** (*teabag*) allows the user to have and manage multiple background images that rotate at a set amount of time for Windows Terminal
 
-This edits the `settings.json` used by *Windows Terminal*; specifically, the `backgroundImage` on the default profile by default but user can override it. It overwrites the `backgroundImage` value every 30 minutes by default but the user can override that to
+This edits the `settings.json` used by *Windows Terminal*; specifically, the `backgroundImage` on the default profile by default but user can override it. It overwrites the `backgroundImage` value every 30 minutes by default but the user can override that too (as well as image alignment, stretch, and opacity)
 
 # Installation
 Download the latest release of [tbg](https://github.com/saltkid/tbg/releases)
@@ -25,7 +25,18 @@ cd tbg && go build
 **Optionally** add the `tbg` executable to your path
 
 # Usage
-On initial execution of **tbg**, it will create a `config.yaml` in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) for input validation
+On initial execution of **tbg**, it will create a [default](#default-config) `config.yaml` in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) for input validation
+
+While **tbg** is running, it takes in optional user input. Here's a list of commands:
+- `n`: goes to next image in the current image collection dir
+- `c`: goes to next image collection dir
+- `h`: shows the available commands
+- `q`: quits the program
+
+After **tbg** exhausts the image collections dirs in the config, it will restart from the first image collection dir so the only way to quit is to either input `q` or press `ctrl+c` so just be aware of that.
+
+## Default Config
+This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. It also keeps track of the currently used config, whether it is this default config or a user config.
 ```
 #------------------------------------------
 # this is the default config. you can edit this or use your own config file by doing any of the following:
@@ -71,8 +82,6 @@ default_opacity: 0.1
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #------------------------------------------
 ```
-## Default Config
-This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. It also keeps track of the currently used config, whether it is this default config or a user config.
 ### Fields
 | Field | Valid Values | Description |
 | --- | --- | --- |
