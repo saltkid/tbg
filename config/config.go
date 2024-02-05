@@ -73,7 +73,7 @@ func (c *Config) AddPath(toAdd string, configPath string, align string, stretch 
 		purePath = strings.TrimSpace(purePath)
 
 		if strings.EqualFold(pureAbsPath, purePath) {
-			return fmt.Errorf("%s already in config at %s", configPath, toAdd)
+			return fmt.Errorf("%s already in config at %s", pureAbsPath, toAdd)
 		}
 	}
 	c.ImageColPaths = append(c.ImageColPaths, toAdd)
