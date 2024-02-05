@@ -26,13 +26,6 @@ func (c *Config) EditWTJson(configPath string, profile string, interval string, 
 		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
 	}
 
-	// only edit the "profiles" field
-	var p Profiles
-	err = json.Unmarshal(allData["profiles"], &p)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal \"profiles\" field of settings.json at %s: %s", settingsPath, err)
-	}
-
 	done := make(chan struct{})
 	nextDir := make(chan struct{})
 	nextImage := make(chan struct{})
