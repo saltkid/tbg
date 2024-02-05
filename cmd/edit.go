@@ -56,42 +56,32 @@ func EditExecute(c *Cmd) error {
 	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
 	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
 
-	// check if config subcommand is set by user
+	// check if config subcommand is set by user (empty if not)
 	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
 	var configPath string
-	var configContents config.Config
-	if specifiedConfig == "default" || specifiedConfig == "" {
-		configPath, _ = filepath.Abs(config.DefaultConfigPath())
-		configContents = &config.DefaultConfig{}
+	var err error
+	if specifiedConfig == "default" {
+		configPath, err = config.DefaultConfigPath()
+	} else if specifiedConfig == "" {
+		configPath, err = config.UsedConfig()
 	} else {
-		configPath, _ = filepath.Abs(specifiedConfig)
-		configContents = &config.UserConfig{}
+		configPath, err = filepath.Abs(specifiedConfig)
+	}
+	if err != nil {
+		return fmt.Errorf("Failed to get config path: %s", err)
 	}
 
 	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("Failed to read config: %s", err)
+		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
+	configContents := &config.Config{}
 	err = configContents.Unmarshal(yamlFile)
 	if err != nil {
 		return err
 	}
 
-	if specifiedConfig == "" {
-		// read default config to check if using user config or default
-		defaultContents, _ := configContents.(*config.DefaultConfig)
-
-		if defaultContents.UserConfig == "" {
-			// using default config
-			err = defaultContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
-		} else {
-			// using user config
-			err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
-		}
-	} else {
-		err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
-	}
-
+	err = configContents.EditPath(toEdit, configPath, profile, interval, alignment, stretch, opacity)
 	if err != nil {
 		return err
 	}
