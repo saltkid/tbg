@@ -6,22 +6,17 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	// "strings"
 	"strconv"
+	"strings"
 	"time"
 )
 
+type Profiles struct {
+	Default Profile   `json:"defaults"`
+	List    []Profile `json:"list"`
+}
+
 type Profile struct {
-	Profiles WTProfiles `json:"profiles"`
-}
-
-type WTProfiles struct {
-	Default WTProfile   `json:"defaults"`
-	List    []WTProfile `json:"list"`
-}
-
-type WTProfile struct {
 	BGImage   string  `json:"backgroundImage"`
 	BGAlign   string  `json:"backgroundImageAlignment"`
 	BGStretch string  `json:"backgroundImageStretchMode"`
@@ -29,57 +24,80 @@ type WTProfile struct {
 }
 
 func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
-	// set values only if specified by user
-	intervalInt, _ := strconv.Atoi(interval)
-	opacityF, _ := strconv.ParseFloat(opacity, 64)
-	if profile == "" {
-		profile = c.Profile
-	}
-	if interval == "" {
-		intervalInt = c.Interval
-	}
-	if align == "" {
-		align = c.Alignment
-	}
-	if stretch == "" {
-		stretch = c.Stretch
-	}
-	if opacity == "" {
-		opacityF = c.Opacity
-	}
-	println(profile, intervalInt, align, stretch, opacityF)
-
 	// read settings.json
 	settingsPath, err := settingsJsonPath()
 	if err != nil {
 		return err
 	}
 	settingsData, err := os.ReadFile(settingsPath)
-	var p Profile
-	err = json.Unmarshal(settingsData, &p)
+	// get all data first to keep unused fields
+	var allData map[string]json.RawMessage
+	err = json.Unmarshal(settingsData, &allData)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
 	}
+	// only edit the "profiles" field
+	var p Profiles
+	err = json.Unmarshal(allData["profiles"], &p)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal \"profiles\" field of settings.json at %s: %s", settingsPath, err)
+	}
+
+	done := make(chan struct{})
+	nextDir := make(chan struct{})
+	nextImage := make(chan struct{})
+	go readUserInput(done, nextDir, nextImage)
 
 	for {
+		overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
 		for i, dir := range c.ImageColPaths {
+			// per path options to override defaults
+			dir, opts, hasOpts := strings.Cut(dir, "|")
+			dir = strings.TrimSpace(dir)
+			// use defaults of no options
+			if hasOpts {
+				opts = strings.TrimSpace(opts)
+				optSlice := strings.Split(opts, " ")
+				overrideAlign, overrideStretch, overrideOpacity = strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
+			}
+
+			// set values only if specified by user
+			intervalInt, _ := strconv.Atoi(interval)
+			if profile == "" {
+				profile = c.Profile
+			}
+			if interval == "" {
+				intervalInt = c.Interval
+			}
+			if align != "" {
+				overrideAlign = align
+			}
+			if stretch != "" {
+				overrideStretch = stretch
+			}
+			if opacity != "" {
+				overrideOpacity = opacity
+			}
+
 			images, err := fetchImages(dir)
 			if err != nil {
 				return err
 			}
 
-			done := make(chan struct{})
-			nextDir := make(chan struct{})
-			nextImage := make(chan struct{})
-
-			go readUserInput(done, nextDir, nextImage)
+		imageLoop:
 			for j, image := range images {
-
 				// ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
 				ticker := time.Tick(time.Second * 10)
 
 				fmt.Println()
-				c.Log(configPath).LogRunSettings(image, profile, intervalInt, align, stretch, opacityF)
+				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
+				c.Log(configPath).LogRunSettings(image, profile, intervalInt, overrideAlign, overrideStretch, opacityF)
+
+				err = changeBackgroundImage(allData, settingsPath, profile, image, overrideAlign, overrideStretch, overrideOpacity)
+				if err != nil {
+					return err
+				}
+				// prompt
 				fmt.Println("Enter a command ('h' for help): ")
 				fmt.Print("> ")
 
@@ -90,14 +108,11 @@ func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval s
 					return nil
 				case <-nextDir:
 					fmt.Println("using next dir...")
-					break
+					break imageLoop
 				case <-nextImage:
 					fmt.Println("using next image...")
 					if j == len(images)-1 {
 						fmt.Print("no more images. going to next dir: ")
-						if i+1 < len(c.ImageColPaths) {
-							fmt.Println(c.ImageColPaths[i+1])
-						}
 					}
 					continue
 				}
@@ -111,57 +126,80 @@ func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval s
 }
 
 func (c *UserConfig) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
-	// set values only if specified by user
-	intervalInt, _ := strconv.Atoi(interval)
-	opacityF, _ := strconv.ParseFloat(opacity, 64)
-	if profile == "" {
-		profile = c.Profile
-	}
-	if interval == "" {
-		intervalInt = c.Interval
-	}
-	if align == "" {
-		align = c.Alignment
-	}
-	if stretch == "" {
-		stretch = c.Stretch
-	}
-	if opacity == "" {
-		opacityF = c.Opacity
-	}
-	println(profile, intervalInt, align, stretch, opacityF)
-
 	// read settings.json
 	settingsPath, err := settingsJsonPath()
 	if err != nil {
 		return err
 	}
 	settingsData, err := os.ReadFile(settingsPath)
-	var p Profile
-	err = json.Unmarshal(settingsData, &p)
+	// get all data first to keep unused fields
+	var allData map[string]json.RawMessage
+	err = json.Unmarshal(settingsData, &allData)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
 	}
+	// only edit the "profiles" field
+	var p Profiles
+	err = json.Unmarshal(allData["profiles"], &p)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal \"profiles\" field of settings.json at %s: %s", settingsPath, err)
+	}
+
+	done := make(chan struct{})
+	nextDir := make(chan struct{})
+	nextImage := make(chan struct{})
+	go readUserInput(done, nextDir, nextImage)
 
 	for {
+		overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
 		for i, dir := range c.ImageColPaths {
+			// per path options to override defaults
+			dir, opts, hasOpts := strings.Cut(dir, "|")
+			dir = strings.TrimSpace(dir)
+			// use defaults of no options
+			if hasOpts {
+				opts = strings.TrimSpace(opts)
+				optSlice := strings.Split(opts, " ")
+				overrideAlign, overrideStretch, overrideOpacity = strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
+			}
+
+			// set values only if specified by user
+			intervalInt, _ := strconv.Atoi(interval)
+			if profile == "" {
+				profile = c.Profile
+			}
+			if interval == "" {
+				intervalInt = c.Interval
+			}
+			if align != "" {
+				overrideAlign = align
+			}
+			if stretch != "" {
+				overrideStretch = stretch
+			}
+			if opacity != "" {
+				overrideOpacity = opacity
+			}
+
 			images, err := fetchImages(dir)
 			if err != nil {
 				return err
 			}
 
-			done := make(chan struct{})
-			nextDir := make(chan struct{})
-			nextImage := make(chan struct{})
-
-			go readUserInput(done, nextDir, nextImage)
+		imageLoop:
 			for j, image := range images {
-
 				// ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
 				ticker := time.Tick(time.Second * 10)
 
 				fmt.Println()
-				c.Log(configPath).LogRunSettings(image, profile, intervalInt, align, stretch, opacityF)
+				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
+				c.Log(configPath).LogRunSettings(image, profile, intervalInt, overrideAlign, overrideStretch, opacityF)
+
+				err = changeBackgroundImage(allData, settingsPath, profile, image, overrideAlign, overrideStretch, overrideOpacity)
+				if err != nil {
+					return err
+				}
+				// prompt
 				fmt.Println("Enter a command ('h' for help): ")
 				fmt.Print("> ")
 
@@ -172,14 +210,11 @@ func (c *UserConfig) EditWTJson(configPath string, profile string, interval stri
 					return nil
 				case <-nextDir:
 					fmt.Println("using next dir...")
-					break
+					break imageLoop
 				case <-nextImage:
 					fmt.Println("using next image...")
 					if j == len(images)-1 {
 						fmt.Print("no more images. going to next dir: ")
-						if i+1 < len(c.ImageColPaths) {
-							fmt.Println(c.ImageColPaths[i+1])
-						}
 					}
 					continue
 				}
@@ -222,8 +257,7 @@ func readUserInput(done chan<- struct{}, nextDir chan<- struct{}, nextImage chan
 				return
 
 			} else if scanner.Text() == "c" {
-				close(nextDir)
-				return
+				nextDir <- struct{}{}
 
 			} else if scanner.Text() == "n" {
 				nextImage <- struct{}{}
@@ -238,7 +272,6 @@ func readUserInput(done chan<- struct{}, nextDir chan<- struct{}, nextImage chan
 		} else {
 			return
 		}
-
 	}
 }
 
@@ -275,20 +308,64 @@ func settingsJsonPath() (string, error) {
 
 }
 
-func printInfo(p *Profile) {
-	fmt.Println("Defaults:")
-	fmt.Println("  image:", p.Profiles.Default.BGImage)
-	fmt.Println("  align:", p.Profiles.Default.BGAlign)
-	fmt.Println("  stretch:", p.Profiles.Default.BGStretch)
-	fmt.Println("  opacity:", p.Profiles.Default.BGOpacity)
+func changeBackgroundImage(allData map[string]json.RawMessage, settingsPath string, profile string, image string, align string, stretch string, opacity string) error {
+	// normalize fields to be json friendly
+	image = strings.ReplaceAll(image, `\`, `\\`)
+	image = fmt.Sprintf(`"%s"`, image)
+	align = fmt.Sprintf(`"%s"`, align)
+	stretch = fmt.Sprintf(`"%s"`, stretch)
 
-	fmt.Println("List:")
-	for i, profile := range p.Profiles.List {
-		fmt.Println(i)
-		fmt.Println("  image:", profile.BGImage)
-		fmt.Println("  align:", profile.BGAlign)
-		fmt.Println("  stretch:", profile.BGStretch)
-		fmt.Println("  opacity:", profile.BGOpacity)
-		fmt.Println()
+	// read profiles
+	var profiles map[string]json.RawMessage
+	err := json.Unmarshal(allData["profiles"], &profiles)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal field \"profiles\" from settings.json: %s", err)
 	}
+
+	// edit profiles
+	if profile == "default" {
+		var defaultProfile map[string]json.RawMessage
+		err = json.Unmarshal(profiles["defaults"], &defaultProfile)
+		if err != nil {
+			return fmt.Errorf("Failed to unmarshal field \"defaults\" from field \"profiles\" in settings.json: %s", err)
+		}
+
+		defaultProfile["backgroundImage"] = json.RawMessage([]byte(image))
+		defaultProfile["backgroundImageAlignment"] = json.RawMessage([]byte(align))
+		defaultProfile["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
+		defaultProfile["backgroundImageOpacity"] = json.RawMessage([]byte(opacity))
+
+		profiles["defaults"], err = json.Marshal(defaultProfile)
+		if err != nil {
+			return fmt.Errorf("Failed to marshal field \"defaults\" to field \"profiles\" in settings.json: %s", err)
+		}
+	} else {
+		var profileList []map[string]json.RawMessage
+		err = json.Unmarshal(profiles["list"], &profileList)
+		if err != nil {
+			return fmt.Errorf("Failed to unmarshal field \"list\" from field \"profiles\" in settings.json: %s", err)
+		}
+		_, num, _ := strings.Cut(profile, "-")
+		profileNum, _ := strconv.Atoi(num)
+		profileList[profileNum-1]["backgroundImage"] = json.RawMessage([]byte(image))
+		profileList[profileNum-1]["backgroundImageAlignment"] = json.RawMessage([]byte(align))
+		profileList[profileNum-1]["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
+		profileList[profileNum-1]["backgroundImageOpacity"] = json.RawMessage([]byte(opacity))
+
+		profiles["list"], err = json.Marshal(profileList)
+		if err != nil {
+			return fmt.Errorf("Failed to marshal field \"list\" to field \"profiles\" in settings.json: %s", err)
+		}
+	}
+
+	// write profiles
+	updatedProfiles, err := json.Marshal(profiles)
+	if err != nil {
+		return fmt.Errorf("Failed to marshal field \"profiles\" in settings.json: %s", err)
+	}
+	allData["profiles"] = updatedProfiles
+	updatedJson, err := json.Marshal(allData)
+	err = os.WriteFile(settingsPath, updatedJson, 0666)
+
+	return nil
 }
