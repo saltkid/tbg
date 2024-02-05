@@ -12,40 +12,37 @@ import (
 
 func ConfigValidateValue(val string) error {
 	// default config
-	if val == "default" || val == "" {
-		configPath, err := filepath.Abs(config.DefaultConfigPath())
+	var configPath string
+	var err error
+	switch val {
+	default:
+		configPath, err = filepath.Abs(val)
 		if err != nil {
-			return fmt.Errorf("Failed to get absolute path of config.yaml: %s", err)
+			return fmt.Errorf("Failed to get absolute path of %s: %s", val, err)
 		}
-
+		if filepath.Ext(configPath) != ".yaml" && filepath.Ext(configPath) != ".yml" {
+			configPath = configPath + ".yaml"
+			fmt.Printf("Creating \"%s\" instead because \"%s\" does not have .yaml or .yml extension.\n", configPath, val)
+		}
 		if _, err := os.Stat(configPath); os.IsNotExist(err) {
-			err = config.DefaultTemplate(configPath).WriteFile()
+			err := os.MkdirAll(filepath.Dir(configPath), os.ModePerm)
 			if err != nil {
-				return fmt.Errorf("Failed to create default config: %s", err)
+				return fmt.Errorf("Failed to create parent dirs of %s: %s", configPath, err)
+			}
+			err = config.NewConfigTemplate(configPath).WriteFile()
+			if err != nil {
+				return fmt.Errorf("Failed to create user config: %s", err)
 			}
 		}
 
-		return nil
+	case "default":
+		configPath, err = config.DefaultConfigPath()
+	case "":
+		configPath, err = config.UsedConfig()
 	}
 
-	// user config
-	configPath, err := filepath.Abs(val)
 	if err != nil {
-		return fmt.Errorf("Failed to get absolute path of %s: %s", val, err)
-	}
-	if filepath.Ext(configPath) != ".yaml" && filepath.Ext(configPath) != ".yml" {
-		configPath = configPath + ".yaml"
-		fmt.Printf("Creating \"%s\" instead because \"%s\" does not have .yaml or .yml extension.\n", configPath, val)
-	}
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		err := os.MkdirAll(filepath.Dir(configPath), os.ModePerm)
-		if err != nil {
-			return fmt.Errorf("Failed to create parent dirs of %s: %s", configPath, err)
-		}
-		err = config.UserTemplate(configPath).WriteFile()
-		if err != nil {
-			return fmt.Errorf("Failed to create user config: %s", err)
-		}
+		return err
 	}
 	return nil
 }
@@ -72,89 +69,77 @@ func ConfigExecute(c *Cmd) error {
 	switch c.Value {
 	// print currently used config
 	case "":
-		configPath, _ := filepath.Abs(config.DefaultConfigPath())
+		configPath, _ := config.UsedConfig()
 		yamlFile, err := os.ReadFile(configPath)
 		if err != nil {
-			return fmt.Errorf("Failed to read default config.yaml: %s", err)
+			return fmt.Errorf("Failed to read config at %s: %s", configPath, err)
 		}
-		defaultContents := &config.DefaultConfig{}
-		err = defaultContents.Unmarshal(yamlFile)
+		configContents := &config.Config{}
+		err = configContents.Unmarshal(yamlFile)
 		if err != nil {
 			return fmt.Errorf("Failed to unmarshal default config.yaml: %s", err)
 		}
-
-		// print user config if set
-		if defaultContents.UserConfig != "" {
-			userConfigPath, _ := filepath.Abs(defaultContents.UserConfig)
-			yamlFile, err := os.ReadFile(userConfigPath)
-			if err != nil {
-				return fmt.Errorf("Failed to read user config.yaml: %s", err)
-			}
-			userContents := &config.UserConfig{}
-			err = userContents.Unmarshal(yamlFile)
-			if err != nil {
-				return fmt.Errorf("Failed to unmarshal user config.yaml: %s", err)
-			}
-			userContents.Log(userConfigPath)
-		} else {
-			defaultContents.Log(configPath)
-		}
+		configContents.Log(configPath)
 
 	// set currently used config to default config
 	case "default":
-		configPath, _ := filepath.Abs(config.DefaultConfigPath())
-		yamlFile, err := os.ReadFile(configPath)
+		profilePath, _ := config.TbgProfilePath()
+		configPath := filepath.Join(filepath.Dir(profilePath), "config.yaml")
+		// edit tbg profile to use default config
+		yamlFile, err := os.ReadFile(profilePath)
 		if err != nil {
-			return fmt.Errorf("Failed to read default config.yaml: %s", err)
+			return fmt.Errorf("Failed to read tbg profile: %s", err)
 		}
-		defaultContents := &config.DefaultConfig{}
-		err = defaultContents.Unmarshal(yamlFile)
+		profileContents := &config.TbgProfile{}
+		err = profileContents.Unmarshal(yamlFile)
 		if err != nil {
-			return fmt.Errorf("Failed to unmarshal default config.yaml: %s", err)
+			return fmt.Errorf("Failed to unmarshal tbg profile: %s", err)
 		}
-
-		// unset user config since we're using default config now
-		defaultContents.UserConfig = ""
-		UpdateDefaultConfig(defaultContents, configPath)
+		profileContents.UsedConfig = configPath
+		UpdateTbgProfile(profileContents, profilePath, configPath, yamlFile)
 
 	// set currently used config to user config passed by user
 	default:
 		configPath, _ := filepath.Abs(c.Value)
-		yamlFile, err := os.ReadFile(configPath)
+		// edit tbg profile config to use this config
+		profilePath, err := config.TbgProfilePath()
 		if err != nil {
-			return fmt.Errorf("Failed to read user config at %s: %s", c.Value, err)
+			return err
 		}
-		userContents := &config.UserConfig{}
-		err = userContents.Unmarshal(yamlFile)
+		yamlFile, err := os.ReadFile(profilePath)
 		if err != nil {
-			return fmt.Errorf("Failed to unmarshal user config at %s: %s", c.Value, err)
+			return fmt.Errorf("Failed to read tbg profile: %s", err)
 		}
-		userContents.Log(configPath)
-
-		// edit default config to use this user config
-		configPath, _ = filepath.Abs(config.DefaultConfigPath())
-		yamlFile, err = os.ReadFile(configPath)
+		profileContents := &config.TbgProfile{}
+		err = profileContents.Unmarshal(yamlFile)
 		if err != nil {
-			return fmt.Errorf("Failed to read default config.yaml: %s", err)
+			return fmt.Errorf("Failed to unmarshal tbg profile: %s", err)
 		}
-		defaultContents := &config.DefaultConfig{}
-		err = defaultContents.Unmarshal(yamlFile)
-		if err != nil {
-			return fmt.Errorf("Failed to unmarshal default config.yaml: %s", err)
-		}
-		defaultContents.UserConfig = configPath
-		UpdateDefaultConfig(defaultContents, configPath)
+		profileContents.UsedConfig = configPath
+		UpdateTbgProfile(profileContents, profilePath, configPath, yamlFile)
 	}
 	return nil
 }
 
-func UpdateDefaultConfig(contents *config.DefaultConfig, configPath string) error {
-	template := config.DefaultTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(contents)
-	err := template.WriteFile()
+func UpdateTbgProfile(profileContents *config.TbgProfile, profilePath string, configPath string, yamlFile []byte) error {
+	// write to tbg profile
+	updatedProfile, err := yaml.Marshal(profileContents)
 	if err != nil {
-		return fmt.Errorf("error writing to config: %s", err.Error())
+		return fmt.Errorf("Failed to marshal tbg profile: %s", err)
 	}
-	contents.Log(configPath)
+	err = os.WriteFile(profilePath, updatedProfile, 0644)
+
+	// log the user passed config
+	yamlFile, err = os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("Failed to read user config at %s: %s", configPath, err)
+	}
+	configContents := &config.Config{}
+	err = configContents.Unmarshal(yamlFile)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal user config at %s: %s", configPath, err)
+	}
+	configContents.Log(configPath)
+
 	return nil
 }
