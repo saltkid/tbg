@@ -18,13 +18,13 @@ type Config struct {
 	Opacity       float64  `yaml:"default_opacity"`
 }
 
-func DefaultConfigPath() string {
+func DefaultConfigPath() (string, error) {
 	e, err := os.Executable()
 	if err != nil {
-		panic(err)
+		return "", fmt.Errorf("Failed to get tbg path to get default config: %s", err.Error())
 	}
 
-	return fmt.Sprintf("%s/config.yaml", filepath.Dir(e))
+	return filepath.Join(filepath.Dir(e), "config.yaml"), nil
 }
 
 func (c *Config) Unmarshal(data []byte) error {
