@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
+	"path/filepath"
 	"strconv"
 	"strings"
 )
@@ -30,24 +31,6 @@ func (c *UserConfig) Unmarshal(data []byte) error {
 		return fmt.Errorf("Failed to unmarshal user config: %s", err)
 	}
 	return nil
-}
-
-func (c *UserConfig) Log(configPath string) Config {
-	fmt.Println("------------------------------------------------------------------------------------")
-	fmt.Println("|", configPath)
-	fmt.Println("------------------------------------------------------------------------------------")
-	fmt.Println("| image_col_paths:")
-	for _, path := range c.ImageColPaths {
-		fmt.Printf("%-25s%s\n", "|", path)
-	}
-	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-25s%s\n", "| profile:", c.Profile)
-	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
-	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
-	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
-	fmt.Println("------------------------------------------------------------------------------------")
-
-	return c
 }
 
 func (c *UserConfig) AddPath(toAdd string, configPath string, align string, stretch string, opacity string) error {
@@ -228,6 +211,24 @@ func (c *UserConfig) EditPath(arg string, configPath string, profile string, int
 	return nil
 }
 
+func (c *UserConfig) Log(configPath string) Config {
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Println("|", configPath)
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Println("| image_col_paths:")
+	for _, path := range c.ImageColPaths {
+		fmt.Printf("%-25s%s\n", "|", path)
+	}
+	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
+	fmt.Printf("%-25s%s\n", "| profile:", c.Profile)
+	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
+	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
+	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
 func (c *UserConfig) LogEdited(editedPaths map[string]string) Config {
 	fmt.Println("| edited: ")
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -256,6 +257,20 @@ func (c *UserConfig) LogRemoved(path map[string]struct{}) Config {
 			fmt.Println(path)
 		}
 	}
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
+func (c *UserConfig) LogRunSettings(imagePath string, profile string, interval int, align string, stretch string, opacity float64) Config {
+	fmt.Println("| editing", profile, "profile")
+	fmt.Println("| image collection:", filepath.Dir(imagePath))
+	fmt.Println("|   image:", filepath.Base(imagePath))
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Printf("%-25s%d%s\n", "| change image every: ", interval, " minutes")
+	fmt.Printf("%-25s%s\n", "| alignment:", align)
+	fmt.Printf("%-25s%s\n", "| stretch:", stretch)
+	fmt.Printf("%-25s%f\n", "| opacity:", opacity)
 	fmt.Println("------------------------------------------------------------------------------------")
 
 	return c

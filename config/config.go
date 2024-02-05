@@ -10,7 +10,10 @@ type Config interface {
 	RemovePath(string, string) error
 	EditPath(string, string, string, string, string, string, string) error
 
+	EditWTJson(string, string, string, string, string, string) error
+
 	Log(string) Config
 	LogRemoved(map[string]struct{}) Config // struct for smaller size; only need unique keys
-	LogEdited(map[string]string) Config
+	LogEdited(map[string]string) Config    // where key:val = old:new
+	LogRunSettings(string, string, int, string, string, float64) Config
 }

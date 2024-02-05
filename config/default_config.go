@@ -273,3 +273,17 @@ func (c *DefaultConfig) LogRemoved(path map[string]struct{}) Config {
 
 	return c
 }
+
+func (c *DefaultConfig) LogRunSettings(imagePath string, profile string, interval int, align string, stretch string, opacity float64) Config {
+	fmt.Println("| editing", profile, "profile")
+	fmt.Println("| image collection:", filepath.Dir(imagePath))
+	fmt.Println("|   image:", filepath.Base(imagePath))
+	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Printf("%-25s%d%s\n", "| change image every: ", interval, " minutes")
+	fmt.Printf("%-25s%s\n", "| alignment:", align)
+	fmt.Printf("%-25s%s\n", "| stretch:", stretch)
+	fmt.Printf("%-25s%f\n", "| opacity:", opacity)
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
