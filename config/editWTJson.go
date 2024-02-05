@@ -30,42 +30,84 @@ type WTProfile struct {
 
 func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
 	// set values only if specified by user
-	// intervalInt, _ := strconv.Atoi(interval)
-	// opacityF, _ := strconv.ParseFloat(opacity, 64)
-	// if profile == "" {
-	// 	profile = c.Profile
-	// }
-	// if interval == "" {
-	// 	intervalInt = c.Interval
-	// }
-	// if align == "" {
-	// 	align = c.Alignment
-	// }
-	// if stretch == "" {
-	// 	stretch = c.Stretch
-	// }
-	// if opacity == "" {
-	// 	opacityF = c.Opacity
-	// }
-	//
-	// // read settings.json
-	// settingsPath, err := settingsJsonPath()
-	// if err != nil {
-	// 	return err
-	// }
-	// settingsData, err := os.ReadFile(settingsPath)
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to read settings.json at %s: %s", &settingsPath, err)
-	// }
-	// var p Profile
-	// err = json.Unmarshal(settingsData, &p)
-	// if err != nil {
-	// 	return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", &settingsPath, err)
-	// }
+	intervalInt, _ := strconv.Atoi(interval)
+	opacityF, _ := strconv.ParseFloat(opacity, 64)
+	if profile == "" {
+		profile = c.Profile
+	}
+	if interval == "" {
+		intervalInt = c.Interval
+	}
+	if align == "" {
+		align = c.Alignment
+	}
+	if stretch == "" {
+		stretch = c.Stretch
+	}
+	if opacity == "" {
+		opacityF = c.Opacity
+	}
+	println(profile, intervalInt, align, stretch, opacityF)
 
-	// edit settings.json at a set interval
-	// infinite loop every <interval> minutes until user inputted exit on another goroutine which will watch for it
-	return nil
+	// read settings.json
+	settingsPath, err := settingsJsonPath()
+	if err != nil {
+		return err
+	}
+	settingsData, err := os.ReadFile(settingsPath)
+	var p Profile
+	err = json.Unmarshal(settingsData, &p)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
+	}
+
+	for {
+		for i, dir := range c.ImageColPaths {
+			images, err := fetchImages(dir)
+			if err != nil {
+				return err
+			}
+
+			done := make(chan struct{})
+			nextDir := make(chan struct{})
+			nextImage := make(chan struct{})
+
+			go readUserInput(done, nextDir, nextImage)
+			for j, image := range images {
+
+				// ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
+				ticker := time.Tick(time.Second * 10)
+
+				fmt.Println()
+				c.Log(configPath).LogRunSettings(image, profile, intervalInt, align, stretch, opacityF)
+				fmt.Println("Enter a command ('h' for help): ")
+				fmt.Print("> ")
+
+				select {
+				case <-ticker:
+				case <-done:
+					fmt.Println("Goodbye!")
+					return nil
+				case <-nextDir:
+					fmt.Println("using next dir...")
+					break
+				case <-nextImage:
+					fmt.Println("using next image...")
+					if j == len(images)-1 {
+						fmt.Print("no more images. going to next dir: ")
+						if i+1 < len(c.ImageColPaths) {
+							fmt.Println(c.ImageColPaths[i+1])
+						}
+					}
+					continue
+				}
+
+			}
+			if i == len(c.ImageColPaths)-1 {
+				fmt.Println("no more dirs. going to first dir again: ", c.ImageColPaths[0])
+			}
+		}
+	}
 }
 
 func (c *UserConfig) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
@@ -148,7 +190,6 @@ func (c *UserConfig) EditWTJson(configPath string, profile string, interval stri
 			}
 		}
 	}
-
 }
 
 func fetchImages(dir string) ([]string, error) {
