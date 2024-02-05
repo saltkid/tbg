@@ -86,8 +86,8 @@ func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval s
 
 		imageLoop:
 			for j, image := range images {
-				// ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
-				ticker := time.Tick(time.Second * 10)
+				ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
+				// ticker := time.Tick(time.Second * 10) // for debug purposes
 
 				fmt.Println()
 				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
@@ -188,8 +188,8 @@ func (c *UserConfig) EditWTJson(configPath string, profile string, interval stri
 
 		imageLoop:
 			for j, image := range images {
-				// ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
-				ticker := time.Tick(time.Second * 10)
+				ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
+				// ticker := time.Tick(time.Second * 10) // for debug purposes
 
 				fmt.Println()
 				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
