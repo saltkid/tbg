@@ -9,6 +9,24 @@ import (
 	"strings"
 )
 
+type Confeeg interface {
+	IsConfig() bool
+	IsUserConfig() bool
+
+	Unmarshal([]byte) error
+
+	AddPath(string, string, string, string, string) error
+	RemovePath(string, string) error
+	EditPath(string, string, string, string, string, string, string) error
+
+	EditWTJson(string, string, string, string, string, string) error
+
+	Log(string) Confeeg
+	LogRemoved(map[string]struct{}) Confeeg // struct for smaller size; only need unique keys
+	LogEdited(map[string]string) Confeeg    // where key:val = old:new
+	LogRunSettings(string, string, int, string, string, float64) Confeeg
+}
+
 func DefaultConfigPath() string {
 	e, err := os.Executable()
 	if err != nil {
@@ -222,7 +240,7 @@ func (c *DefaultConfig) EditPath(arg string, configPath string, profile string, 
 	return nil
 }
 
-func (c *DefaultConfig) Log(configPath string) Config {
+func (c *DefaultConfig) Log(configPath string) Confeeg {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
@@ -241,7 +259,7 @@ func (c *DefaultConfig) Log(configPath string) Config {
 	return c
 }
 
-func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
+func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Confeeg {
 	fmt.Println("| edited: ")
 	fmt.Println("------------------------------------------------------------------------------------")
 	if _, ok := editedPaths["no changes made"]; ok {
@@ -260,7 +278,7 @@ func (c *DefaultConfig) LogEdited(editedPaths map[string]string) Config {
 	return c
 }
 
-func (c *DefaultConfig) LogRemoved(path map[string]struct{}) Config {
+func (c *DefaultConfig) LogRemoved(path map[string]struct{}) Confeeg {
 	fmt.Println("| removed: ")
 	if _, ok := path["no changes made"]; ok {
 		fmt.Println("| no changes made")
@@ -274,7 +292,7 @@ func (c *DefaultConfig) LogRemoved(path map[string]struct{}) Config {
 	return c
 }
 
-func (c *DefaultConfig) LogRunSettings(imagePath string, profile string, interval int, align string, stretch string, opacity float64) Config {
+func (c *DefaultConfig) LogRunSettings(imagePath string, profile string, interval int, align string, stretch string, opacity float64) Confeeg {
 	fmt.Println("| editing", profile, "profile")
 	fmt.Println("| image collection:", filepath.Dir(imagePath))
 	fmt.Println("|   image:", filepath.Base(imagePath))

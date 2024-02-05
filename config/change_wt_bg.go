@@ -11,31 +11,21 @@ import (
 	"time"
 )
 
-type Profiles struct {
-	Default Profile   `json:"defaults"`
-	List    []Profile `json:"list"`
-}
-
-type Profile struct {
-	BGImage   string  `json:"backgroundImage"`
-	BGAlign   string  `json:"backgroundImageAlignment"`
-	BGStretch string  `json:"backgroundImageStretchMode"`
-	BGOpacity float64 `json:"backgroundImageOpacity"`
-}
-
-func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
+func (c *Config) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
 	// read settings.json
 	settingsPath, err := settingsJsonPath()
 	if err != nil {
 		return err
 	}
 	settingsData, err := os.ReadFile(settingsPath)
+
 	// get all data first to keep unused fields
 	var allData map[string]json.RawMessage
 	err = json.Unmarshal(settingsData, &allData)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
 	}
+
 	// only edit the "profiles" field
 	var p Profiles
 	err = json.Unmarshal(allData["profiles"], &p)
@@ -125,109 +115,7 @@ func (c *DefaultConfig) EditWTJson(configPath string, profile string, interval s
 	}
 }
 
-func (c *UserConfig) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
-	// read settings.json
-	settingsPath, err := settingsJsonPath()
-	if err != nil {
-		return err
-	}
-	settingsData, err := os.ReadFile(settingsPath)
-	// get all data first to keep unused fields
-	var allData map[string]json.RawMessage
-	err = json.Unmarshal(settingsData, &allData)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
-	}
-	// only edit the "profiles" field
-	var p Profiles
-	err = json.Unmarshal(allData["profiles"], &p)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal \"profiles\" field of settings.json at %s: %s", settingsPath, err)
-	}
-
-	done := make(chan struct{})
-	nextDir := make(chan struct{})
-	nextImage := make(chan struct{})
-	go readUserInput(done, nextDir, nextImage)
-
-	for {
-		overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
-		for i, dir := range c.ImageColPaths {
-			// per path options to override defaults
-			dir, opts, hasOpts := strings.Cut(dir, "|")
-			dir = strings.TrimSpace(dir)
-			// use defaults of no options
-			if hasOpts {
-				opts = strings.TrimSpace(opts)
-				optSlice := strings.Split(opts, " ")
-				overrideAlign, overrideStretch, overrideOpacity = strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
-			}
-
-			// set values only if specified by user
-			intervalInt, _ := strconv.Atoi(interval)
-			if profile == "" {
-				profile = c.Profile
-			}
-			if interval == "" {
-				intervalInt = c.Interval
-			}
-			if align != "" {
-				overrideAlign = align
-			}
-			if stretch != "" {
-				overrideStretch = stretch
-			}
-			if opacity != "" {
-				overrideOpacity = opacity
-			}
-
-			images, err := fetchImages(dir)
-			if err != nil {
-				return err
-			}
-
-		imageLoop:
-			for j, image := range images {
-				ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
-				// ticker := time.Tick(time.Second * 10) // for debug purposes
-
-				fmt.Println()
-				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
-				c.Log(configPath).LogRunSettings(image, profile, intervalInt, overrideAlign, overrideStretch, opacityF)
-
-				err = changeBackgroundImage(allData, settingsPath, profile, image, overrideAlign, overrideStretch, overrideOpacity)
-				if err != nil {
-					return err
-				}
-				// prompt
-				fmt.Println("Enter a command ('h' for help): ")
-				fmt.Print("> ")
-
-				select {
-				case <-ticker:
-				case <-done:
-					fmt.Println("Goodbye!")
-					return nil
-				case <-nextDir:
-					fmt.Println("using next dir...")
-					break imageLoop
-				case <-nextImage:
-					fmt.Println("using next image...")
-					if j == len(images)-1 {
-						fmt.Print("no more images. going to next dir: ")
-					}
-					continue
-				}
-
-			}
-			if i == len(c.ImageColPaths)-1 {
-				fmt.Println("no more dirs. going to first dir again: ", c.ImageColPaths[0])
-			}
-		}
-	}
-}
-
-func FetchImages(dir string) ([]string, error) {
+func fetchImages(dir string) ([]string, error) {
 	images := make([]string, 0)
 	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
 		if err != nil {
@@ -247,7 +135,7 @@ func FetchImages(dir string) ([]string, error) {
 	return images, nil
 }
 
-func ReadUserInput(done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}) {
+func readUserInput(done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}) {
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		if scanner.Scan() {
@@ -275,7 +163,7 @@ func ReadUserInput(done chan<- struct{}, nextDir chan<- struct{}, nextImage chan
 	}
 }
 
-func Help() {
+func help() {
 	fmt.Println("q: [q]uit")
 	fmt.Println("c: [c]hange dir")
 	fmt.Println("n: [n]ext image")
@@ -283,7 +171,7 @@ func Help() {
 	fmt.Print("> ")
 }
 
-func SettingsJsonPath() (string, error) {
+func settingsJsonPath() (string, error) {
 	localAppDataPath := os.Getenv("LOCALAPPDATA")
 
 	// stable release
@@ -308,7 +196,7 @@ func SettingsJsonPath() (string, error) {
 
 }
 
-func ChangeBackgroundImage(allData map[string]json.RawMessage, settingsPath string, profile string, image string, align string, stretch string, opacity string) error {
+func changeBackgroundImage(allData map[string]json.RawMessage, settingsPath string, profile string, image string, align string, stretch string, opacity string) error {
 	// normalize fields to be json friendly
 	image = strings.ReplaceAll(image, `\`, `\\`)
 	image = fmt.Sprintf(`"%s"`, image)
