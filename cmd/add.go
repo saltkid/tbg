@@ -93,7 +93,6 @@ func AddExecute(c *Cmd) error {
 	if err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
-
 	configContents := &config.Config{}
 	err = configContents.Unmarshal(yamlFile)
 	if err != nil {
