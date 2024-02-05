@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"gopkg.in/yaml.v3"
+	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -15,6 +16,15 @@ type Config struct {
 	Alignment     string   `yaml:"default_alignment"`
 	Stretch       string   `yaml:"default_stretch"`
 	Opacity       float64  `yaml:"default_opacity"`
+}
+
+func DefaultConfigPath() string {
+	e, err := os.Executable()
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s/config.yaml", filepath.Dir(e))
 }
 
 func (c *Config) Unmarshal(data []byte) error {
@@ -54,16 +64,16 @@ func (c *Config) AddPath(toAdd string, configPath string, align string, stretch 
 		purePath = strings.TrimSpace(purePath)
 
 		if strings.EqualFold(pureAbsPath, purePath) {
-			return fmt.Errorf("%s already in user config", toAdd)
+			return fmt.Errorf("%s already in config at %s", configPath, toAdd)
 		}
 	}
 	c.ImageColPaths = append(c.ImageColPaths, toAdd)
 
-	template := DefaultTemplate(configPath)
+	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(c)
 	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to user config: %s", err.Error())
+		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
 	}
 
 	c.Log(configPath)
@@ -82,11 +92,11 @@ func (c *Config) RemovePath(absPath string, configPath string) error {
 			break
 		}
 	}
-	template := DefaultTemplate(configPath)
+	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(c)
 	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to default config: %s", err.Error())
+		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
 	}
 	if len(removed) == 0 {
 		removed["no changes made"] = struct{}{}
@@ -189,11 +199,11 @@ func (c *Config) EditPath(arg string, configPath string, profile string, interva
 			}
 		}
 	}
-	template := DefaultTemplate(configPath)
+	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(c)
 	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to default config: %s", err.Error())
+		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
 	}
 	if len(edited) == 0 {
 		edited["no changes made"] = ""
