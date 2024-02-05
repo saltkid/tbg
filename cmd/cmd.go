@@ -103,7 +103,7 @@ func (c *Cmd) ValidateValue(val string) error {
 	// TODO
 	switch c.Type {
 	case Run:
-		return nil
+		return RunValidateValue(val)
 	case Config:
 		return ConfigValidateValue(val)
 	case Add:
@@ -125,7 +125,7 @@ func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 	// TODO
 	switch c.Type {
 	case Run:
-		return nil
+		return RunValidateFlag(f)
 	case Config:
 		return ConfigValidateFlag(f)
 	case Add:
@@ -147,7 +147,7 @@ func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 	// TODO
 	switch c.Type {
 	case Run:
-		return nil
+		return RunValidateSubCmd(sc)
 	case Config:
 		return ConfigValidateSubCmd(sc)
 	case Add:
@@ -169,7 +169,7 @@ func (c *Cmd) Execute() error {
 	// TODO
 	switch c.Type {
 	case Run:
-		return nil
+		return RunExecute(c)
 	case Config:
 		return ConfigExecute(c)
 	case Add:
