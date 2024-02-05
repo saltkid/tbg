@@ -2,11 +2,12 @@ package config
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
@@ -24,7 +25,15 @@ func DefaultConfigPath() (string, error) {
 		return "", fmt.Errorf("Failed to get tbg path to get default config: %s", err.Error())
 	}
 
-	return filepath.Join(filepath.Dir(e), "config.yaml"), nil
+	configPath := filepath.Join(filepath.Dir(e), "config.yaml")
+	if _, err := os.Stat(configPath); os.IsNotExist(err) {
+		err = NewConfigTemplate(configPath).WriteFile()
+		if err != nil {
+			return "", fmt.Errorf("Failed to create default config: %s", err.Error())
+		}
+	}
+
+	return configPath, nil
 }
 
 func (c *Config) Unmarshal(data []byte) error {
