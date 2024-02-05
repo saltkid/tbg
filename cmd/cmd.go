@@ -100,7 +100,6 @@ func (c *Cmd) IsNone() bool {
 }
 
 func (c *Cmd) ValidateValue(val string) error {
-	// TODO
 	switch c.Type {
 	case Run:
 		return RunValidateValue(val)
@@ -109,9 +108,9 @@ func (c *Cmd) ValidateValue(val string) error {
 	case Add:
 		return AddValidateValue(val)
 	case Remove:
-		return nil
+		return RemoveValidateValue(val)
 	case Edit:
-		return nil
+		return EditValidateValue(val)
 	case Help:
 		return nil
 	case Version:
@@ -122,7 +121,6 @@ func (c *Cmd) ValidateValue(val string) error {
 }
 
 func (c *Cmd) ValidateFlag(f *flag.Flag) error {
-	// TODO
 	switch c.Type {
 	case Run:
 		return RunValidateFlag(f)
@@ -144,7 +142,6 @@ func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 }
 
 func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
-	// TODO
 	switch c.Type {
 	case Run:
 		return RunValidateSubCmd(sc)
@@ -166,7 +163,6 @@ func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 }
 
 func (c *Cmd) Execute() error {
-	// TODO
 	switch c.Type {
 	case Run:
 		return RunExecute(c)
