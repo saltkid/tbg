@@ -13,10 +13,19 @@ type TbgProfile struct {
 	UsedConfig string `yaml:"used_config"`
 }
 
-func UsedConfig() (string, error) {
+func (c *TbgProfile) Unmarshal(data []byte) error {
+	err := yaml.Unmarshal(data, c)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal config: %s", err)
+	}
+	return nil
+}
+
+// creates tbg_profile.yaml if it does not exist
+func TbgProfilePath() (string, error) {
 	e, err := os.Executable()
 	if err != nil {
-		return "", fmt.Errorf("Failed to get tbg path to get tbg profile: %s", err.Error())
+		return "", fmt.Errorf("Failed to get tbg profile: %s", err.Error())
 	}
 
 	profilePath := filepath.Join(filepath.Dir(e), "tbg_profile.yaml")
@@ -25,6 +34,14 @@ func UsedConfig() (string, error) {
 		if err != nil {
 			return "", fmt.Errorf("Failed to create default tbg profile: %s", err.Error())
 		}
+	}
+	return profilePath, nil
+}
+
+func UsedConfig() (string, error) {
+	profilePath, err := TbgProfilePath()
+	if err != nil {
+		return "", err
 	}
 
 	yamlFile, err := os.ReadFile(profilePath)
