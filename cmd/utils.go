@@ -1,18 +1,8 @@
 package cmd
 
 import (
-	"path/filepath"
-	"strings"
-
 	"github.com/saltkid/tbg/flag"
 )
-
-func isImageFile(f string) bool {
-	f = strings.ToLower(filepath.Ext(f))
-	return f == ".png" ||
-		f == ".jpg" ||
-		f == ".jpeg"
-}
 
 // returns empty string if not found in map of flags
 func ExtractFlagValue(val flag.FlagType, flags map[flag.FlagType]*flag.Flag) string {
