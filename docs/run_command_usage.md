@@ -8,7 +8,7 @@ On initial execution of **tbg**, it will create the `tbg_profile.yaml` and `conf
 
 For more information, see documentation on [tbg profile](#link) and [config](#link).
 
-## Key events
+# Key events
 **tbg** takes optional commands during execution:
 - `n`: goes to next image in the current image collection dir
 - `p`: goes to previous image in the current image collection dir
@@ -18,9 +18,9 @@ For more information, see documentation on [tbg profile](#link) and [config](#li
 
 **tbg** will continue running until you press `q` or `ctrl+c`. This means even if all images are exhausted, **tbg** will safely wrap back around.
 
-For an example, see [walkthrough with key events](#normal-execution,-using-used_config-specified-in-tbg_profile.yaml,-path-with-flags)
+For an example, see [walkthrough with key events](#normal-execution)
 
-## Executing with `--`flags
+# Executing with `--`flags
 `--alignment`, `--opacity`, `--stretch`
 
 `--`flags can be used to override the default flag fields in the config: `default_alignment`, `default_stretch`, `default_opacity`.
@@ -34,16 +34,18 @@ The order of importance is:
 
 For an example, see [overriding default flags walkthrough](#overriding-default-flags)
 
-## Executing with `config` subcommand
+# Executing with `config` subcommand
 Using the `config` command will override the `tbg_profile.yaml`'s `used_config` field. This means it will force **tbg** to use the specified config instead of the default behavior of checking `used_config` field of `tbg_profile.yaml`
 
 Note that this will not edit the `used_config` field in `tbg_profile.yaml`, only override it for the current execution.
 
-For an example, see [Using different config walkthrough](#using-different-config,-overriding-profile-and-interval-fields)
+For an example, see [Using different config walkthrough](#using-different-config)
 
 
-## Walkthroughs
-#### Normal Execution, using used_config specified in tbg_profile.yaml, path with flags
+# Walkthroughs
+### Normal Execution
+This will delve on using the config on `used_config` field set in `tbg_profile.yaml`, and image collection dir with flags.
+
 Let's use this config:
 ```
 # config.yaml
@@ -71,12 +73,14 @@ When I press `b`, it goes back to the previous image collection dir (`path/to/di
 This wrap around behavior also applies to `f`.
 
 ---
-#### Using different config, overriding profile and interval fields
+#### Using different config
+This will delve on overriding `profile` and `interval` fields in the config.
+
 Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
 Instead of `tbg run`, let's do:
 ```
-tbg run config path/to/config-2.yaml  --profile list-1 --interval 5
+tbg run config path/to/config-2.yaml --profile list-1 --interval 5
 ```
 ```
 # config-2.yaml
@@ -96,7 +100,7 @@ The `config` subcommand tells **tbg** to use `path/to/config-2.yaml` instead of 
 The `--profile` and `--interval` flags will override the values in `config-2.yaml`. Again, not edit them. This means instead of changing the background image of the `default` profile every 30 minutes, it will change the background image of the first profile under `list` field in `settings.json`
 
 ---
-#### Overriding default flags
+### Overriding default flags
 Let's quit **tbg** again by pressing `q` or `ctrl+c`. Let's use the default config again.
 ```
 # config.yaml
