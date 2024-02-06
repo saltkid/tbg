@@ -28,7 +28,8 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 #   tbg config path/to/config.yaml
 #------------------------------------------
 `),
-		YamlContents: []byte(`profile: default
+		YamlContents: []byte(`
+profile: default
 interval: 30
 
 image_col_paths: []
@@ -37,7 +38,8 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 `),
-		EndDesc: []byte(`#------------------------------------------
+		EndDesc: []byte(`
+#------------------------------------------
 # Fields:
 #   profile: profile profile in Windows Terminal (default, list-0, list-1, etc...)
 #      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
