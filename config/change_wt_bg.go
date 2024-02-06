@@ -1,7 +1,6 @@
 package config
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -10,6 +9,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/eiannone/keyboard"
 	"github.com/saltkid/tbg/utils"
 )
 
@@ -28,10 +28,18 @@ func (c *Config) EditWTJson(configPath string, profile string, interval string, 
 		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
 	}
 
+	keysEvents, err := keyboard.GetKeys(10)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		_ = keyboard.Close()
+	}()
+
 	done := make(chan struct{})
 	nextDir := make(chan struct{})
 	nextImage := make(chan struct{})
-	go readUserInput(done, nextDir, nextImage)
+	go readUserInput(keysEvents, done, nextDir, nextImage)
 
 	for {
 		/* the order of flag importance is:
@@ -91,8 +99,7 @@ func (c *Config) EditWTJson(configPath string, profile string, interval string, 
 					return err
 				}
 				// prompt
-				fmt.Println("Enter a command ('h' for help): ")
-				fmt.Print("> ")
+				fmt.Println("Press a key to execute a command ('h' for help): ")
 
 				select {
 				case <-ticker:
@@ -118,30 +125,29 @@ func (c *Config) EditWTJson(configPath string, profile string, interval string, 
 	}
 }
 
-func readUserInput(done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}) {
+func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}) {
 	for {
-		scanner := bufio.NewScanner(os.Stdin)
-		if scanner.Scan() {
-			if scanner.Text() == "q" {
-				fmt.Println("Exiting...")
-				close(done)
-				return
+		event := <-keysEvents
+		if event.Err != nil {
+			panic(event.Err)
+		}
 
-			} else if scanner.Text() == "c" {
-				nextDir <- struct{}{}
-
-			} else if scanner.Text() == "n" {
-				nextImage <- struct{}{}
-
-			} else if scanner.Text() == "h" {
-				help()
-
-			} else {
-				fmt.Printf("invalid input '%s' ('h' for help)\n", scanner.Text())
-				fmt.Print("> ")
-			}
-		} else {
+		if keyboard.Key(event.Rune) == keyboard.Key('q') {
+			fmt.Println("Exiting...")
+			close(done)
 			return
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('c') {
+			nextDir <- struct{}{}
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('n') {
+			nextImage <- struct{}{}
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('h') {
+			help()
+
+		} else {
+			fmt.Printf("invalid key '%c' ('h' for help)\n", event.Rune)
 		}
 	}
 }
@@ -254,9 +260,9 @@ func settingsJsonPath() (string, error) {
 }
 
 func help() {
+	fmt.Println()
 	fmt.Println("q: [q]uit")
 	fmt.Println("c: [c]hange dir")
 	fmt.Println("n: [n]ext image")
 	fmt.Println("h: [h]elp")
-	fmt.Print("> ")
 }
