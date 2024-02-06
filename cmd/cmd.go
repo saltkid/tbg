@@ -112,7 +112,7 @@ func (c *Cmd) ValidateValue(val string) error {
 	case Edit:
 		return EditValidateValue(val)
 	case Help:
-		return nil
+		return HelpValidateValue(val)
 	case Version:
 		return nil
 	default:
@@ -133,7 +133,7 @@ func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 	case Edit:
 		return EditValidateFlag(f)
 	case Help:
-		return nil
+		return HelpValidateFlag(f)
 	case Version:
 		return nil
 	default:
@@ -154,7 +154,7 @@ func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 	case Edit:
 		return EditValidateSubCmd(sc)
 	case Help:
-		return nil
+		return HelpValidateSubCmd(sc)
 	case Version:
 		return nil
 	default:
@@ -175,7 +175,7 @@ func (c *Cmd) Execute() error {
 	case Edit:
 		return EditExecute(c)
 	case Help:
-		return nil
+		return HelpExecute(c)
 	case Version:
 		return nil
 	default:
