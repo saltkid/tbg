@@ -73,7 +73,7 @@ When I press `b`, it goes back to the previous image collection dir (`path/to/di
 This wrap around behavior also applies to `f`.
 
 ---
-#### Using different config
+### Using different config
 This will delve on overriding `profile` and `interval` fields in the config.
 
 Now let's quit **tbg** by pressing `q` or `ctrl+c`.
