@@ -51,6 +51,7 @@ func HelpExecute(c *Cmd) error {
 		VersionExecute()
 		fmt.Println("Usage: tbg run")
 		fmt.Println("\nCommands:")
+		RunHelp(false)
 		AddHelp(false)
 		RemoveHelp(false)
 		EditHelp(false)
@@ -64,6 +65,8 @@ func HelpExecute(c *Cmd) error {
 			continue
 		}
 		switch subCmd {
+		case Run:
+			RunHelp(true)
 		case Add:
 			AddHelp(true)
 		case Remove:
@@ -86,6 +89,63 @@ func HelpExecute(c *Cmd) error {
 	return nil
 }
 
+func RunHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  run",
+		"reads the used config and edits Windows Terminal's settings.json to change background images\n")
+	if verbose {
+		fmt.Println("\n  Args: run takes no args")
+		fmt.Println("\n  Subcommands:")
+		fmt.Println("  1. config [arg]")
+		fmt.Println("     [default, path/to/a/config.yaml]")
+		fmt.Println("     You can specify which config to read from using the 'config' subcommand.")
+		fmt.Println("     If you do not specify a config, the currently used config will be used.")
+		fmt.Println("\n  Flags:")
+		fmt.Println("  You can specify alignment, stretch, and opacity using flags.")
+		fmt.Println("  This will override the values in the used config (not edit)")
+		fmt.Println("  1. -a, --alignment [arg]")
+		fmt.Println("         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]")
+		fmt.Println("  2. -o, --opacity   [arg]")
+		fmt.Println("         [any float between 0 and 1 (inclusive)]")
+		fmt.Println("  3. -s, --stretch   [arg]")
+		fmt.Println("         [fill, none, uniform, uniformToFill]")
+		fmt.Println("  4. -p, --profile   [arg]")
+		fmt.Println("         [default, list-n]")
+		fmt.Println("         where n is the list index Windows Terminal uses to identify the profile")
+		fmt.Println("  5. -i, --interval  [arg]")
+		fmt.Println("         [any positive integer]")
+		fmt.Println("         note that this is in minutes")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run")
+		fmt.Println("     This will use the currently used config's values to edit Windows Terminal's settings.json")
+		fmt.Println("\n  2. tbg run config path/to/a/config.yaml ")
+		fmt.Println("     tbg run config default ")
+		fmt.Println("     These two are similar in the sense that this will have tbg use whatever")
+		fmt.Println("     config was specified to edit Windows Terminal's settings.json")
+		fmt.Println("\n  3. tbg run --profile list-2 --interval 5 --alignment center")
+		fmt.Println("      used_config                      values used to edit settings.json")
+		fmt.Println("      --------------------------       ------------------------------------------------")
+		fmt.Println("      | image_col_paths:               | image_col_paths:")
+		fmt.Println("      |   - /path/to/images/dir1       |   - /path/to/images/dir1 | center fill 0.1")
+		fmt.Println("      |   - /path/to/images/dir2       |   - /path/to/images/dir2 | center fill 0.1")
+		fmt.Println("      |                                |")
+		fmt.Println("      | profile: default               | profile: list-2")
+		fmt.Println("      | interval: 30                   | interval: 5")
+		fmt.Println("      |                                ------------------------------------------------")
+		fmt.Println("      | default_alignment: right")
+		fmt.Println("      | default_stretch: fill")
+		fmt.Println("      | default_alignment: 0.1")
+		fmt.Println("      --------------------------")
+		fmt.Println("     This means that instead of editing the default profile, it will edit the")
+		fmt.Println("     2nd profile in Windows Terminal's list. The interval will be 5 minutes")
+		fmt.Println("     instead of 30 minutes.")
+		fmt.Println("     The dirs's alignment is set to center instead of inheriting the.")
+		fmt.Println("     default_alignment. The stretch and opacity though are inherited")
+		fmt.Println("     from the default values since it was not specified by the user.")
+		fmt.Println("\n     Also note that the values on the right are not the 'edited' version but only")
+		fmt.Print("     exist in the current execution. The values in the config stays the same\n\n")
+	}
+}
+
 func AddHelp(verbose bool) {
 	fmt.Printf("%-30s%s", "  add",
 		"Adds a path containing images to currently used config\n")
@@ -96,6 +156,7 @@ func AddHelp(verbose bool) {
 		fmt.Println("     file under it. All subdirectories will be ignored.")
 		fmt.Println("\n  Subcommands:")
 		fmt.Println("  1. config [arg]")
+		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to add to using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
 		fmt.Println("\n  Flags:")
@@ -148,23 +209,18 @@ func RemoveHelp(verbose bool) {
 		fmt.Println("  1. path/to/images/dir")
 		fmt.Println("\n  Subcommands:")
 		fmt.Println("  1. config [arg]")
+		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to remove from using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
 		fmt.Println("\n  Flags: remove takes no flags")
-		fmt.Println("  Examples:")
+		fmt.Println("\n  Examples:")
 		fmt.Println("  1. tbg remove path/to/images/dir")
-		fmt.Println("      before:")
-		fmt.Println("      ----------------------")
-		fmt.Println("      | image_col_paths:")
-		fmt.Println("      |   - /path/to/images/dir")
-		fmt.Println("      |")
-		fmt.Println("      | other fields...")
-		fmt.Println("      ----------------------")
-		fmt.Println("      after:")
-		fmt.Println("      ----------------------")
-		fmt.Println("      | image_col_paths: []")
-		fmt.Println("      |")
-		fmt.Println("      | other fields...")
+		fmt.Println("      before:                        after:")
+		fmt.Println("      --------------------------     ---------------------")
+		fmt.Println("      | image_col_paths: []          | image_col_paths: []")
+		fmt.Println("      |   - /path/to/images/dir      |")
+		fmt.Println("      |                              | other fields...")
+		fmt.Println("      | other fields...              ---------------------")
 		fmt.Println("      ----------------------")
 	}
 }
@@ -181,6 +237,7 @@ func EditHelp(verbose bool) {
 		fmt.Println("     edit only the default flag fields with the specified flags")
 		fmt.Println("\n  Subcommands:")
 		fmt.Println("  1. config [arg]")
+		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to remove from using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
 		fmt.Println("\n  Flags:")
