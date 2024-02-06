@@ -15,7 +15,6 @@ func main() {
 		return
 	}
 	LogTokens(tokens)
-	fmt.Println("done tokenizing")
 
 	cmd, err := ParseArgs(tokens)
 	if err != nil {
@@ -23,7 +22,6 @@ func main() {
 		return
 	}
 	LogArgs(cmd)
-	fmt.Println("done parsing")
 
 	err = cmd.Execute()
 	if err != nil {
@@ -148,4 +146,28 @@ func ParseArgs(tokens []Token) (*cmd.Cmd, error) {
 		}
 	}
 	return &mainCommand, nil
+}
+
+func LogTokens(tokens []Token) {
+	fmt.Println("Tokens:")
+	for _, token := range tokens {
+		if token.isCmd {
+			fmt.Println("|", cmd.CmdType(token.id).ToString(), token.value)
+		} else if token.isFlag {
+			fmt.Println("|", flag.FlagType(token.id).ToString(), token.value)
+		}
+	}
+}
+
+func LogArgs(mainCmd *cmd.Cmd) {
+	fmt.Println("Main Command:", cmd.CmdType(mainCmd.Type).ToString())
+	fmt.Println("       Value:", mainCmd.Value)
+	fmt.Println("Sub Commands:")
+	for _, c := range mainCmd.SubCmds {
+		fmt.Println("|", cmd.CmdType(c.Type).ToString(), c.Value)
+	}
+	fmt.Println("Flags:")
+	for _, f := range mainCmd.Flags {
+		fmt.Println("|", flag.FlagType(f.Type).ToString(), f.Value)
+	}
 }
