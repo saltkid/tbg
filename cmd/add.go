@@ -7,6 +7,7 @@ import (
 
 	"github.com/saltkid/tbg/config"
 	"github.com/saltkid/tbg/flag"
+	"github.com/saltkid/tbg/utils"
 )
 
 func AddValidateValue(val string) error {
@@ -30,7 +31,7 @@ func AddValidateValue(val string) error {
 			return filepath.SkipDir
 		}
 		// find at least one
-		if isImageFile(d.Name()) {
+		if utils.IsImageFile(d.Name()) {
 			hasImageFile = true
 			return filepath.SkipAll
 		}

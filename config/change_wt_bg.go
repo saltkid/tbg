@@ -9,6 +9,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/saltkid/tbg/utils"
 )
 
 func (c *Config) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
@@ -117,7 +119,7 @@ func fetchImages(dir string) ([]string, error) {
 		if d.IsDir() && d.Name() != filepath.Base(dir) {
 			return filepath.SkipDir
 		}
-		if isImageFile(d.Name()) {
+		if utils.IsImageFile(d.Name()) {
 			images = append(images, path)
 		}
 		return nil
