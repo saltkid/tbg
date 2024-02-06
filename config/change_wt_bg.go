@@ -39,29 +39,50 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 	done := make(chan struct{})
 	nextDir := make(chan struct{})
 	nextImage := make(chan struct{})
-	go readUserInput(keysEvents, done, nextDir, nextImage)
+	prevDir := make(chan struct{})
+	prevImage := make(chan struct{})
+	go readUserInput(keysEvents, done, nextDir, nextImage, prevDir, prevImage)
 
 	for {
 		// indices to allow going to previous dir/image
 		dirIndex, imgIndex := 0, 0
 
-		/* the order of flag importance is:
+		/* bool to determine direction
+		 *  only applicable in nextImage and prevImage
+		 *  when going nextDir/prevDir, it will always start at the first image (always true)
 		 *
-		 * 1. flags set by user on execution      (eg. --alignment, --stretch, etc.)
-		 * 2. per path options set in config.yaml (eg. C:/Users/username/Pictures | right uniform 0.5)
-		 * 3. default fields on config.yaml       (eg. default_alignment, default_stretch, etc.)
-		 *
+		 *  if true : when going to next dir, start at first image of next dir
+		 *          : when dirs are exhausted, start at first image of first dir
+		 *  if false: when going to prev  dir, start at last image of prev dir
+		 *          : when dirs are exhausted, start at last image of last dir
 		 */
+		startAtFirstImage := true
 
 		for dirIndex >= 0 && dirIndex < len(c.ImageColPaths) {
-			dir := c.ImageColPaths[dirIndex]
+			/* the order of flag importance is:
+			 *
+			 * 1. flags set by user on execution      (eg. --alignment, --stretch, etc.)
+			 * 2. per path options set in config.yaml (eg. C:/Users/username/Pictures | right uniform 0.5)
+			 * 3. default fields on config.yaml       (eg. default_alignment, default_stretch, etc.)
+			 */
 
 			// default fields
 			overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
 
 			// check if path entry has per path options
+			dir := c.ImageColPaths[dirIndex]
 			dir, opts, hasOpts := strings.Cut(dir, "|")
 			dir = strings.TrimSpace(dir)
+			images, err := fetchImages(dir)
+			if err != nil {
+				return err
+			}
+			if startAtFirstImage {
+				imgIndex = 0
+			} else {
+				imgIndex = len(images) - 1
+			}
+
 			if hasOpts {
 				opts = strings.TrimSpace(opts)
 				optSlice := strings.Split(opts, " ")
@@ -86,11 +107,6 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 				overrideOpacity = opacity
 			}
 
-			images, err := fetchImages(dir)
-			if err != nil {
-				return err
-			}
-
 		imageLoop:
 			for imgIndex >= 0 && imgIndex < len(images) {
 				image := images[imgIndex]
@@ -107,7 +123,7 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 					return err
 				}
 				// prompt
-				fmt.Println("Press a key to execute a command ('h' for help): ")
+				fmt.Println("Press a key to execute a command ('c' for list of commands): ")
 
 				select {
 				case <-ticker:
@@ -117,6 +133,12 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 				case <-nextDir:
 					fmt.Println("using next dir...")
 					dirIndex++
+					startAtFirstImage = true
+					break imageLoop
+				case <-prevDir:
+					fmt.Println("using previous dir...")
+					dirIndex--
+					startAtFirstImage = true
 					break imageLoop
 				case <-nextImage:
 					fmt.Println("using next image...")
@@ -124,22 +146,35 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 					if imgIndex == len(images) {
 						fmt.Print("no more images. going to next dir: ")
 						dirIndex++
+						startAtFirstImage = true
+					}
+					continue
+				case <-prevImage:
+					fmt.Println("using previous image...")
+					imgIndex--
+					if imgIndex < 0 {
+						fmt.Print("no more images. going to previous dir: ")
+						dirIndex--
+						startAtFirstImage = false
 					}
 					continue
 				}
 
 			}
 
-			imgIndex = 0
 			if dirIndex >= len(c.ImageColPaths) {
-				fmt.Println("no more dirs. going to first dir again: ", c.ImageColPaths[0])
+				fmt.Println("no more next dirs. going to first dir again: ", c.ImageColPaths[0])
 				dirIndex = 0
+			} else if dirIndex < 0 {
+				fmt.Println("no more previous dirs. going to last dir again: ", c.ImageColPaths[len(c.ImageColPaths)-1])
+				dirIndex = len(c.ImageColPaths) - 1
 			}
+
 		}
 	}
 }
 
-func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}) {
+func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}, prevDir chan<- struct{}, prevImage chan<- struct{}) {
 	for {
 		event := <-keysEvents
 		if event.Err != nil {
@@ -151,14 +186,20 @@ func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, ne
 			close(done)
 			return
 
-		} else if keyboard.Key(event.Rune) == keyboard.Key('c') {
+		} else if keyboard.Key(event.Rune) == keyboard.Key('f') {
 			nextDir <- struct{}{}
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('b') {
+			prevDir <- struct{}{}
 
 		} else if keyboard.Key(event.Rune) == keyboard.Key('n') {
 			nextImage <- struct{}{}
 
-		} else if keyboard.Key(event.Rune) == keyboard.Key('h') {
-			help()
+		} else if keyboard.Key(event.Rune) == keyboard.Key('p') {
+			prevImage <- struct{}{}
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('c') {
+			commandList()
 
 		} else {
 			fmt.Printf("invalid key '%c' ('h' for help)\n", event.Rune)
@@ -273,10 +314,12 @@ func settingsJsonPath() (string, error) {
 
 }
 
-func help() {
+func commandList() {
 	fmt.Println()
 	fmt.Println("q: [q]uit")
-	fmt.Println("c: [c]hange dir")
+	fmt.Println("f: [f]orward to next dir")
+	fmt.Println("b: [b]ack to previous dir")
 	fmt.Println("n: [n]ext image")
-	fmt.Println("h: [h]elp")
+	fmt.Println("p: [p]revious image")
+	fmt.Println("c: [c]ommand list")
 }
