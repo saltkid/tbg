@@ -6,7 +6,7 @@
 - [Config](#config)
     - [Fields](#fields)
 - [Commands](#commands)
-- [Flags](#flags)
+    - [Flags](#flags)
 - [Credits](#credits)
 # tbg (Terminal Background Gallery)
 **tbg** (*teabag*) allows the user to have and manage multiple background images that rotate at a set amount of time for Windows Terminal
@@ -151,7 +151,7 @@ For a more detailed explanation on each types, follow the command name links
 | [remove](#link) | `path/to/dir` | `config` | Remove a dir from the currently used config.<br><br>If `config` is specified, it will remove the dir in the specific config instead. |
 | [edit](#link) | `path/to/dir`<br>`fields`<br>`all` | `config`, `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch` | Edits the flags of the path specified. A path can individually have fields to override the default values in the config.<br>`path/to/dir \| center fill 0.2`<br><br>You can also specify `all` to edit all paths to have the flags you specified.<br><br>If you want to edit the default fields (`default_alignment`, `default_stretch`, and `default_opacity`), the arg should be `fields`<br><br>`--profile` and `--interval` are always edited on a per config basis, not per path since paths only take `--alignment`, `--stretch`, and `--opacity` options. |
 
-# Flags
+## Flags
 Flags are used to override [field entries in a config](#config), which are then passed to the parent command.
 
 Flags behave differently based on the main command so for more detailed explanation, go to the documentation of the command instead.
