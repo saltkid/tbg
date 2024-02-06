@@ -11,7 +11,8 @@ func HelpValidateValue(val string) error {
 	case "":
 		return nil
 	default:
-		return fmt.Errorf("help takes no args. got '%s'", val)
+		fmt.Printf("help takes no args. got '%s'\n", val)
+		return nil
 	}
 }
 
@@ -45,7 +46,14 @@ func HelpExecute(c *Cmd) error {
 	// length of 1 means only None and flag.None types are in the map
 	// meaning there's no subcmds or flags
 	if len(subCmds) == 1 && len(flags) == 1 {
+		fmt.Println("tbg (Terminal Background Gallery)")
+		fmt.Print("Version: ")
+		VersionExecute()
+		fmt.Println("Usage: tbg run")
+		fmt.Println("\nCommands:")
 		AddHelp(false)
+		fmt.Println("\nFlags:")
+		fmt.Println("\nNot all flags are applicable to all commands. See help <command> for more info")
 	}
 
 	for subCmd := range subCmds {
@@ -66,4 +74,47 @@ func HelpExecute(c *Cmd) error {
 	}
 
 	return nil
+}
+
+func AddHelp(verbose bool) {
+	fmt.Printf("%-60s%s", "  add path/to/images/dir",
+		"Adds a path containing images to currently used config\n")
+	if verbose {
+		fmt.Println("\n\n  Path to images dir should have at least one image")
+		fmt.Println("  file under it. All subdirectories will be ignored.")
+		fmt.Println("\n  You can specify which config to add to using the 'config' subcommand.")
+		fmt.Println("  If you do not specify a config, the currently used config will be used.")
+		fmt.Println("\n  You can specify alignment, stretch, and opacity using flags.")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg add path/to/images/dir")
+		fmt.Println("     This is how it would look like in the config:")
+		fmt.Println("      ----------------------")
+		fmt.Println("      | image_col_paths:")
+		fmt.Println("      |   - /path/to/images/dir")
+		fmt.Println("      |")
+		fmt.Println("      | other fields...")
+		fmt.Println("      ----------------------")
+		fmt.Println("\n  2. tbg add path/to/images/dir --alignment center --opacity 0.5 --stretch uniform")
+		fmt.Println("     This is how it would look like in the config:")
+		fmt.Println("      ----------------------")
+		fmt.Println("      | image_col_paths:")
+		fmt.Println("      |   - /path/to/images/dir | center uniform 0.5")
+		fmt.Println("      |")
+		fmt.Println("      | other fields...")
+		fmt.Println("      ----------------------")
+		fmt.Println("\n  3. tbg add path/to/images/dir --alignment top")
+		fmt.Println("     This is how it would look like in the config:")
+		fmt.Println("      ----------------------")
+		fmt.Println("      | image_col_paths:")
+		fmt.Println("      |   - /path/to/images/dir | top fill 0.1")
+		fmt.Println("      |")
+		fmt.Println("      | default_alignment: right")
+		fmt.Println("      | default_stretch: fill")
+		fmt.Println("      | default_alignment: 0.1")
+		fmt.Println("      |")
+		fmt.Println("      | other fields...")
+		fmt.Println("      ----------------------")
+		fmt.Println("     Notice that even though there is only one flag specified, there are 3 after |")
+		fmt.Print("     This is because it inerited the default values for flags that were not specified\n\n")
+	}
 }
