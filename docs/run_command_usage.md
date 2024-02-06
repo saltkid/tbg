@@ -32,7 +32,7 @@ The order of importance is:
 2. per path flags
 3. default flag fields 
 
-For an example, see [overriding default flags walkthrough](#overriding-default-flags)
+For an example, see [overriding default flags walkthrough](#overriding-default-flag-fields)
 
 # Executing with `config` subcommand
 Using the `config` command will override the `tbg_profile.yaml`'s `used_config` field. This means it will force **tbg** to use the specified config instead of the default behavior of checking `used_config` field of `tbg_profile.yaml`
@@ -44,9 +44,15 @@ For an example, see [Using different config walkthrough](#using-different-config
 
 # Walkthroughs
 ### Normal Execution
-This will delve on using the config on `used_config` field set in `tbg_profile.yaml`, and image collection dir with flags.
+This will delve on image collection dir with flags and key events.
 
-Let's use this config:
+Let's do:
+```
+tbg run
+```
+This means the config we will be using is the config on the `used_config` field set on `tbg_profile.yaml`. Let's say the value of `used_config` is `"default"`, meaning we will use the `config.yaml` in the same path as the **tbg** executable (the auto created one)
+
+Let's also say that this is the default config:
 ```
 # config.yaml
 profile: default
@@ -60,23 +66,19 @@ default_alignment: center
 default_stretch: fill
 default_opacity: 0.1
 ```
-This just means that when we do `tbg run`, we want to change the background image of the **default** *Windows Terminal* profile every **30 minutes**.
-
-The first few images will be from `path/to/dir1`. The image will be at the **center**, **fill** the entire screen without regard of the original aspect ratio, with an opacity of **10%**. 
+This just means that when we do `tbg run`, we want to change the background image of the **default** *Windows Terminal* profile every **30 minutes**. The first few images will be from `path/to/dir1`. The image will be at the **center**, **fill** the entire screen without regard of the original aspect ratio, with an opacity of **10%**. 
 
 When I press `n`, it goes to the next images without waiting for 30 minutes. I can go back by pressing `p`.
 
 When I press `f`, it goes to the next image collection dir. This means we are now in `path/to/dir2`. This path has flags so these values will be used instead of the default flag fields. This means instead of the image being at the **center**, it will be at the **right**. Instead of having an opacity of **10%**, it the images will have **35%** opacity. However, since stretch is the same, it will still **fill** the screen without regard of the orignal aspect ratio.
 
-When I press `b`, it goes back to the previous image collection dir (`path/to/dir1`). If i press `b` again, it will wrap around and go to the last image collection dir (`path/to/dir2`).
+When I press `b`, it goes back to the previous image collection dir (`path/to/dir1`). If i press `b` again, it will wrap around and go to the last image collection dir (`path/to/dir2`). This wrap around behavior also applies to `f`.
 
-This wrap around behavior also applies to `f`.
+Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
 ---
 ### Using different config
 This will delve on overriding `profile` and `interval` fields in the config.
-
-Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
 Instead of `tbg run`, let's do:
 ```
@@ -100,8 +102,10 @@ The `config` subcommand tells **tbg** to use `path/to/config-2.yaml` instead of 
 The `--profile` and `--interval` flags will override the values in `config-2.yaml`. Again, not edit them. This means instead of changing the background image of the `default` profile every 30 minutes, it will change the background image of the first profile under `list` field in `settings.json`
 
 ---
-### Overriding default flags
-Let's quit **tbg** again by pressing `q` or `ctrl+c`. Let's use the default config again.
+### Overriding default flag fields
+This will delve on overriding default flag fields on the config using `--`flags. This will also override the per-path flags
+
+Let's use the default config again.
 ```
 # config.yaml
 profile: default
