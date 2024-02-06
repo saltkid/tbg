@@ -127,9 +127,31 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 
 				select {
 				case <-ticker:
+					imgIndex++
+					if imgIndex == len(images) {
+						fmt.Print("no more images. going to next dir: ")
+						dirIndex++
+						startAtFirstImage = true
+					}
 				case <-done:
 					fmt.Println("Goodbye!")
 					return nil
+				case <-nextImage:
+					fmt.Println("using next image...")
+					imgIndex++
+					if imgIndex == len(images) {
+						fmt.Print("no more images. going to next dir: ")
+						dirIndex++
+						startAtFirstImage = true
+					}
+				case <-prevImage:
+					fmt.Println("using previous image...")
+					imgIndex--
+					if imgIndex < 0 {
+						fmt.Print("no more images. going to previous dir: ")
+						dirIndex--
+						startAtFirstImage = false
+					}
 				case <-nextDir:
 					fmt.Println("using next dir...")
 					dirIndex++
@@ -140,24 +162,6 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 					dirIndex--
 					startAtFirstImage = true
 					break imageLoop
-				case <-nextImage:
-					fmt.Println("using next image...")
-					imgIndex++
-					if imgIndex == len(images) {
-						fmt.Print("no more images. going to next dir: ")
-						dirIndex++
-						startAtFirstImage = true
-					}
-					continue
-				case <-prevImage:
-					fmt.Println("using previous image...")
-					imgIndex--
-					if imgIndex < 0 {
-						fmt.Print("no more images. going to previous dir: ")
-						dirIndex--
-						startAtFirstImage = false
-					}
-					continue
 				}
 
 			}
