@@ -14,14 +14,12 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	LogTokens(tokens)
 
 	cmd, err := ParseArgs(tokens)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	LogArgs(cmd)
 
 	err = cmd.Execute()
 	if err != nil {
