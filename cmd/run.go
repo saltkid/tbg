@@ -70,7 +70,7 @@ func RunExecute(c *Cmd) error {
 		return err
 	}
 
-	err = configContents.EditWTJson(configPath, profile, interval, alignment, stretch, opacity)
+	err = configContents.ChangeBgImage(configPath, profile, interval, alignment, stretch, opacity)
 	if err != nil {
 		return err
 	}

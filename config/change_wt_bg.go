@@ -13,7 +13,7 @@ import (
 	"github.com/saltkid/tbg/utils"
 )
 
-func (c *Config) EditWTJson(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
+func (c *Config) ChangeBgImage(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
 	// read settings.json
 	settingsPath, err := settingsJsonPath()
 	if err != nil {
@@ -94,7 +94,7 @@ func (c *Config) EditWTJson(configPath string, profile string, interval string, 
 				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
 				c.Log(configPath).LogRunSettings(image, profile, intervalInt, overrideAlign, overrideStretch, opacityF)
 
-				err = changeBackgroundImage(allData, settingsPath, profile, image, overrideAlign, overrideStretch, overrideOpacity)
+				err = updateWtJsonFields(allData, settingsPath, profile, image, overrideAlign, overrideStretch, overrideOpacity)
 				if err != nil {
 					return err
 				}
@@ -152,7 +152,7 @@ func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, ne
 	}
 }
 
-func changeBackgroundImage(allData map[string]json.RawMessage, settingsPath string, profile string, image string, align string, stretch string, opacity string) error {
+func updateWtJsonFields(allData map[string]json.RawMessage, settingsPath string, profile string, image string, align string, stretch string, opacity string) error {
 	// normalize fields to be json friendly
 	image = strings.ReplaceAll(image, `\`, `\\`)
 	image = fmt.Sprintf(`"%s"`, image)
