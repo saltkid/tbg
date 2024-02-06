@@ -42,6 +42,9 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 	go readUserInput(keysEvents, done, nextDir, nextImage)
 
 	for {
+		// indices to allow going to previous dir/image
+		dirIndex, imgIndex := 0, 0
+
 		/* the order of flag importance is:
 		 *
 		 * 1. flags set by user on execution      (eg. --alignment, --stretch, etc.)
@@ -50,9 +53,12 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 		 *
 		 */
 
-		// default fields
-		overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
-		for i, dir := range c.ImageColPaths {
+		for dirIndex >= 0 && dirIndex < len(c.ImageColPaths) {
+			dir := c.ImageColPaths[dirIndex]
+
+			// default fields
+			overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+
 			// check if path entry has per path options
 			dir, opts, hasOpts := strings.Cut(dir, "|")
 			dir = strings.TrimSpace(dir)
@@ -86,7 +92,9 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 			}
 
 		imageLoop:
-			for j, image := range images {
+			for imgIndex >= 0 && imgIndex < len(images) {
+				image := images[imgIndex]
+
 				ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
 				// ticker := time.Tick(time.Second * 10) // for debug purposes
 
@@ -108,18 +116,24 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 					return nil
 				case <-nextDir:
 					fmt.Println("using next dir...")
+					dirIndex++
 					break imageLoop
 				case <-nextImage:
 					fmt.Println("using next image...")
-					if j == len(images)-1 {
+					imgIndex++
+					if imgIndex == len(images) {
 						fmt.Print("no more images. going to next dir: ")
+						dirIndex++
 					}
 					continue
 				}
 
 			}
-			if i == len(c.ImageColPaths)-1 {
+
+			imgIndex = 0
+			if dirIndex >= len(c.ImageColPaths) {
 				fmt.Println("no more dirs. going to first dir again: ", c.ImageColPaths[0])
+				dirIndex = 0
 			}
 		}
 	}
