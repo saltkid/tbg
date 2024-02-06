@@ -177,7 +177,7 @@ func (c *Cmd) Execute() error {
 	case Help:
 		return HelpExecute(c)
 	case Version:
-		return nil
+		return VersionExecute()
 	default:
 		return fmt.Errorf("unexpected error: unknown command type: %d", c.Type)
 	}
