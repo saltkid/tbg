@@ -20,8 +20,12 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 	return &ConfigTemplate{
 		Path: path,
 		BeginDesc: []byte(`#------------------------------------------
-# this is a tbg config. Whenver tbg is ran, it will load this config file if it's the config in tbg's profile
-# and use the fields below to control the behavior of tbg when changing background images of Windows Terminal
+# this is a tbg config. Whenver tbg is ran, it will load this config file
+# if it's the config in tbg's profile and use the fields below to control
+# the behavior of tbg when changing background images of Windows Terminal
+#
+# to use your own config file, use the 'config' command:
+#   tbg config path/to/config.yaml
 #------------------------------------------
 `),
 		YamlContents: []byte(`profile: default
@@ -65,6 +69,7 @@ default_opacity: 0.1
 #
 #   default_stretch: image stretch in Windows Terminal (uniform, fill, etc...)
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
+#
 #------------------------------------------
 `),
 	}

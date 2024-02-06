@@ -66,16 +66,19 @@ func TbgProfileTemplate(path string) *ConfigTemplate {
 	return &ConfigTemplate{
 		Path: path,
 		BeginDesc: []byte(`#---------------------------------------------
-# this is a tbg profile. Whenver tbg is ran, it will load this profile to get the currently used config
+# this is a tbg profile. Whenver tbg is ran, it will load
+# this profile to get the currently used config
+#
 # currently, it only has one field: used_config
 # I'll add more if the need arises
 #---------------------------------------------
 `),
 		YamlContents: []byte(`used_config: ""`),
-		EndDesc: []byte(`#---------------------------------------------
+		EndDesc: []byte(`
+#---------------------------------------------
 # Fields:
-#   used_config: path to the used config
+#   used_config: path to the config used by tbg
 #------------------------------------------
-#`),
+`),
 	}
 }
