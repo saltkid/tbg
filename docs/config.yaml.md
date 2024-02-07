@@ -59,12 +59,12 @@ default_opacity: 0.1
 #------------------------------------------
 ```
 ## Fields
-Although you can edit the fields in the config directly, it is recommended to use the [`config` command](#link) to edit them.
+Although you can edit the fields in the config directly, it is recommended to use the [`config` command](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) to edit them.
 | Field | Valid Values | Description |
 | --- | --- | --- |
 | `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*.<br><br>To change background images in user created profiles, set `profile` to `list-<n>` where n is the index used by *Windows Terminal* to identify the profile.<br><br>See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information |
 | `interval` | any positive integer | time in minutes between each image change. |
-| `image_col_paths` | `[]`<br>`- path/to/dir1`<br>`- path/to/dir2 \| center uniform 0.1` | list of image collection paths. Must be directories containing images, not image paths.<br><br>Each dir can override the default fields by putting all 3 options after a pipe `\|`. See [add command](#link) and [edit command](#link)<br><br>Example:<br>`path/to/dir \| center fill 0.2` |
+| `image_col_paths` | `[]`<br>`- path/to/dir1`<br>`- path/to/dir2 \| center uniform 0.1` | list of image collection paths. Must be directories containing images, not image paths.<br><br>Each dir can override the default fields by putting all 3 options after a pipe `\|`. See [add command](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) and [edit command](https://github.com/saltkid/tbg/blob/main/docs/edit_command_usage.md)<br><br>Example:<br>`path/to/dir \| center fill 0.2` |
 | `default_alignment` | `top`, `top-left`, `top-right`, `left`, `center`, `right`, `bottom`, `bottom-left`, `bottom-right` | image alignment in Windows Terminal.|
 | `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
 | `default_opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |

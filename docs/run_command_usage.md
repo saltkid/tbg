@@ -17,7 +17,7 @@
 
 On initial execution of **tbg**, it will create the `tbg_profile.yaml` and `config.yaml` in the same directory as the **tbg** executable if it does not exist already. This is so it can safely fallback on a `config.yaml`. **There can only be one `tbg_profile.yaml`**. You can have multiple `config.yaml`s if you want. `tbg_profile.yaml` will keep track of which one you want to use.
 
-For more information, see documentation on [tbg profile](#link) and [config](#link).
+For more information, see documentation on [tbg profile.yaml](https://github.com/saltkid/tbg/blob/main/docs/tbg_profile.yaml.md) and [config.yaml](https://github.com/saltkid/tbg/blob/main/docs/config.yaml.md).
 
 # Key events
 **tbg** takes optional commands during execution:

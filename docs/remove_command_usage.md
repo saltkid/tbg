@@ -208,4 +208,4 @@ default_opacity: 0.1
 ```
 There was no error message because it removed `path/to/images/dir1` from the currently used config (in this case, it was the default `config.yaml`), not from `path/to/another/config.yaml` since it was not specified
 
-For more information on setting the currently used config, see [config command usage](#link)
+For more information on setting the currently used config, see [config command usage](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md)

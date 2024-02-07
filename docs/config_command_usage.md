@@ -12,7 +12,7 @@
 
 `config` command prints the currently used config if no arg is specified. If an arg is specified, it will set the arg as the currently used config after validation, then print it.
 
-The way **tbg** keeps track of the currently used config is by using `tbg_profile.yaml` that was auto generated on initial execution. It is not recommended to edit this. See [`tbg_profile.yaml`](#link) for more information.
+The way **tbg** keeps track of the currently used config is by using `tbg_profile.yaml` that was auto generated on initial execution. It is not recommended to edit this. See [`tbg_profile.yaml`](https://github.com/saltkid/tbg/blob/main/docs/tbg_profile.yaml.md) for more information.
 
 # Walkthroughs
 #### Printing currently used config

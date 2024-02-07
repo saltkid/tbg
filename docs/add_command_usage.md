@@ -150,4 +150,4 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 ```
-For more information on setting the currently used config, see [config command usage](#link)
+For more information on setting the currently used config, see [config command usage](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md)
