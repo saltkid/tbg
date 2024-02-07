@@ -25,27 +25,7 @@ func HelpValidateSubCmd(c *Cmd) error {
 }
 
 func HelpExecute(c *Cmd) error {
-	subCmds := make(map[CmdType]struct{}, 0)
-	subCmds[ExtractSubCmdType(Run, c.SubCmds)] = struct{}{}
-	subCmds[ExtractSubCmdType(Config, c.SubCmds)] = struct{}{}
-	subCmds[ExtractSubCmdType(Add, c.SubCmds)] = struct{}{}
-	subCmds[ExtractSubCmdType(Remove, c.SubCmds)] = struct{}{}
-	subCmds[ExtractSubCmdType(Edit, c.SubCmds)] = struct{}{}
-	subCmds[ExtractSubCmdType(Help, c.SubCmds)] = struct{}{}
-	subCmds[ExtractSubCmdType(Version, c.SubCmds)] = struct{}{}
-
-	flags := make(map[flag.FlagType]struct{}, 0)
-	flags[ExtractFlagType(flag.Profile, c.Flags)] = struct{}{}
-	flags[ExtractFlagType(flag.Interval, c.Flags)] = struct{}{}
-	flags[ExtractFlagType(flag.Alignment, c.Flags)] = struct{}{}
-	flags[ExtractFlagType(flag.Opacity, c.Flags)] = struct{}{}
-	flags[ExtractFlagType(flag.Stretch, c.Flags)] = struct{}{}
-
-	fmt.Println()
-
-	// length of 1 means only None and flag.None types are in the map
-	// meaning there's no subcmds or flags
-	if len(subCmds) == 1 && len(flags) == 1 {
+	if len(c.SubCmds) == 0 && len(c.Flags) == 0 {
 		fmt.Println("tbg (Terminal Background Gallery)")
 		fmt.Print("Version: ")
 		VersionExecute()
@@ -60,10 +40,7 @@ func HelpExecute(c *Cmd) error {
 		fmt.Println("\nNot all flags are applicable to all commands. See help <command> for more info")
 	}
 
-	for subCmd := range subCmds {
-		if subCmd == None {
-			continue
-		}
+	for subCmd := range c.SubCmds {
 		switch subCmd {
 		case Run:
 			RunHelp(true)
@@ -79,10 +56,7 @@ func HelpExecute(c *Cmd) error {
 		fmt.Println("------------------------------------------------------------------------------------")
 	}
 
-	for f := range flags {
-		if f == flag.None {
-			continue
-		}
+	for f := range c.Flags {
 		fmt.Println("\t", f.ToString())
 	}
 
@@ -101,7 +75,7 @@ func RunHelp(verbose bool) {
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
 		fmt.Println("\n  Flags:")
 		fmt.Println("  You can specify alignment, stretch, and opacity using flags.")
-		fmt.Println("  This will override the values in the used config (not edit)")
+		fmt.Println("  These will override the values in the used config (not edit)")
 		fmt.Println("  1. -a, --alignment [arg]")
 		fmt.Println("         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]")
 		fmt.Println("  2. -o, --opacity   [arg]")
