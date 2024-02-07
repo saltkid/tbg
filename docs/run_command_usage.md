@@ -1,3 +1,14 @@
+# Table of Contents
+- [Overview](#tbg-run)
+- [Key events](#key-events)
+- [Executing with `--`flags](#executing-with---flags)
+- [Executing with `config` subcommand](#executing-with-config-subcommand)
+- [Walkthroughs](#walkthroughs)
+    - [Normal Execution, key events, and path specific flags](#normal-execution)
+    - [Using different config, and overriding `profile` and `interval` fields](#using-different-config)
+    - [Overriding default flag fields](#overriding-default-flag-fields)
+---
+
 # `tbg run`
 
 `run` command edits the `settings.json` used by *Windows Terminal* using settings from the currently used config.
@@ -21,7 +32,7 @@ For more information, see documentation on [tbg profile](#link) and [config](#li
 For an example, see [walkthrough with key events](#normal-execution)
 
 # Executing with `--`flags
-`--alignment`, `--opacity`, `--stretch`
+#### Valid Flags: `--alignment`, `--opacity`, `--stretch`
 
 `--`flags can be used to override the default flag fields in the config: `default_alignment`, `default_stretch`, `default_opacity`.
 
@@ -44,7 +55,7 @@ For an example, see [Using different config walkthrough](#using-different-config
 
 # Walkthroughs
 ### Normal Execution
-This will delve on image collection dir with flags and key events.
+This will delve on and key events and path specific flags.
 
 Let's do:
 ```
@@ -70,7 +81,8 @@ This just means that when we do `tbg run`, we want to change the background imag
 
 When I press `n`, it goes to the next images without waiting for 30 minutes. I can go back by pressing `p`.
 
-When I press `f`, it goes to the next image collection dir. This means we are now in `path/to/dir2`. This path has flags so these values will be used instead of the default flag fields. This means instead of the image being at the **center**, it will be at the **right**. Instead of having an opacity of **10%**, it the images will have **35%** opacity. However, since stretch is the same, it will still **fill** the screen without regard of the orignal aspect ratio.
+When I press `f`, it goes to the next image collection dir. This means we are now in `path/to/dir2`. This path has flags specific to it so these values will be used instead of the default flag fields. This means instead of the image being at the **center**, it will be at the **right**.
+- Instead of having an opacity of **10%**, it the images will have **35%** opacity. However, since stretch is the same, it will still **fill** the screen without regard of the orignal aspect ratio.
 
 When I press `b`, it goes back to the previous image collection dir (`path/to/dir1`). If i press `b` again, it will wrap around and go to the last image collection dir (`path/to/dir2`). This wrap around behavior also applies to `f`.
 
