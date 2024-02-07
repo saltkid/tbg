@@ -28,7 +28,7 @@ func RemoveValidateFlag(f *flag.Flag) error {
 		if f.Value != "" {
 			return fmt.Errorf("'remove' flags don't take any values. flag '%s' has value: '%s'", f.Type.ToString(), f.Value)
 		}
-		return f.ValidateValue(f.Value)
+		return nil
 	default:
 		return fmt.Errorf("invalid flag for 'remove': '%s'", f.Type.ToString())
 	}
@@ -48,6 +48,11 @@ func RemoveValidateSubCmd(c *Cmd) error {
 
 func RemoveExecute(c *Cmd) error {
 	toRemove, _ := filepath.Abs(c.Value)
+
+	// check if flags are set by user (empty if not)
+	align := ExtractFlagValue(flag.Alignment, c.Flags)
+	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
+	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
 
 	// check if config subcommand is set by user (empty if not)
 	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
@@ -74,7 +79,7 @@ func RemoveExecute(c *Cmd) error {
 		return err
 	}
 
-	err = configContents.RemovePath(toRemove, configPath)
+	err = configContents.RemovePath(toRemove, configPath, align, stretch, opacity)
 	if err != nil {
 		return err
 	}

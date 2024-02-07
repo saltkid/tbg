@@ -84,15 +84,76 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 	return nil
 }
 
-func (c *Config) RemovePath(absPath string, configPath string) error {
+func (c *Config) RemovePath(absPath string, configPath string, align *string, stretch *string, opacity *string) error {
+	removePath := true
+	removeAllFlags := false
+	replaceFlags := false
+
+	// if any flags assigned, do not remove path
+	if align != nil || stretch != nil || opacity != nil {
+		removePath = false
+		// specifically, if assigned all, remove all flags
+		if align != nil && stretch != nil && opacity != nil {
+			removeAllFlags = true
+		} else {
+			replaceFlags = true
+		}
+	}
 	removed := make(map[string]struct{})
 	for i, path := range c.ImageColPaths {
-		purePath, _, _ := strings.Cut(path, "|")
-		purePath = strings.TrimSpace(purePath)
+		purePath, opts, hasOpts := strings.Cut(path, "|")
+		purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
 
 		if strings.EqualFold(absPath, purePath) {
-			removed[absPath] = struct{}{}
-			c.ImageColPaths = append(c.ImageColPaths[:i], c.ImageColPaths[i+1:]...)
+			if removePath {
+				removed[absPath] = struct{}{}
+				c.ImageColPaths = append(c.ImageColPaths[:i], c.ImageColPaths[i+1:]...)
+
+			} else if removeAllFlags {
+				if hasOpts {
+					removed[fmt.Sprintf("'%s' flags from '%s'", opts, purePath)] = struct{}{}
+					c.ImageColPaths[i] = purePath
+				}
+			} else if replaceFlags {
+				optSlice := strings.Split(opts, " ")
+				if len(optSlice) != 3 {
+					return fmt.Errorf("invalid options for '%s': '%s'", purePath, opts)
+				}
+				alignOpt, stretchOpt, opacityOpt := optSlice[0], optSlice[1], optSlice[2]
+				alignOpt, stretchOpt, opacityOpt = strings.TrimSpace(alignOpt), strings.TrimSpace(stretchOpt), strings.TrimSpace(opacityOpt)
+
+				// if set to remove, inherit from default
+				// if not set to remove, keep the current flag
+				if align == nil {
+					align = &alignOpt
+				} else {
+					align = &c.Alignment
+				}
+				if stretch == nil {
+					stretch = &stretchOpt
+				} else {
+					stretch = &c.Stretch
+				}
+				if opacity == nil {
+					opacity = &opacityOpt
+				} else {
+					tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+					opacity = &tmp
+				}
+				// final check if all flags are the same as default flag fields
+				if *align == c.Alignment && *stretch == c.Stretch && *opacity == strconv.FormatFloat(c.Opacity, 'f', -1, 64) {
+					// remove flags
+					c.ImageColPaths[i] = purePath
+					removed[fmt.Sprintf("'%s' flags from '%s'", opts, purePath)] = struct{}{}
+					break
+				}
+				// replace flags
+				newFlags := fmt.Sprintf("%s %s %s", *align, *stretch, *opacity)
+				c.ImageColPaths[i] = fmt.Sprintf("%s | %s", purePath, newFlags)
+				if hasOpts {
+					removed[fmt.Sprintf("'%s' flags: '%s' --> '%s'", purePath, opts, newFlags)] = struct{}{}
+				}
+			}
 			break
 		}
 	}
