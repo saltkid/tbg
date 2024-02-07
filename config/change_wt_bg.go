@@ -96,6 +96,8 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 			}
 			if interval == nil {
 				intervalInt = c.Interval
+			} else {
+				intervalInt, _ = strconv.Atoi(*interval)
 			}
 			if align != nil {
 				overrideAlign = *align
