@@ -1,5 +1,5 @@
 # Table of Contents
-- [Overview](#tbg-edit-[arg])
+- [Overview](#tbg-add-[arg])
 - [Subcommands](#subcommands)
 - [Valid Flags](#valid-flags)
 - [Walkthroughs](#walkthroughs)
