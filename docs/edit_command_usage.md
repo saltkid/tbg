@@ -29,16 +29,16 @@ The changes are specified by `--`flags such as `--alignment`, `--opacity`, etc.
         - example: `path/to/images/dir` --> `path/to/images/dir | center fill 0.5`
     - if edit arg is `fields`, it will edit the `default_alignment` field in the config
 
-2. `--opacity [arg]`
-    - args: any float between 0 and 1 (inclusive)
-
-    - if edit arg is `path/to/images/dir` or `all`, it will add flags to that path (or all paths) after a pipe `|`
-    - if edit arg is `fields`, it will edit the `default_opacity` field in the config
-3. `--stretch [arg]`
+2. `--stretch [arg]`
     - args: `none`, `fill`, `uniform`, `uniformToFill`
 
     - if edit arg is `path/to/images/dir` or `all`, it will add flags to that path (or all paths) after a pipe `|`
     - if edit arg is `fields`, it will edit the `default_stretch` field in the config
+3. `--opacity [arg]`
+    - args: any float between 0 and 1 (inclusive)
+
+    - if edit arg is `path/to/images/dir` or `all`, it will add flags to that path (or all paths) after a pipe `|`
+    - if edit arg is `fields`, it will edit the `default_opacity` field in the config
 4. `--profile [arg]`
     - args: `default`, `list-n` where n is the list index Windows Terminal uses to identify a profile
 

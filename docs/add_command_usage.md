@@ -12,7 +12,7 @@
 #### args: `path/to/images/dir`
 `add` command adds a path to **tbg**'s currently used config. If the `config` subcommand is specified, it will add the path to that config specified by that subcommand instead.
 
-The changes are specified by `--`flags such as `--alignment`, `--opacity`, etc.
+You can add flags to a path to be added using `--`flags (see [valid flags](#valid-flags))
 
 # Subcommands
 1. `config [arg]`
@@ -25,11 +25,11 @@ The changes are specified by `--`flags such as `--alignment`, `--opacity`, etc.
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
     - it will add flags to the path being added after a pipe `|`
         - example: `path/to/images/dir | center fill 0.5`
-2. `--opacity [arg]`
-    - args: any float between 0 and 1 (inclusive)
-    - it will add flags to the path being added after a pipe `|`
-3. `--stretch [arg]`
+2. `--stretch [arg]`
     - args: `none`, `fill`, `uniform`, `uniformToFill`
+    - it will add flags to the path being added after a pipe `|`
+3. `--opacity [arg]`
+    - args: any float between 0 and 1 (inclusive)
     - it will add flags to the path being added after a pipe `|`
 
 # Walkthroughs
