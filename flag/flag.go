@@ -74,6 +74,8 @@ func (f *Flag) ValidateValue(val string) error {
 		return ValidateOpacity(val)
 	case Stretch:
 		return ValidateStretch(val)
+	case None:
+		return nil
 	default:
 		return fmt.Errorf("unexpected error: unknown flag: %d", f.Type)
 	}

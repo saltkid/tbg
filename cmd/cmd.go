@@ -115,6 +115,8 @@ func (c *Cmd) ValidateValue(val string) error {
 		return HelpValidateValue(val)
 	case Version:
 		return nil
+	case None:
+		return nil
 	default:
 		return fmt.Errorf("unknown command: %s", val)
 	}
@@ -135,6 +137,8 @@ func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 	case Help:
 		return HelpValidateFlag(f)
 	case Version:
+		return nil
+	case None:
 		return nil
 	default:
 		return fmt.Errorf("unexpected error: unknown command type: %d", c.Type)
@@ -157,6 +161,8 @@ func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 		return HelpValidateSubCmd(sc)
 	case Version:
 		return nil
+	case None:
+		return nil
 	default:
 		return fmt.Errorf("unexpected error: unknown command type: %d", sc.Type)
 	}
@@ -178,6 +184,8 @@ func (c *Cmd) Execute() error {
 		return HelpExecute(c)
 	case Version:
 		return VersionExecute()
+	case None:
+		return nil
 	default:
 		return fmt.Errorf("unexpected error: unknown command type: %d", c.Type)
 	}
