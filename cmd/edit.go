@@ -30,7 +30,7 @@ func EditValidateFlag(f *flag.Flag) error {
 	case flag.Profile, flag.Interval, flag.Alignment, flag.Opacity, flag.Stretch:
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown flag: '%s'", f.Type.ToString())
+		return fmt.Errorf("invalid flag for 'edit': '%s'", f.Type.ToString())
 	}
 }
 
@@ -42,7 +42,7 @@ func EditValidateSubCmd(c *Cmd) error {
 		}
 		return c.ValidateValue(c.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown sub command type: '%s'", c.Type.ToString())
+		return fmt.Errorf("invalid sub command for 'edit': '%s'", c.Type.ToString())
 	}
 }
 
