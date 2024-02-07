@@ -1,25 +1,11 @@
-package config
+# Table of Contents
+- [Config](#config)
+- [Fields](#fields)
 
-import (
-	"os"
-)
-
-type ConfigTemplate struct {
-	Path         string
-	BeginDesc    []byte
-	YamlContents []byte
-	EndDesc      []byte
-}
-
-func (c *ConfigTemplate) WriteFile() error {
-	toWrite := append(append(c.BeginDesc, c.YamlContents...), c.EndDesc...)
-	return os.WriteFile(c.Path, toWrite, 0666)
-}
-
-func NewConfigTemplate(path string) *ConfigTemplate {
-	return &ConfigTemplate{
-		Path: path,
-		BeginDesc: []byte(`#------------------------------------------
+# Config
+This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. **tbg** creates a `config.yaml` in the same path as the **tbg** executable on initial execution. This is what it should look like:
+```
+#------------------------------------------
 # this is a tbg config. Whenver tbg is ran, it will load this config file
 # if it's the config in tbg's profile and use the fields below to control
 # the behavior of tbg when changing background images of Windows Terminal
@@ -27,8 +13,7 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 # to use your own config file, use the 'config' command:
 #   tbg config path/to/config.yaml
 #------------------------------------------
-`),
-		YamlContents: []byte(`
+
 image_col_paths: []
 
 profile: default
@@ -37,8 +22,7 @@ interval: 30
 default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
-`),
-		EndDesc: []byte(`
+
 #------------------------------------------
 # Fields:
 #   image_col_paths: list of image collection paths
@@ -73,6 +57,16 @@ default_opacity: 0.1
 #     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
 #
 #------------------------------------------
-`),
-	}
-}
+```
+## Fields
+Although you can edit the fields in the config directly, it is recommended to use the [`config` command](#link) to edit them.
+| Field | Valid Values | Description |
+| --- | --- | --- |
+| `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*.<br><br>To change background images in user created profiles, set `profile` to `list-<n>` where n is the index used by *Windows Terminal* to identify the profile.<br><br>See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information |
+| `interval` | any positive integer | time in minutes between each image change. |
+| `image_col_paths` | `[]`<br>`- path/to/dir1`<br>`- path/to/dir2 \| center uniform 0.1` | list of image collection paths. Must be directories containing images, not image paths.<br><br>Each dir can override the default fields by putting all 3 options after a pipe `\|`. See [add command](#link) and [edit command](#link)<br><br>Example:<br>`path/to/dir \| center fill 0.2` |
+| `default_alignment` | `top`, `top-left`, `top-right`, `left`, `center`, `right`, `bottom`, `bottom-left`, `bottom-right` | image alignment in Windows Terminal.|
+| `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
+| `default_opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
+
+For the default flag fields, see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)

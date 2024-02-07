@@ -70,73 +70,20 @@ used_config: ""
 ```
 
 # Config
-This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. As stated earlier, **tbg** created a `config.yaml` in the same path as the **tbg** executable. This is what it should look like:
-```
-#------------------------------------------
-# this is a tbg config. Whenver tbg is ran, it will load this config file
-# if it's the config in tbg's profile and use the fields below to control
-# the behavior of tbg when changing background images of Windows Terminal
-#
-# to use your own config file, use the 'config' command:
-#   tbg config path/to/config.yaml
-#------------------------------------------
+This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. As stated earlier, **tbg** created a `config.yaml` in the same path as the **tbg** executable on intial execution.
 
-profile: default
-interval: 30
-
-image_col_paths: []
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
-
-#------------------------------------------
-# Fields:
-#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc...)
-#      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
-#
-#   interval: time in minutes between each image change
-#
-#   image_col_paths: list of image collection paths
-#      notes:
-#        - put directories that contain images, not image filepaths
-#        - can override default options for a specific path by putting a | after the path
-#          and putting "alignment", "stretch", and "opacity" after the |
-#          eg. abs/path/to/images/dir | right uniform 0.1
-#
-#------------------------------------------
-#   Below are default options which can be overriden on a per-path basis by putting a pipe (|)
-#   after the path and putting "alignment", "stretch", and "opacity" values after the | in order
-#
-#   example: abs/path/to/images/dir | right uniform 0.1
-#
-#   whatever values the values below have, the options after the | will override
-#   the values in the default values for that specific path
-#------------------------------------------
-#
-#   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
-#
-#   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
-#
-#   default_stretch: image stretch in Windows Terminal (uniform, fill, etc...)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
-#
-#------------------------------------------
-```
 ## Fields
 Although you can edit the fields in the config directly, it is recommended to use the command `config` to edit them.
 | Field | Valid Values | Description |
 | --- | --- | --- |
-| `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*. To change background images in user created profiles, set `profile` to `list-<n>` where n is the index used by *Windows Terminal* to identify the profile.<br><br>See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information |
+| `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*.<br><br>See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information |
 | `interval` | any positive integer | time in minutes between each image change. |
 | `image_col_paths` | `[]`<br>`- path/to/dir1`<br>`- path/to/dir2 \| center uniform 0.1` | list of image collection paths. Must be directories containing images, not image paths.<br><br>Each dir can override the default fields by putting all 3 options after a pipe `\|`. Example:<br>`path/to/dir \| center fill 0.2` |
-| `default_alignment` | `top`, `top-left`, `top-right`, `left`, `center`, `right`, `bottom`, `bottom-left`, `bottom-right` | image alignment in Windows Terminal. Can be overriden on a per-dir basis. See valid values of `image_col_paths` |
+| `default_alignment` | `top`, `top-left`, `top-right`, `left`, `center`, `right`, `bottom`, `bottom-left`, `bottom-right` | image alignment in Windows Terminal. Can be overriden on a per-dir basis. |
 | `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
-| `default_opacity` | inclusive between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
+| `default_opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
 
-For the default fields, see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)
+For the default flag fields, see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)
 
 # Commands
 The commands other than `run` are used to safely edit the currently used config with input validation. If your currently used config is a user config, it will automatically edit the default config as well appropriately.
@@ -154,7 +101,7 @@ For a more detailed explanation on each types, follow the command name links
 ## Flags
 Flags are used to override [field entries in a config](#config), which are then passed to the parent command.
 
-Flags behave differently based on the main command so for more detailed explanation, go to the documentation of the command instead.
+Flags behave differently based on the parent command so for more detailed explanation, go to the documentation of the command instead.
 | Flag | Field Overriden |
 | --- | --- |
 | `--profile`<br>`-p` | `profile` |

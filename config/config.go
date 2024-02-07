@@ -278,8 +278,8 @@ func (c *Config) Log(configPath string) *Config {
 	for _, path := range c.ImageColPaths {
 		fmt.Printf("%-25s%s\n", "|", path)
 	}
-	fmt.Printf("|\n%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-25s%s\n", "| profile:", c.Profile)
+	fmt.Printf("|\n%-25s%s\n", "| profile:", c.Profile)
+	fmt.Printf("%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
 	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
 	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
 	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))

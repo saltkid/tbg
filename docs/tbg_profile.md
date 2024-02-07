@@ -20,5 +20,3 @@ used_config: path/to/default/config.yaml
 ```
 It only has one field: `used_config` which keeps track of the currently used config.
 Whenever `tbg config [arg]` is ran, which sets the currently used config to whatever the `[arg]` is, **tbg** edits `tbg_profile.yaml`'s `used_config` field.
-
-
