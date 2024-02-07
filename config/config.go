@@ -44,26 +44,21 @@ func (c *Config) Unmarshal(data []byte) error {
 	return nil
 }
 
-func (c *Config) AddPath(toAdd string, configPath string, align string, stretch string, opacity string) error {
+func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch *string, opacity *string) error {
 	// set flags after path only if at least one is set
-	if align != "" || opacity != "" || stretch != "" {
-		if align == "" {
-			align = c.Alignment
+	if align != nil || opacity != nil || stretch != nil {
+		// inherit default values if not set
+		if align == nil {
+			align = &c.Alignment
 		}
-		if stretch == "" {
-			stretch = c.Stretch
+		if stretch == nil {
+			stretch = &c.Stretch
 		}
-		if opacity == "" {
-			opacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+		if opacity == nil {
+			tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+			opacity = &tmp
 		}
-
-		isDefaultAlign := strings.EqualFold(align, c.Alignment)
-		isDefaultStretch := strings.EqualFold(stretch, c.Stretch)
-		isDefaultOpacity := strings.EqualFold(opacity, strconv.FormatFloat(c.Opacity, 'f', -1, 64))
-		// only add flags if all are not the default values
-		if !(isDefaultAlign && isDefaultStretch && isDefaultOpacity) {
-			toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, align, stretch, opacity)
-		}
+		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, *align, *stretch, *opacity)
 	}
 
 	for _, path := range c.ImageColPaths {
@@ -114,34 +109,34 @@ func (c *Config) RemovePath(absPath string, configPath string) error {
 	c.Log(configPath).LogRemoved(removed)
 	return nil
 }
-func (c *Config) EditPath(arg string, configPath string, profile string, interval string, align string, stretch string, opacity string) error {
+func (c *Config) EditPath(arg string, configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
 	// key:val = old:new
 	edited := make(map[string]string, 0)
 
 	// edit these two on a config level
-	if profile != "" {
-		edited[c.Profile] = profile
-		c.Profile = profile
+	if profile != nil {
+		edited[c.Profile] = *profile
+		c.Profile = *profile
 	}
-	if interval != "" {
-		edited[strconv.Itoa(c.Interval)] = interval
-		intervalInt, _ := strconv.Atoi(interval)
+	if interval != nil {
+		edited[strconv.Itoa(c.Interval)] = *interval
+		intervalInt, _ := strconv.Atoi(*interval)
 		c.Interval = intervalInt
 	}
 
 	if arg == "fields" {
 		// edit the rest of the fields on a config level too
-		if align != "" {
-			edited[c.Alignment] = align
-			c.Alignment = align
+		if align != nil {
+			edited[c.Alignment] = *align
+			c.Alignment = *align
 		}
-		if stretch != "" {
-			edited[c.Stretch] = stretch
-			c.Stretch = stretch
+		if stretch != nil {
+			edited[c.Stretch] = *stretch
+			c.Stretch = *stretch
 		}
-		if opacity != "" {
-			edited[strconv.FormatFloat(c.Opacity, 'f', -1, 64)] = opacity
-			opacityFloat, _ := strconv.ParseFloat(opacity, 64)
+		if opacity != nil {
+			edited[strconv.FormatFloat(c.Opacity, 'f', -1, 64)] = *opacity
+			opacityFloat, _ := strconv.ParseFloat(*opacity, 64)
 			c.Opacity = opacityFloat
 		}
 
@@ -164,38 +159,31 @@ func (c *Config) EditPath(arg string, configPath string, profile string, interva
 				}
 
 				currAlign, currStretch, currOpacity := strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
-				if align == "" {
-					align = currAlign
+				if align == nil {
+					align = &currAlign
 				}
-				if stretch == "" {
-					stretch = currStretch
+				if stretch == nil {
+					stretch = &currStretch
 				}
-				if opacity == "" {
-					opacity = currOpacity
+				if opacity == nil {
+					opacity = &currOpacity
 				}
 			} else {
 				// use default values if not set
-				if align == "" {
-					align = c.Alignment
+				if align == nil {
+					align = &c.Alignment
 				}
-				if stretch == "" {
-					stretch = c.Stretch
+				if stretch == nil {
+					stretch = &c.Stretch
 				}
-				if opacity == "" {
-					opacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+				if opacity == nil {
+					tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+					opacity = &tmp
 				}
 
 			}
 
-			// if all opts are equal to the defaults set in the config, just remove the options
-			isDefaultAlign := strings.EqualFold(align, c.Alignment)
-			isDefaultStretch := strings.EqualFold(stretch, c.Stretch)
-			isDefaultOpacity := strings.EqualFold(opacity, strconv.FormatFloat(c.Opacity, 'f', -1, 64))
-			if isDefaultAlign && isDefaultStretch && isDefaultOpacity {
-				c.ImageColPaths[i] = purePath // removed opts after | and just kept the path
-			} else {
-				c.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, align, stretch, opacity)
-			}
+			c.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, *align, *stretch, *opacity)
 
 			// check if path was edited for logging purposes
 			if path != c.ImageColPaths[i] {
