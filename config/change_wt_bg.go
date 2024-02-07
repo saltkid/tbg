@@ -13,7 +13,7 @@ import (
 	"github.com/saltkid/tbg/utils"
 )
 
-func (c *Config) ChangeBgImage(configPath string, profile string, interval string, align string, stretch string, opacity string) error {
+func (c *Config) ChangeBgImage(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
 	// read settings.json
 	settingsPath, err := settingsJsonPath()
 	if err != nil {
@@ -90,21 +90,21 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 			}
 
 			// flags set by user on execution
-			intervalInt, _ := strconv.Atoi(interval)
-			if profile == "" {
-				profile = c.Profile
+			var intervalInt int
+			if profile == nil {
+				profile = &c.Profile
 			}
-			if interval == "" {
+			if interval == nil {
 				intervalInt = c.Interval
 			}
-			if align != "" {
-				overrideAlign = align
+			if align != nil {
+				overrideAlign = *align
 			}
-			if stretch != "" {
-				overrideStretch = stretch
+			if stretch != nil {
+				overrideStretch = *stretch
 			}
-			if opacity != "" {
-				overrideOpacity = opacity
+			if opacity != nil {
+				overrideOpacity = *opacity
 			}
 
 		imageLoop:
@@ -116,9 +116,9 @@ func (c *Config) ChangeBgImage(configPath string, profile string, interval strin
 
 				fmt.Println()
 				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
-				c.Log(configPath).LogRunSettings(image, profile, intervalInt, overrideAlign, overrideStretch, opacityF)
+				c.Log(configPath).LogRunSettings(image, *profile, intervalInt, overrideAlign, overrideStretch, opacityF)
 
-				err = updateWtJsonFields(allData, settingsPath, profile, image, overrideAlign, overrideStretch, overrideOpacity)
+				err = updateWtJsonFields(allData, settingsPath, *profile, image, overrideAlign, overrideStretch, overrideOpacity)
 				if err != nil {
 					return err
 				}

@@ -50,12 +50,12 @@ func RemoveExecute(c *Cmd) error {
 	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
 	var configPath string
 	var err error
-	if specifiedConfig == "default" {
-		configPath, err = config.DefaultConfigPath()
-	} else if specifiedConfig == "" {
+	if specifiedConfig == nil {
 		configPath, err = config.UsedConfig()
+	} else if *specifiedConfig == "default" {
+		configPath, err = config.DefaultConfigPath()
 	} else {
-		configPath, err = filepath.Abs(specifiedConfig)
+		configPath, err = filepath.Abs(*specifiedConfig)
 	}
 	if err != nil {
 		return fmt.Errorf("Failed to get config path: %s", err)
