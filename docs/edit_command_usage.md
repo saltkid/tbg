@@ -65,7 +65,7 @@ default_opacity: 0.1
 ```
 If we run:
 ```
-tbg edit path/to/images/dir --alignment right --stretch fill --opacity 0.5
+tbg edit path/to/images/dir1 --alignment right --stretch fill --opacity 0.5
 ```
 It will find `path/to/images/dir1` in `image_col_paths` field and add flags to it like this:
 ```

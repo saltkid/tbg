@@ -47,7 +47,7 @@ default_opacity: 0.1
 ```
 If we run:
 ```
-tbg add path/to/images/dir
+tbg add path/to/images/dir1
 ```
 It will add `path/to/images/dir1` to the currently used config's `image_col_paths` field like this:
 ```
