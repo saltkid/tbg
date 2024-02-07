@@ -36,8 +36,8 @@ While **tbg** is running, it takes in optional user input through key presses. H
 - `q`: quit
 - `n`: goes to next image in the current image collection dir
 - `p`: goes to previous image in the current image collection dir
-- `f`: goes to next image collection dir
-- `b`: goes to previous image collection dir
+- `N`: goes to next image collection dir
+- `P`: goes to previous image collection dir
 - `c`: shows the available commands
 
 See [fields](#fields) for more information about image collection dirs.
@@ -45,6 +45,7 @@ See [fields](#fields) for more information about image collection dirs.
 The image collection dirs wrap around so if you go past the last image in the last image collection dir, it will go back to the first image in the first image collection dir. Same goes with the reverse direction.
 
 When changing image collection dirs, it always starts at the first image to avoid disorientation.
+
 # tbg Profile
 This is what is used by **tbg** to keep track of what config to use when it runs. There can only be one of this and it must be in the same directory as the **tbg** executable.
 

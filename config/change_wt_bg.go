@@ -192,10 +192,10 @@ func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, ne
 			close(done)
 			return
 
-		} else if keyboard.Key(event.Rune) == keyboard.Key('f') {
+		} else if keyboard.Key(event.Rune) == keyboard.Key('N') {
 			nextDir <- struct{}{}
 
-		} else if keyboard.Key(event.Rune) == keyboard.Key('b') {
+		} else if keyboard.Key(event.Rune) == keyboard.Key('P') {
 			prevDir <- struct{}{}
 
 		} else if keyboard.Key(event.Rune) == keyboard.Key('n') {
@@ -323,9 +323,9 @@ func settingsJsonPath() (string, error) {
 func commandList() {
 	fmt.Println()
 	fmt.Println("q: [q]uit")
-	fmt.Println("f: [f]orward to next dir")
-	fmt.Println("b: [b]ack to previous dir")
 	fmt.Println("n: [n]ext image")
 	fmt.Println("p: [p]revious image")
+	fmt.Println("f: [N]ext dir")
+	fmt.Println("b: [P]revious dir")
 	fmt.Println("c: [c]ommand list")
 }

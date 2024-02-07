@@ -23,8 +23,8 @@ For more information, see documentation on [tbg profile.yaml](https://github.com
 **tbg** takes optional commands during execution:
 - `n`: goes to next image in the current image collection dir
 - `p`: goes to previous image in the current image collection dir
-- `f`: goes to next image collection dir
-- `b`: goes to previous image collection dir
+- `N`: goes to next image collection dir
+- `P`: goes to previous image collection dir
 - `c`: shows the available commands
 
 **tbg** will continue running until you press `q` or `ctrl+c`. This means even if all images are exhausted, **tbg** will safely wrap back around.
@@ -81,10 +81,10 @@ This just means that when we do `tbg run`, we want to change the background imag
 
 When I press `n`, it goes to the next images without waiting for 30 minutes. I can go back by pressing `p`.
 
-When I press `f`, it goes to the next image collection dir. This means we are now in `path/to/dir2`. This path has flags specific to it so these values will be used instead of the default flag fields. This means instead of the image being at the **center**, it will be at the **right**.
+When I press `N`, it goes to the next image collection dir. This means we are now in `path/to/dir2`. This path has flags specific to it so these values will be used instead of the default flag fields. This means instead of the image being at the **center**, it will be at the **right**.
 - Instead of having an opacity of **10%**, it the images will have **35%** opacity. However, since stretch is the same, it will still **fill** the screen without regard of the orignal aspect ratio.
 
-When I press `b`, it goes back to the previous image collection dir (`path/to/dir1`). If i press `b` again, it will wrap around and go to the last image collection dir (`path/to/dir2`). This wrap around behavior also applies to `f`.
+When I press `P`, it goes back to the previous image collection dir (`path/to/dir1`). If i press `P` again, it will wrap around and go to the last image collection dir (`path/to/dir2`). This wrap around behavior also applies to `N`.
 
 Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
