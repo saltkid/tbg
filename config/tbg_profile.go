@@ -66,8 +66,8 @@ func TbgProfileTemplate(path string) *ConfigTemplate {
 	return &ConfigTemplate{
 		Path: path,
 		BeginDesc: []byte(`#---------------------------------------------
-# this is a tbg profile. Whenver tbg is ran, it will load
-# this profile to get the currently used config
+# this is a tbg profile. Whenver tbg is ran, it will
+# load this profile to get the currently used config
 #
 # currently, it only has one field: used_config
 # I'll add more if the need arises
