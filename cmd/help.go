@@ -37,9 +37,16 @@ func HelpExecute(c *Cmd) error {
 		EditHelp(false)
 		ConfigHelp(false)
 		fmt.Println("\nFlags:")
+		ProfileHelp(false)
+		IntervalHelp(false)
+		AlignmentHelp(false)
+		StretchHelp(false)
+		OpacityHelp(false)
 		fmt.Println("\nNot all flags are applicable to all commands. See help <command> for more info")
+		return nil
 	}
 
+	// verbose messages
 	for subCmd := range c.SubCmds {
 		switch subCmd {
 		case Run:
@@ -55,11 +62,21 @@ func HelpExecute(c *Cmd) error {
 		}
 		fmt.Println("------------------------------------------------------------------------------------")
 	}
-
 	for f := range c.Flags {
-		fmt.Println("\t", f.ToString())
+		switch f {
+		case flag.Profile:
+			ProfileHelp(true)
+		case flag.Interval:
+			IntervalHelp(true)
+		case flag.Alignment:
+			AlignmentHelp(true)
+		case flag.Stretch:
+			StretchHelp(true)
+		case flag.Opacity:
+			OpacityHelp(true)
+		}
+		fmt.Println("------------------------------------------------------------------------------------")
 	}
-
 	return nil
 }
 
@@ -330,5 +347,91 @@ func ConfigHelp(verbose bool) {
 		fmt.Println("      ----------------------------------")
 		fmt.Println("      Note that specifying a path/to/config.yaml instead of 'default' will do essentially")
 		fmt.Print("      the same thing: set the used_config field to the specified path.\n\n")
+	}
+}
+
+func ProfileHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  -p, --profile",
+		"Specifies which Windows Terminal profile to use in a command.\n")
+	if verbose {
+		fmt.Println("\n  Args:")
+		fmt.Println("  1. default")
+		fmt.Println("     Sets the default profile as the profile to be used")
+		fmt.Println("     by the parent command")
+		fmt.Println("  2. list-n")
+		fmt.Println("     where n is the list index Windows Terminal uses to identify the profile")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run --profile default")
+		fmt.Println("     whatever value the \"profile\" field in the currently used config is will")
+		fmt.Println("     be ignored and tbg will edit the default Windows Terminal profile instead")
+		fmt.Println("\n  2. tbg edit --profile list-2 config /path/to/a/config.yaml")
+		fmt.Println("     this will change the \"profile\" field on the config /path/to/a/config.yaml")
+		fmt.Println("     to \"list-2\"")
+	}
+}
+
+func IntervalHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  -i, --interval",
+		"Specifies the interval of image change in minutes to use in a command.\n")
+	if verbose {
+		fmt.Println("\n  Args:")
+		fmt.Println("  1. any positive integer")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run --interval 30")
+		fmt.Println("     whatever value the \"interval\" field in the currently used config is will")
+		fmt.Println("     be ignored and tbg change images every 30 minutes instead.")
+		fmt.Println("\n  2. tbg edit --interval 30 config /path/to/a/config.yaml")
+		fmt.Println("     this will change the \"interval\" field on the config /path/to/a/config.yaml")
+		fmt.Println("     to 30")
+	}
+}
+
+func AlignmentHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  -a, --alignment",
+		"Specifies the alignment of the image to use in a command.\n")
+	if verbose {
+		fmt.Println("\n  Args:")
+		fmt.Println("  1. topLeft,    top,    topRight")
+		fmt.Println("  2. left,       center, right")
+		fmt.Println("  3. bottomLeft, bottom, bottomRight")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run --alignment center")
+		fmt.Println("     whatever value the \"alignment\" field in the currently used config is will")
+		fmt.Println("     be ignored and tbg will center the image instead")
+		fmt.Println("\n  2. tbg edit --alignment center config /path/to/a/config.yaml")
+		fmt.Println("     this will change the \"alignment\" field on the config /path/to/a/config.yaml")
+		fmt.Println("     to \"center\"")
+	}
+}
+
+func StretchHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  -s, --stretch",
+		"Specifies the stretch of the image to use in a command.\n")
+	if verbose {
+		fmt.Println("\n  Args:")
+		fmt.Println("  1. fill, none, uniform, uniformToFill")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run --stretch fill")
+		fmt.Println("     whatever value the \"stretch\" field in the currently used config is will")
+		fmt.Println("     be ignored and tbg will upscale the image to exactly fill the screen instead")
+		fmt.Println("\n  2. tbg edit --stretch fill config /path/to/a/config.yaml")
+		fmt.Println("     this will change the \"stretch\" field on the config /path/to/a/config.yaml")
+		fmt.Println("     to \"fill\"")
+	}
+}
+
+func OpacityHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  -o, --opacity",
+		"Specifies the opacity of the image to use in a command.\n")
+	if verbose {
+		fmt.Println("\n  Args:")
+		fmt.Println("  1. any float between 0 and 1 (inclusive)")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run --opacity 0.5")
+		fmt.Println("     whatever value the \"opacity\" field in the currently used config is will")
+		fmt.Println("     be ignored and tbg will set the image opacity to 0.5")
+		fmt.Println("\n  2. tbg edit --opacity 0.5 config /path/to/a/config.yaml")
+		fmt.Println("     this will change the \"opacity\" field on the config /path/to/a/config.yaml")
+		fmt.Println("     to 0.5")
 	}
 }
