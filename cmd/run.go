@@ -21,7 +21,7 @@ func RunValidateFlag(f *flag.Flag) error {
 	case flag.Profile, flag.Interval, flag.Alignment, flag.Opacity, flag.Stretch:
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown flag: '%s'", f.Type.ToString())
+		return fmt.Errorf("invalid flag for 'run': '%s'", f.Type.ToString())
 	}
 }
 
@@ -33,7 +33,7 @@ func RunValidateSubCmd(sc *Cmd) error {
 		}
 		return sc.ValidateValue(sc.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown sub command: '%s'", sc.Type.ToString())
+		return fmt.Errorf("invalid sub command for 'run': '%s'", sc.Type.ToString())
 	}
 }
 
