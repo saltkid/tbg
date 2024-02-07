@@ -24,10 +24,13 @@ func RemoveValidateValue(val string) error {
 
 func RemoveValidateFlag(f *flag.Flag) error {
 	switch f.Type {
-	case flag.None:
+	case flag.Alignment, flag.Opacity, flag.Stretch:
+		if f.Value != "" {
+			return fmt.Errorf("'remove' flags don't take any values. flag '%s' has value: '%s'", f.Type.ToString(), f.Value)
+		}
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("'remove' takes no flags. got: '%s'", f.Type.ToString())
+		return fmt.Errorf("invalid flag for 'remove': '%s'", f.Type.ToString())
 	}
 }
 
@@ -39,7 +42,7 @@ func RemoveValidateSubCmd(c *Cmd) error {
 		}
 		return c.ValidateValue(c.Value)
 	default:
-		return fmt.Errorf("unexpected error: unknown sub command type: '%s'", c.Type.ToString())
+		return fmt.Errorf("invalid sub command for 'remove': '%s'", c.Type.ToString())
 	}
 }
 
