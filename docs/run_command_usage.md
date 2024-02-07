@@ -50,7 +50,7 @@ Let's do:
 ```
 tbg run
 ```
-This means the config we will be using is the config on the `used_config` field set on `tbg_profile.yaml`. Let's say the value of `used_config` is `"default"`, meaning we will use the `config.yaml` in the same path as the **tbg** executable (the auto created one)
+This means the config we will be using is the config on the `used_config` field set on `tbg_profile.yaml`. Let's say the value of `used_config` is the path of `config.yaml` in the same path as the **tbg** executable (the auto created one)
 
 Let's also say that this is the default config:
 ```
