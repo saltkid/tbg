@@ -42,6 +42,7 @@ func HelpExecute(c *Cmd) error {
 		AlignmentHelp(false)
 		StretchHelp(false)
 		OpacityHelp(false)
+		RandomHelp(false)
 		fmt.Println("\nNot all flags are applicable to all commands. See help <command> for more info")
 		return nil
 	}
@@ -74,6 +75,8 @@ func HelpExecute(c *Cmd) error {
 			StretchHelp(true)
 		case flag.Opacity:
 			OpacityHelp(true)
+		case flag.Random:
+			RandomHelp(true)
 		}
 		fmt.Println("------------------------------------------------------------------------------------")
 	}
@@ -381,7 +384,7 @@ func ProfileHelp(verbose bool) {
 
 func IntervalHelp(verbose bool) {
 	fmt.Printf("%-30s%s", "  -i, --interval",
-		"Specifies the interval of image change in minutes to use in a command.\n")
+		"The interval of image change in minutes to use in a command.\n")
 	if verbose {
 		fmt.Println("\n  Args:")
 		fmt.Println("  1. any positive integer")
@@ -397,7 +400,7 @@ func IntervalHelp(verbose bool) {
 
 func AlignmentHelp(verbose bool) {
 	fmt.Printf("%-30s%s", "  -a, --alignment",
-		"Specifies the alignment of the image to use in a command.\n")
+		"The alignment of the image to use in a command.\n")
 	if verbose {
 		fmt.Println("\n  Args:")
 		fmt.Println("  1. topLeft,    top,    topRight")
@@ -415,7 +418,7 @@ func AlignmentHelp(verbose bool) {
 
 func StretchHelp(verbose bool) {
 	fmt.Printf("%-30s%s", "  -s, --stretch",
-		"Specifies the stretch of the image to use in a command.\n")
+		"The stretch of the image to use in a command.\n")
 	if verbose {
 		fmt.Println("\n  Args:")
 		fmt.Println("  1. fill, none, uniform, uniformToFill")
@@ -431,7 +434,7 @@ func StretchHelp(verbose bool) {
 
 func OpacityHelp(verbose bool) {
 	fmt.Printf("%-30s%s", "  -o, --opacity",
-		"Specifies the opacity of the image to use in a command.\n")
+		"The opacity of the image to use in a command.\n")
 	if verbose {
 		fmt.Println("\n  Args:")
 		fmt.Println("  1. any float between 0 and 1 (inclusive)")
@@ -442,5 +445,22 @@ func OpacityHelp(verbose bool) {
 		fmt.Println("\n  2. tbg edit --opacity 0.5 config /path/to/a/config.yaml")
 		fmt.Println("     this will change the \"opacity\" field on the config /path/to/a/config.yaml")
 		fmt.Println("     to 0.5")
+	}
+}
+
+func RandomHelp(verbose bool) {
+	fmt.Printf("%-30s%s", "  -r, --random",
+		"Randomize image collections and images. Specific to `run` command\n")
+	if verbose {
+		fmt.Println("\n  Args: --random does not take args")
+		fmt.Println("\n  Examples:")
+		fmt.Println("  1. tbg run --random")
+		fmt.Println("     This will randomize the order of the image collections read")
+		fmt.Println("     from the currently used config. It randomizes the order the")
+		fmt.Println("     images in each collection.")
+		fmt.Println()
+		fmt.Println("     When image collections are exhausted and tbg wraps around, the")
+		fmt.Println("     order of the image collections will be randomized again. This")
+		fmt.Println("     behavior applies to images too.")
 	}
 }
