@@ -354,8 +354,10 @@ func commandList() {
 	fmt.Println("q: [q]uit")
 	fmt.Println("n: [n]ext image")
 	fmt.Println("p: [p]revious image")
-	fmt.Println("f: [N]ext dir")
-	fmt.Println("b: [P]revious dir")
+	fmt.Println("N: [N]ext dir")
+	fmt.Println("P: [P]revious dir")
+	fmt.Println("r: [r]andomize images (current to last; previous unaffected)")
+	fmt.Println("R: [R]andomize dirs (current to last; previous unaffected)")
 	fmt.Println("c: [c]ommand list")
 }
 
