@@ -4,9 +4,9 @@ import (
 	"fmt"
 )
 
-var version string
+var TbgVersion = "dev"
 
 func VersionExecute() error {
-	fmt.Println(version)
+	fmt.Println(TbgVersion)
 	return nil
 }

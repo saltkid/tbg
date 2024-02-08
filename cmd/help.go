@@ -27,9 +27,11 @@ func HelpValidateSubCmd(c *Cmd) error {
 func HelpExecute(c *Cmd) error {
 	if len(c.SubCmds) == 0 && len(c.Flags) == 0 {
 		fmt.Println("tbg (Terminal Background Gallery)")
-		fmt.Print("Version: ")
+		fmt.Println("  tbg (teabag) allows the user to have and manage multiple background")
+		fmt.Println("  images, that rotate at a set amount of time, for Windows Terminal.")
+		fmt.Print("\nVersion: ")
 		VersionExecute()
-		fmt.Println("Usage: tbg run")
+		fmt.Println("\nUsage: tbg run")
 		fmt.Println("\nCommands:")
 		RunHelp(false)
 		AddHelp(false)
