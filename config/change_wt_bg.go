@@ -3,6 +3,7 @@ package config
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -41,7 +42,9 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 	nextImage := make(chan struct{})
 	prevDir := make(chan struct{})
 	prevImage := make(chan struct{})
-	go readUserInput(keysEvents, done, nextDir, nextImage, prevDir, prevImage)
+	randomDir := make(chan struct{})
+	randomImage := make(chan struct{})
+	go readUserInput(keysEvents, done, nextDir, nextImage, prevDir, prevImage, randomDir, randomImage)
 
 	for {
 		// indices to allow going to previous dir/image
@@ -138,6 +141,23 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 				case <-done:
 					fmt.Println("Goodbye!")
 					return nil
+				case <-randomImage:
+					fmt.Println("randomizing from current image up to last image...")
+					fmt.Println("(previous images will not be randomized so you can go back)")
+					for range images[imgIndex:] {
+						i := rand.Intn(len(images) - imgIndex)
+						i += imgIndex
+						images[i], images[imgIndex] = images[imgIndex], images[i]
+					}
+				case <-randomDir:
+					fmt.Println("randomizing from current dir up to last dir...")
+					fmt.Println("(previous dirs will not be randomized so you can go back)")
+					for range c.ImageColPaths[dirIndex:] {
+						i := rand.Intn(len(c.ImageColPaths) - dirIndex)
+						i += dirIndex
+						c.ImageColPaths[i], c.ImageColPaths[dirIndex] = c.ImageColPaths[dirIndex], c.ImageColPaths[i]
+					}
+					break imageLoop
 				case <-nextImage:
 					fmt.Println("using next image...")
 					imgIndex++
@@ -180,7 +200,10 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 	}
 }
 
-func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, nextDir chan<- struct{}, nextImage chan<- struct{}, prevDir chan<- struct{}, prevImage chan<- struct{}) {
+func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{},
+	nextDir chan<- struct{}, nextImage chan<- struct{},
+	prevDir chan<- struct{}, prevImage chan<- struct{},
+	randomDir chan<- struct{}, randomImage chan<- struct{}) {
 	for {
 		event := <-keysEvents
 		if event.Err != nil {
@@ -191,6 +214,12 @@ func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{}, ne
 			fmt.Println("Exiting...")
 			close(done)
 			return
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('R') {
+			randomDir <- struct{}{}
+
+		} else if keyboard.Key(event.Rune) == keyboard.Key('r') {
+			randomImage <- struct{}{}
 
 		} else if keyboard.Key(event.Rune) == keyboard.Key('N') {
 			nextDir <- struct{}{}
