@@ -45,6 +45,7 @@ func (c *Config) Unmarshal(data []byte) error {
 }
 
 func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch *string, opacity *string) error {
+	var toAddFlags string
 	// set flags after path only if at least one is set
 	if align != nil || opacity != nil || stretch != nil {
 		// inherit default values if not set
@@ -58,20 +59,22 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 			tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
 			opacity = &tmp
 		}
-		toAdd = fmt.Sprintf("%s | %s %s %s", toAdd, *align, *stretch, *opacity)
+		toAddFlags = fmt.Sprintf("%s %s %s", *align, *stretch, *opacity)
 	}
 
+	added := make(map[string]struct{}, 0)
 	for _, path := range c.ImageColPaths {
-		pureAbsPath, _, _ := strings.Cut(toAdd, "|")
-		pureAbsPath = strings.TrimSpace(pureAbsPath)
 		purePath, _, _ := strings.Cut(path, "|")
 		purePath = strings.TrimSpace(purePath)
 
-		if strings.EqualFold(pureAbsPath, purePath) {
-			return fmt.Errorf("'%s' already in config at '%s'", pureAbsPath, path)
+		if strings.EqualFold(toAdd, purePath) {
+			added["no changes made"] = struct{}{}
 		}
 	}
-	c.ImageColPaths = append(c.ImageColPaths, toAdd)
+	if len(added) == 0 {
+		c.ImageColPaths = append(c.ImageColPaths, fmt.Sprintf("%s | %s", toAdd, toAddFlags))
+		added[toAdd] = struct{}{}
+	}
 
 	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(c)
@@ -80,7 +83,11 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
 	}
 
-	c.Log(configPath)
+	c.Log(configPath).LogAdded(added)
+	if _, ok := added["no changes made"]; ok {
+
+		return fmt.Errorf("'%s' already exists in config", toAdd)
+	}
 	return nil
 }
 
@@ -303,6 +310,20 @@ func (c *Config) LogEdited(editedPaths map[string]string) *Config {
 				fmt.Printf("%-25s%s\n", "| new:", edited)
 				fmt.Println("|")
 			}
+		}
+	}
+	fmt.Println("------------------------------------------------------------------------------------")
+
+	return c
+}
+
+func (c *Config) LogAdded(path map[string]struct{}) *Config {
+	fmt.Println("| added: ")
+	if _, ok := path["no changes made"]; ok {
+		fmt.Println("| no changes made")
+	} else {
+		for path := range path {
+			fmt.Println("|", path)
 		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")
