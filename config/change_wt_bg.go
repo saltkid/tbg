@@ -14,7 +14,7 @@ import (
 	"github.com/saltkid/tbg/utils"
 )
 
-func (c *Config) ChangeBgImage(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
+func (c *Config) ChangeBgImage(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string, random *string) error {
 	// read settings.json
 	settingsPath, err := settingsJsonPath()
 	if err != nil {
@@ -61,6 +61,10 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 		 */
 		startAtFirstImage := true
 
+		if random != nil {
+			shuffleFrom(0, c.ImageColPaths)
+		}
+
 		for dirIndex >= 0 && dirIndex < len(c.ImageColPaths) {
 			/* the order of flag importance is:
 			 *
@@ -80,6 +84,10 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 			if err != nil {
 				return err
 			}
+			if random != nil {
+				shuffleFrom(0, images)
+			}
+
 			if startAtFirstImage {
 				imgIndex = 0
 			} else {
@@ -144,19 +152,11 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 				case <-randomImage:
 					fmt.Println("randomizing from current image up to last image...")
 					fmt.Println("(previous images will not be randomized so you can go back)")
-					for range images[imgIndex:] {
-						i := rand.Intn(len(images) - imgIndex)
-						i += imgIndex
-						images[i], images[imgIndex] = images[imgIndex], images[i]
-					}
+					shuffleFrom(imgIndex, images)
 				case <-randomDir:
 					fmt.Println("randomizing from current dir up to last dir...")
 					fmt.Println("(previous dirs will not be randomized so you can go back)")
-					for range c.ImageColPaths[dirIndex:] {
-						i := rand.Intn(len(c.ImageColPaths) - dirIndex)
-						i += dirIndex
-						c.ImageColPaths[i], c.ImageColPaths[dirIndex] = c.ImageColPaths[dirIndex], c.ImageColPaths[i]
-					}
+					shuffleFrom(dirIndex, c.ImageColPaths)
 					break imageLoop
 				case <-nextImage:
 					fmt.Println("using next image...")
@@ -357,4 +357,14 @@ func commandList() {
 	fmt.Println("f: [N]ext dir")
 	fmt.Println("b: [P]revious dir")
 	fmt.Println("c: [c]ommand list")
+}
+
+// shuffles the string slice from the current index up to the end
+//
+// it does not affect the elements before the current index
+func shuffleFrom(currentIndex int, stringSlice []string) {
+	for range stringSlice[currentIndex:] {
+		i := rand.Intn(len(stringSlice)-currentIndex) + currentIndex
+		stringSlice[i], stringSlice[currentIndex] = stringSlice[currentIndex], stringSlice[i]
+	}
 }

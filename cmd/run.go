@@ -18,7 +18,7 @@ func RunValidateValue(val string) error {
 
 func RunValidateFlag(f *flag.Flag) error {
 	switch f.Type {
-	case flag.Profile, flag.Interval, flag.Alignment, flag.Opacity, flag.Stretch:
+	case flag.Profile, flag.Interval, flag.Alignment, flag.Opacity, flag.Stretch, flag.Random:
 		return f.ValidateValue(f.Value)
 	default:
 		return fmt.Errorf("invalid flag for 'run': '%s'", f.Type.ToString())
@@ -44,6 +44,7 @@ func RunExecute(c *Cmd) error {
 	alignment := ExtractFlagValue(flag.Alignment, c.Flags)
 	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
 	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
+	random := ExtractFlagValue(flag.Random, c.Flags)
 
 	// check if config subcommand is set by user (empty if not)
 	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
@@ -70,7 +71,7 @@ func RunExecute(c *Cmd) error {
 		return err
 	}
 
-	err = configContents.ChangeBgImage(configPath, profile, interval, alignment, stretch, opacity)
+	err = configContents.ChangeBgImage(configPath, profile, interval, alignment, stretch, opacity, random)
 	if err != nil {
 		return err
 	}

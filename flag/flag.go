@@ -15,6 +15,7 @@ const (
 	Alignment
 	Opacity
 	Stretch
+	Random
 )
 
 func (f FlagType) ToString() string {
@@ -31,6 +32,8 @@ func (f FlagType) ToString() string {
 		return "--opacity"
 	case Stretch:
 		return "--stretch"
+	case Random:
+		return "--random"
 	default:
 		return "unknown"
 	}
@@ -53,6 +56,8 @@ func ToFlag(s string) (*Flag, error) {
 		return &Flag{Type: Opacity}, nil
 	case "--stretch", "-s":
 		return &Flag{Type: Stretch}, nil
+	case "--random", "-r":
+		return &Flag{Type: Random}, nil
 	default:
 		return nil, fmt.Errorf("unknown flag: %s", s)
 	}
@@ -74,6 +79,8 @@ func (f *Flag) ValidateValue(val string) error {
 		return ValidateOpacity(val)
 	case Stretch:
 		return ValidateStretch(val)
+	case Random:
+		return ValidateRandom(val)
 	case None:
 		return nil
 	default:
@@ -137,5 +144,14 @@ func ValidateStretch(val string) error {
 		return nil
 	default:
 		return fmt.Errorf("invalid arg '%s' for --stretch: unknown stretch", val)
+	}
+}
+
+func ValidateRandom(val string) error {
+	switch val {
+	case "":
+		return nil
+	default:
+		return fmt.Errorf("'--random' flag does not take any arguments. got '%s'", val)
 	}
 }
