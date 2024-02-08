@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/saltkid/tbg/flag"
+	"github.com/saltkid/tbg/utils"
 )
 
 func HelpValidateValue(val string) error {
@@ -26,30 +27,33 @@ func HelpValidateSubCmd(c *Cmd) error {
 
 func HelpExecute(c *Cmd) error {
 	if len(c.SubCmds) == 0 && len(c.Flags) == 0 {
-		fmt.Println("tbg (Terminal Background Gallery)")
-		fmt.Println("  tbg (teabag) allows the user to have and manage multiple background")
-		fmt.Println("  images, that rotate at a set amount of time, for Windows Terminal.")
-		fmt.Print("\nVersion: ")
-		VersionExecute()
-		fmt.Println("\nUsage: tbg run")
-		fmt.Println("\nCommands:")
+		fmt.Printf("%-37s%s\n", *utils.ToAnsiString("tbg").Bold().Underline(),
+			*utils.ToAnsiString("Terminal Background Gallery").Italic())
+		fmt.Printf("%-30s%s\n", "", fmt.Sprintf("%s (%s) allows the user to have and manage multiple background", *utils.ToAnsiString("tbg").Bold(), *utils.ToAnsiString("teabag").Italic()))
+		fmt.Printf("%-30s%s\n", "", fmt.Sprintf("images, that rotate at a set amount of time, for Windows Terminal."))
+		fmt.Printf("%-37s%s\n", *utils.ToAnsiString("Version").Bold().Underline(),
+			*utils.ToAnsiString(TbgVersion).Italic())
+		fmt.Printf("\n%-37s%s\n", *utils.ToAnsiString("Usage").Bold().Underline(),
+			*utils.ToAnsiString("tbg run").Italic())
+		fmt.Printf("\n%s:\n", *utils.ToAnsiString("Commands").Bold().Underline())
 		RunHelp(false)
 		AddHelp(false)
 		RemoveHelp(false)
 		EditHelp(false)
 		ConfigHelp(false)
-		fmt.Println("\nFlags:")
+		fmt.Printf("\n%s:\n", *utils.ToAnsiString("Flags").Bold().Underline())
 		ProfileHelp(false)
 		IntervalHelp(false)
 		AlignmentHelp(false)
 		StretchHelp(false)
 		OpacityHelp(false)
 		RandomHelp(false)
-		fmt.Println("\nNot all flags are applicable to all commands. See help <command> for more info")
+		fmt.Printf("\n%s\n", *utils.ToAnsiString("Not all flags are applicable to all commands. See help <command> for more info").Italic())
 		return nil
 	}
 
 	// verbose messages
+	fmt.Println("------------------------------------------------------------------------------------")
 	for subCmd := range c.SubCmds {
 		switch subCmd {
 		case Run:
@@ -86,16 +90,16 @@ func HelpExecute(c *Cmd) error {
 }
 
 func RunHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  run",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  run").Bold(),
 		"reads the used config and edits Windows Terminal's settings.json to change background images\n")
 	if verbose {
-		fmt.Println("\n  Args: run takes no args")
-		fmt.Println("\n  Subcommands:")
+		fmt.Printf("\n  %s: run takes no args\n", *utils.ToAnsiString("Args").Bold())
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Subcommands").Bold())
 		fmt.Println("  1. config [arg]")
 		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to read from using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
-		fmt.Println("\n  Flags:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Flags").Bold())
 		fmt.Println("  You can specify alignment, stretch, and opacity using flags.")
 		fmt.Println("  These will override the values in the used config (not edit)")
 		fmt.Println("  1. -a, --alignment [arg]")
@@ -110,7 +114,7 @@ func RunHelp(verbose bool) {
 		fmt.Println("  5. -i, --interval  [arg]")
 		fmt.Println("         [any positive integer]")
 		fmt.Println("         note that this is in minutes")
-		fmt.Println("\n  Key Events:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Key Events").Bold())
 		fmt.Println("  while tbg is running, it accepts optional key events.")
 		fmt.Println("  Press a key to execute the command")
 		fmt.Println("  1. q: [q]uit tbg")
@@ -119,7 +123,7 @@ func RunHelp(verbose bool) {
 		fmt.Println("  4. f: goes [f]orward to next image collection dir")
 		fmt.Println("  5. b: goes [b]ack to previous image collection dir")
 		fmt.Println("  6. c: list all [c]ommands")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run")
 		fmt.Println("     This will use the currently used config's values to edit Windows Terminal's settings.json")
 		fmt.Println("\n  2. tbg run config path/to/a/config.yaml ")
@@ -152,19 +156,19 @@ func RunHelp(verbose bool) {
 }
 
 func AddHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  add",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  add").Bold(),
 		"Adds a path containing images to currently used config\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. path/to/images/dir")
 		fmt.Println("     Path to images dir should have at least one image")
 		fmt.Println("     file under it. All subdirectories will be ignored.")
-		fmt.Println("\n  Subcommands:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Subcommands").Bold())
 		fmt.Println("  1. config [arg]")
 		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to add to using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
-		fmt.Println("\n  Flags:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Flags").Bold())
 		fmt.Println("  You can specify alignment, stretch, and opacity using flags. See example 2 and 3")
 		fmt.Println("  1. -a, --alignment [arg]")
 		fmt.Println("         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]")
@@ -172,7 +176,7 @@ func AddHelp(verbose bool) {
 		fmt.Println("         [any float between 0 and 1 (inclusive)]")
 		fmt.Println("  3. -s, --stretch   [arg]")
 		fmt.Println("         [fill, none, uniform, uniformToFill]")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg add path/to/images/dir")
 		fmt.Println("     This is how it would look like in the config:")
 		fmt.Println("      ----------------------")
@@ -207,18 +211,18 @@ func AddHelp(verbose bool) {
 }
 
 func RemoveHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  remove",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  remove").Bold(),
 		"Removes a path from the currently used config\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. path/to/images/dir")
-		fmt.Println("\n  Subcommands:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Subcommands").Bold())
 		fmt.Println("  1. config [arg]")
 		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to remove from using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
-		fmt.Println("\n  Flags: remove takes no flags")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s: remove takes no flags\n", *utils.ToAnsiString("Flags").Bold())
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg remove path/to/images/dir")
 		fmt.Println("      before:                        after:")
 		fmt.Println("      --------------------------     ---------------------")
@@ -231,21 +235,21 @@ func RemoveHelp(verbose bool) {
 }
 
 func EditHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  edit",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  edit").Bold(),
 		"Edits a path, all paths, or just the fields from the currently used config\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. path/to/images/dir")
 		fmt.Println("  2. all")
 		fmt.Println("     edit all paths with specified flags")
 		fmt.Println("  3. fields")
 		fmt.Println("     edit only the default flag fields with the specified flags")
-		fmt.Println("\n  Subcommands:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Subcommands").Bold())
 		fmt.Println("  1. config [arg]")
 		fmt.Println("     [default, path/to/a/config.yaml]")
 		fmt.Println("     You can specify which config to remove from using the 'config' subcommand.")
 		fmt.Println("     If you do not specify a config, the currently used config will be used.")
-		fmt.Println("\n  Flags:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Flags").Bold())
 		fmt.Println("  You can specify alignment, stretch, and opacity using flags. See examples below.")
 		fmt.Println("  1. -a, --alignment [arg]")
 		fmt.Println("         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]")
@@ -264,7 +268,7 @@ func EditHelp(verbose bool) {
 		fmt.Println("  never on per path level even if user specified 'all' or a path. Only,")
 		fmt.Println("  alignment, stretch, and opacity can be both per path and config level")
 		fmt.Println("  See example 3.")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg edit path/to/images/dir --alignment center --stretch none")
 		fmt.Println("      before:                          after:")
 		fmt.Println("      --------------------------       --------------------------------------------")
@@ -313,12 +317,12 @@ func EditHelp(verbose bool) {
 }
 
 func ConfigHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  config",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  config").Bold(),
 		"Prints the currently used config if no arg.\n")
-	fmt.Printf("%-30s%s", "",
+	fmt.Printf("%-25s%s", "",
 		"If an arg is specified, it sets that arg as the currently used config, then prints it.\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. path/to/a-config.yaml")
 		fmt.Println("     Sets this path as the currently used config.")
 		fmt.Println("     It does this by editing the 'used_config' field on tbg_profile.yaml")
@@ -330,9 +334,9 @@ func ConfigHelp(verbose bool) {
 		fmt.Println("     This also edits the 'used_config' field in tbg_profile.yaml")
 		fmt.Println("  3. no arg")
 		fmt.Println("     Prints the currently used config.")
-		fmt.Println("\n  Subcommands: config takes no subcommands")
-		fmt.Println("  Flags: config takes no flags")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s: config takes no subcommands\n", *utils.ToAnsiString("Subcommands").Bold())
+		fmt.Printf("  %s: config takes no flags\n", *utils.ToAnsiString("Flags").Bold())
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg config")
 		fmt.Println("      print currently used config:")
 		fmt.Println("      --------------------------")
@@ -365,16 +369,16 @@ func ConfigHelp(verbose bool) {
 }
 
 func ProfileHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  -p, --profile",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  -p, --profile").Bold(),
 		"Specifies which Windows Terminal profile to use in a command.\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. default")
 		fmt.Println("     Sets the default profile as the profile to be used")
 		fmt.Println("     by the parent command")
 		fmt.Println("  2. list-n")
 		fmt.Println("     where n is the list index Windows Terminal uses to identify the profile")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run --profile default")
 		fmt.Println("     whatever value the \"profile\" field in the currently used config is will")
 		fmt.Println("     be ignored and tbg will edit the default Windows Terminal profile instead")
@@ -385,12 +389,12 @@ func ProfileHelp(verbose bool) {
 }
 
 func IntervalHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  -i, --interval",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  -i, --interval").Bold(),
 		"The interval of image change in minutes to use in a command.\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. any positive integer")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run --interval 30")
 		fmt.Println("     whatever value the \"interval\" field in the currently used config is will")
 		fmt.Println("     be ignored and tbg change images every 30 minutes instead.")
@@ -401,14 +405,14 @@ func IntervalHelp(verbose bool) {
 }
 
 func AlignmentHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  -a, --alignment",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  -a, --alignment").Bold(),
 		"The alignment of the image to use in a command.\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. topLeft,    top,    topRight")
 		fmt.Println("  2. left,       center, right")
 		fmt.Println("  3. bottomLeft, bottom, bottomRight")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run --alignment center")
 		fmt.Println("     whatever value the \"alignment\" field in the currently used config is will")
 		fmt.Println("     be ignored and tbg will center the image instead")
@@ -419,12 +423,12 @@ func AlignmentHelp(verbose bool) {
 }
 
 func StretchHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  -s, --stretch",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  -s, --stretch").Bold(),
 		"The stretch of the image to use in a command.\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. fill, none, uniform, uniformToFill")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run --stretch fill")
 		fmt.Println("     whatever value the \"stretch\" field in the currently used config is will")
 		fmt.Println("     be ignored and tbg will upscale the image to exactly fill the screen instead")
@@ -435,12 +439,12 @@ func StretchHelp(verbose bool) {
 }
 
 func OpacityHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  -o, --opacity",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  -o, --opacity").Bold(),
 		"The opacity of the image to use in a command.\n")
 	if verbose {
-		fmt.Println("\n  Args:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Args").Bold())
 		fmt.Println("  1. any float between 0 and 1 (inclusive)")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run --opacity 0.5")
 		fmt.Println("     whatever value the \"opacity\" field in the currently used config is will")
 		fmt.Println("     be ignored and tbg will set the image opacity to 0.5")
@@ -451,11 +455,11 @@ func OpacityHelp(verbose bool) {
 }
 
 func RandomHelp(verbose bool) {
-	fmt.Printf("%-30s%s", "  -r, --random",
+	fmt.Printf("%-33s%s", *utils.ToAnsiString("  -r, --random").Bold(),
 		"Randomize image collections and images. Specific to `run` command\n")
 	if verbose {
-		fmt.Println("\n  Args: --random does not take args")
-		fmt.Println("\n  Examples:")
+		fmt.Printf("\n  %s: --random does not take args\n", *utils.ToAnsiString("Args").Bold())
+		fmt.Printf("\n  %s:\n", *utils.ToAnsiString("Examples").Bold())
 		fmt.Println("  1. tbg run --random")
 		fmt.Println("     This will randomize the order of the image collections read")
 		fmt.Println("     from the currently used config. It randomizes the order the")
