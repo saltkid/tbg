@@ -20,6 +20,8 @@ const (
 
 func (c CmdType) ToString() string {
 	switch c {
+	case None:
+		return "none"
 	case Run:
 		return "run"
 	case Config:

@@ -15,13 +15,17 @@ func main() {
 		return
 	}
 
-	cmd, err := ParseArgs(tokens)
+	command, err := ParseArgs(tokens)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
 
-	err = cmd.Execute()
+	if command.IsNone() {
+		command.Type = cmd.Help
+	}
+
+	err = command.Execute()
 	if err != nil {
 		fmt.Println(err)
 		return
