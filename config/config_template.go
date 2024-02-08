@@ -2,6 +2,8 @@ package config
 
 import (
 	"os"
+	"fmt"
+	"path/filepath"
 )
 
 type ConfigTemplate struct {
@@ -17,6 +19,13 @@ func (c *ConfigTemplate) WriteFile() error {
 }
 
 func NewConfigTemplate(path string) *ConfigTemplate {
+	// put C:\Users\username\Pictures as an initial value
+	userProfile, err := os.UserHomeDir()
+	imageColPaths := `image_col_paths : []`
+	if err == nil {
+		imageColPaths = fmt.Sprintf("image_col_paths\n- %s", filepath.Join(userProfile, "Pictures"))
+	}
+
 	return &ConfigTemplate{
 		Path: path,
 		BeginDesc: []byte(`#------------------------------------------
@@ -29,7 +38,7 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 #------------------------------------------
 `),
 		YamlContents: []byte(`
-image_col_paths: []
+` + imageColPaths + `
 
 profile: default
 interval: 30
