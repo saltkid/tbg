@@ -2,12 +2,16 @@
 - [tbg](#tbg-Terminal-Background-Gallery)
 - [Installation](#installation)
 - [Usage](#usage)
+    - [Building from source](#building-from-source)
 - [tbg Profile](#tbg-profile)
 - [Config](#config)
     - [Fields](#fields)
 - [Commands](#commands)
     - [Flags](#flags)
 - [Credits](#credits)
+
+---
+
 # tbg (Terminal Background Gallery)
 **tbg** (*teabag*) allows the user to have and manage multiple background images that rotate at a set amount of time for Windows Terminal
 
@@ -15,7 +19,10 @@ This edits the `settings.json` used by *Windows Terminal*; specifically, the `ba
 
 # Installation
 Download the latest release of [tbg](https://github.com/saltkid/tbg/releases)
-or build it from source
+
+or
+
+## Building from source
 - clone the repo
 ```
 git clone git@github.com:saltkid/tbg.git
@@ -26,11 +33,11 @@ cd tbg && go build
 ```
 **Optionally** add the `tbg` executable to your path
 
-# Usage
+# [Usage](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md)
 ```
 tbg run
 ```
-On initial execution of **tbg**, it will create a [tbg_profile](#tbg_profile) (`tbg_profile.yaml`) and a [default config](#config) (`config.yaml`) in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) to edit these for input validation
+On initial execution of **tbg**, it will create a [tbg_profile](#tbg_profile) (`tbg_profile.yaml`) and a [default config](#config) (`config.yaml`) in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) to edit these with input validation
 
 While **tbg** is running, it takes in optional user input through key presses. Here's a list of commands:
 - `q`: quit

@@ -24,14 +24,14 @@ For more information, see documentation on [tbg profile.yaml](https://github.com
 **tbg** takes optional commands during execution:
 - `q`: quits
 - `c`: shows the available commands
-- `n`: goes to next image in the current image collection dir
-- `p`: goes to previous image in the current image collection dir
-- `N`: goes to next image collection dir
-- `P`: goes to previous image collection dir
-- `r`: randomizes the images in the current image collecetion dir starting from the current image
+- `n`: goes to next image
+- `p`: goes to previous image
+- `N`: goes to next image collection
+- `P`: goes to previous image collection
+- `r`: randomizes the images in the current image collection starting from the current image
     - this does not affect the order of the previous images
-- `R`: randomizes the images in the current image collecetion dir starting from the current dir
-    - this does not affect the order of the previous dirs
+- `R`: randomizes the images in the current image collection starting from the current collection
+    - this does not affect the order of the previous collections
 
 **tbg** will continue running until you press `q` or `ctrl+c`. This means even if all images are exhausted, **tbg** will safely wrap back around.
 
