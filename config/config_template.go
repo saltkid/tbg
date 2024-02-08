@@ -1,8 +1,8 @@
 package config
 
 import (
-	"os"
 	"fmt"
+	"os"
 	"path/filepath"
 )
 
@@ -23,7 +23,9 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 	userProfile, err := os.UserHomeDir()
 	imageColPaths := `image_col_paths : []`
 	if err == nil {
-		imageColPaths = fmt.Sprintf("image_col_paths\n- %s", filepath.Join(userProfile, "Pictures"))
+		picturesDir := filepath.Join(userProfile, "Pictures")
+		picturesDir = filepath.ToSlash(picturesDir)
+		imageColPaths = fmt.Sprintf("image_col_paths:\n- %s", picturesDir)
 	}
 
 	return &ConfigTemplate{

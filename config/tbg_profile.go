@@ -67,6 +67,7 @@ func TbgProfileTemplate(path string) *ConfigTemplate {
 	defaultConfig, err := DefaultConfigPath()
 	usedConfig := `used_config: ""`
 	if err == nil {
+		defaultConfig = filepath.ToSlash(defaultConfig)
 		usedConfig = fmt.Sprintf(`used_config: "%s"`, defaultConfig)
 	}
 
