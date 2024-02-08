@@ -6,6 +6,7 @@ import (
 
 	"github.com/saltkid/tbg/cmd"
 	"github.com/saltkid/tbg/flag"
+	"github.com/saltkid/tbg/utils"
 )
 
 func main() {
@@ -25,6 +26,7 @@ func main() {
 		command.Type = cmd.Help
 	}
 
+	utils.Cls()
 	err = command.Execute()
 	if err != nil {
 		fmt.Println(err)
