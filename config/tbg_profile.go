@@ -25,7 +25,7 @@ func (c *TbgProfile) Unmarshal(data []byte) error {
 func TbgProfilePath() (string, error) {
 	e, err := os.Executable()
 	if err != nil {
-		return "", fmt.Errorf("Failed to get tbg profile: %s", err.Error())
+		return "", fmt.Errorf("Failed to get executable path to get tbg profile: %s", err.Error())
 	}
 
 	profilePath := filepath.Join(filepath.Dir(e), "tbg_profile.yaml")
@@ -63,6 +63,13 @@ func UsedConfig() (string, error) {
 }
 
 func TbgProfileTemplate(path string) *ConfigTemplate {
+	// set default used_config to the default config.yaml
+	defaultConfig, err := DefaultConfigPath()
+	usedConfig := `used_config: ""`
+	if err == nil {
+		usedConfig = fmt.Sprintf(`used_config: "%s"`, defaultConfig)
+	}
+
 	return &ConfigTemplate{
 		Path: path,
 		BeginDesc: []byte(`#---------------------------------------------
@@ -73,7 +80,7 @@ func TbgProfileTemplate(path string) *ConfigTemplate {
 # I'll add more if the need arises
 #---------------------------------------------
 `),
-		YamlContents: []byte(`used_config: ""`),
+		YamlContents: []byte(usedConfig),
 		EndDesc: []byte(`
 #---------------------------------------------
 # Fields:
