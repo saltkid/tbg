@@ -2,6 +2,7 @@
 - [Overview](#tbg-run)
 - [Key events](#key-events)
 - [Executing with `--`flags](#executing-with---flags)
+    - [Using `--random` flag](#using---random-flag)
 - [Executing with `config` subcommand](#executing-with-config-subcommand)
 - [Walkthroughs](#walkthroughs)
     - [Normal Execution, key events, and path specific flags](#normal-execution)
@@ -21,29 +22,37 @@ For more information, see documentation on [tbg profile.yaml](https://github.com
 
 # Key events
 **tbg** takes optional commands during execution:
+- `q`: quits
+- `c`: shows the available commands
 - `n`: goes to next image in the current image collection dir
 - `p`: goes to previous image in the current image collection dir
 - `N`: goes to next image collection dir
 - `P`: goes to previous image collection dir
-- `c`: shows the available commands
+- `r`: randomizes the images in the current image collecetion dir starting from the current image
+    - this does not affect the order of the previous images
+- `R`: randomizes the images in the current image collecetion dir starting from the current dir
+    - this does not affect the order of the previous dirs
 
 **tbg** will continue running until you press `q` or `ctrl+c`. This means even if all images are exhausted, **tbg** will safely wrap back around.
 
 For an example, see [walkthrough with key events](#normal-execution)
 
 # Executing with `--`flags
-#### Valid Flags: `--alignment`, `--opacity`, `--stretch`
+#### Valid Flags: `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch`, `--random`
 
-`--`flags can be used to override the default flag fields in the config: `default_alignment`, `default_stretch`, `default_opacity`.
+`--`flags can be used to override these fields in the config: `profile`, `interval`, `default_alignment`, `default_stretch`, `default_opacity`.
 
-These flags will override the flags set per path as well. So if there is a `path/to/dir | center fill 0.1`, **tbg** will use the `--`flags instead of that or the default flag fields.
+The flags that override default flag fields will override the flags set per path as well. So if there is a `path/to/dir | center fill 0.1`, **tbg** will use the flags instead of that or the default flag fields.
 
 The order of importance is:
-1. `--`flags
+1. `--`flags (`--alignment`, `--opacity`, `--stretch`)
 2. per path flags
 3. default flag fields 
 
 For an example, see [overriding default flags walkthrough](#overriding-default-flag-fields)
+
+#### Using `--random` flag
+The `--random` flag will randomize the order of image collections dirs **and** the images. Even if you consumed all dirs and wrap around to the first dir again, the dirs will be re-randomized. Even the images: when you go to next dir B, then go to previous dir A, the order will be different from the first time you go to dir A, since images are also re-randomized every time you enter a dir.
 
 # Executing with `config` subcommand
 Using the `config` command will override the `tbg_profile.yaml`'s `used_config` field. This means it will force **tbg** to use the specified config instead of the default behavior of checking `used_config` field of `tbg_profile.yaml`
