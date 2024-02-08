@@ -115,6 +115,9 @@ func (c *Config) RemovePath(absPath string, configPath string, align *string, st
 					c.ImageColPaths[i] = purePath
 				}
 			} else if replaceFlags {
+				if !hasOpts {
+					return fmt.Errorf("'%s' does not have any flags set", purePath)
+				}
 				optSlice := strings.Split(opts, " ")
 				if len(optSlice) != 3 {
 					return fmt.Errorf("invalid options for '%s': '%s'", purePath, opts)
