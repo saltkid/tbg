@@ -47,7 +47,10 @@ func EditValidateSubCmd(c *Cmd) error {
 }
 
 func EditExecute(c *Cmd) error {
-	toEdit, _ := filepath.Abs(c.Value)
+	toEdit := c.Value
+	if !(c.Value == "all" || c.Value == "fields") {
+		toEdit, _ = filepath.Abs(c.Value)
+	}
 
 	// check if flags are set by user
 	profile := ExtractFlagValue(flag.Profile, c.Flags)
