@@ -69,6 +69,7 @@ func AddValidateSubCmd(c *Cmd) error {
 
 func AddExecute(c *Cmd) error {
 	toAdd, _ := filepath.Abs(c.Value)
+	toAdd = filepath.ToSlash(toAdd)
 
 	// check if flags are set by user (empty if not)
 	align := ExtractFlagValue(flag.Alignment, c.Flags)

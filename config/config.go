@@ -59,20 +59,21 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 			tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
 			opacity = &tmp
 		}
-		toAddFlags = fmt.Sprintf("%s %s %s", *align, *stretch, *opacity)
+		toAddFlags = fmt.Sprintf(" | %s %s %s", *align, *stretch, *opacity)
 	}
 
 	added := make(map[string]struct{}, 0)
 	for _, path := range c.ImageColPaths {
 		purePath, _, _ := strings.Cut(path, "|")
 		purePath = strings.TrimSpace(purePath)
+		purePath = filepath.ToSlash(purePath)
 
 		if strings.EqualFold(toAdd, purePath) {
 			added["no changes made"] = struct{}{}
 		}
 	}
 	if len(added) == 0 {
-		c.ImageColPaths = append(c.ImageColPaths, fmt.Sprintf("%s | %s", toAdd, toAddFlags))
+		c.ImageColPaths = append(c.ImageColPaths, fmt.Sprintf("%s%s", toAdd, toAddFlags))
 		added[toAdd] = struct{}{}
 	}
 
@@ -217,6 +218,7 @@ func (c *Config) EditPath(arg string, configPath string, profile *string, interv
 		for i, path := range c.ImageColPaths {
 			purePath, opts, hasOpts := strings.Cut(path, "|")
 			purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
+			purePath = filepath.ToSlash(purePath)
 
 			// if arg is specific path, skip non equal paths
 			if arg != "all" && !strings.EqualFold(arg, purePath) {

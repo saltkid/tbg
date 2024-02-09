@@ -50,6 +50,7 @@ func EditExecute(c *Cmd) error {
 	toEdit := c.Value
 	if !(c.Value == "all" || c.Value == "fields") {
 		toEdit, _ = filepath.Abs(c.Value)
+		toEdit = filepath.ToSlash(toEdit)
 	}
 
 	// check if flags are set by user
