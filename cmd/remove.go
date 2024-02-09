@@ -48,6 +48,7 @@ func RemoveValidateSubCmd(c *Cmd) error {
 
 func RemoveExecute(c *Cmd) error {
 	toRemove, _ := filepath.Abs(c.Value)
+	toRemove = filepath.ToSlash(toRemove)
 
 	// check if flags are set by user (empty if not)
 	align := ExtractFlagValue(flag.Alignment, c.Flags)

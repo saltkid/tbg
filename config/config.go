@@ -110,6 +110,7 @@ func (c *Config) RemovePath(absPath string, configPath string, align *string, st
 	for i, path := range c.ImageColPaths {
 		purePath, opts, hasOpts := strings.Cut(path, "|")
 		purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
+		purePath = filepath.ToSlash(purePath)
 
 		if strings.EqualFold(absPath, purePath) {
 			if removePath {
