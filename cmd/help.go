@@ -41,6 +41,8 @@ func HelpExecute(c *Cmd) error {
 		RemoveHelp(false)
 		EditHelp(false)
 		ConfigHelp(false)
+		HelpHelp(false)
+		VersionHelp(false)
 		fmt.Printf("\n%s:\n", *u.Decorate("Flags").Bold().Underline())
 		ProfileHelp(false)
 		IntervalHelp(false)
@@ -66,6 +68,10 @@ func HelpExecute(c *Cmd) error {
 			EditHelp(true)
 		case Config:
 			ConfigHelp(true)
+		case Help:
+			HelpHelp(true)
+		case Version:
+			VersionHelp(true)
 		}
 		fmt.Println("------------------------------------------------------------------------------------")
 	}
@@ -417,6 +423,36 @@ func ConfigHelp(verbose bool) {
 		fmt.Println("      ----------------------------------")
 		fmt.Println("      Note that specifying a path/to/config.yaml instead of 'default' will do essentially")
 		fmt.Print("      the same thing: set the used_config field to the specified path.\n\n")
+	}
+}
+
+func HelpHelp(verbose bool) {
+	fmt.Printf("%-33s%s", *u.Decorate("  help").Bold(),
+		"Prints this help message. If a command or flag is specified,\n")
+	fmt.Printf("%-25s%s", "", "prints verbose help for that command or flag\n")
+	if verbose {
+		fmt.Printf("\n  %s:\n", *u.Decorate("Args").Bold())
+		fmt.Println("  1. command names or flag names")
+		fmt.Println("     allows multiple commands or flags to be specified")
+		fmt.Printf("\n  %s:\n", *u.Decorate("Examples").Bold())
+		fmt.Println("  1. tbg help")
+		fmt.Println("     Prints this help message")
+		fmt.Println("  2. tbg help run")
+		fmt.Println("     Prints verbose help for the 'run' command")
+		fmt.Println("  3. tbg help --alignment add --profile run")
+		fmt.Println("     Prints verbose help for the '--alingment' flag,")
+		fmt.Println("     'add' command, '--profile' flag and the 'run' command")
+	}
+}
+
+func VersionHelp(verbose bool) {
+	fmt.Printf("%-33s%s", *u.Decorate("  version").Bold(),
+		"Prints the version of tbg\n")
+	if verbose {
+		fmt.Printf("\n  %s: --version does not take args\n", *u.Decorate("Args").Bold())
+		fmt.Printf("\n  %s:\n", *u.Decorate("Examples").Bold())
+		fmt.Println("  1. tbg version")
+		fmt.Println("     Prints the version of tbg")
 	}
 }
 
