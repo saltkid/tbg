@@ -41,11 +41,13 @@ On initial execution of **tbg**, it will create a [tbg_profile](#tbg_profile) (`
 
 While **tbg** is running, it takes in optional user input through key presses. Here's a list of commands:
 - `q`: quit
-- `n`: goes to next image in the current image collection dir
-- `p`: goes to previous image in the current image collection dir
-- `N`: goes to next image collection dir
-- `P`: goes to previous image collection dir
 - `c`: shows the available commands
+- `n`: goes to next image in the current image collection
+- `p`: goes to previous image in the current image collection
+- `r`: randomize images
+- `N`: goes to next image collection
+- `P`: goes to previous image collection
+- `R`: randomize image collections
 
 See [fields](#fields) for more information about image collection dirs.
 
