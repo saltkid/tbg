@@ -23,6 +23,11 @@ const (
 
 type AnsiString string
 
+func Decorate(s string) *AnsiString {
+	tmp := AnsiString(s)
+	return &tmp
+}
+
 func (s *AnsiString) Format(codes ...AnsiCode) *AnsiString {
 	var sb strings.Builder
 	for _, code := range codes {
@@ -30,15 +35,10 @@ func (s *AnsiString) Format(codes ...AnsiCode) *AnsiString {
 	}
 	sb.WriteString(string(*s))
 	if strings.HasSuffix(sb.String(), string(reset)) {
-		return ToAnsiString(sb.String())
+		return Decorate(sb.String())
 	}
 	sb.WriteString(string(reset))
-	return ToAnsiString(sb.String())
-}
-
-func ToAnsiString(s string) *AnsiString {
-	tmp := AnsiString(s)
-	return &tmp
+	return Decorate(sb.String())
 }
 
 func (s *AnsiString) Bold() *AnsiString {
