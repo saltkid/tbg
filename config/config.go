@@ -227,94 +227,32 @@ func (c *Config) RemovePath(absPath string, configPath string, align *string, st
 	return nil
 }
 
-func (c *Config) EditPath(arg string, configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
+func (c *Config) EditConfig(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
 	// key:val = old:new
 	edited := make(map[string]string, 0)
-
-	// edit these two on a config level
 	if profile != nil {
 		edited[c.Profile] = *profile
 		c.Profile = *profile
 	}
 	if interval != nil {
-		edited[strconv.Itoa(c.Interval)] = *interval
 		intervalInt, _ := strconv.Atoi(*interval)
+		edited[strconv.Itoa(c.Interval)] = *interval
 		c.Interval = intervalInt
 	}
-
-	if arg == "fields" {
-		// edit the rest of the fields on a config level too
-		if align != nil {
-			edited[c.Alignment] = *align
-			c.Alignment = *align
-		}
-		if stretch != nil {
-			edited[c.Stretch] = *stretch
-			c.Stretch = *stretch
-		}
-		if opacity != nil {
-			edited[strconv.FormatFloat(c.Opacity, 'f', -1, 64)] = *opacity
-			opacityFloat, _ := strconv.ParseFloat(*opacity, 64)
-			c.Opacity = opacityFloat
-		}
-
-	} else {
-		// edit the rest of the fields on a per path basis
-		for i, path := range c.ImageColPaths {
-			purePath, opts, hasOpts := strings.Cut(path, "|")
-			purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
-			purePath = filepath.ToSlash(purePath)
-
-			// if arg is specific path, skip non equal paths
-			if arg != "all" && !strings.EqualFold(arg, purePath) {
-				continue
-			}
-
-			if hasOpts {
-				// use options already present if not set
-				optSlice := strings.Split(opts, " ")
-				if len(optSlice) != 3 {
-					return fmt.Errorf("invalid options for %s: %s", purePath, opts)
-				}
-
-				currAlign, currStretch, currOpacity := strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
-				if align == nil {
-					align = &currAlign
-				}
-				if stretch == nil {
-					stretch = &currStretch
-				}
-				if opacity == nil {
-					opacity = &currOpacity
-				}
-			} else {
-				// use default values if not set
-				if align == nil {
-					align = &c.Alignment
-				}
-				if stretch == nil {
-					stretch = &c.Stretch
-				}
-				if opacity == nil {
-					tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
-					opacity = &tmp
-				}
-
-			}
-
-			c.ImageColPaths[i] = fmt.Sprintf("%s | %s %s %s", purePath, *align, *stretch, *opacity)
-
-			// check if path was edited for logging purposes
-			if path != c.ImageColPaths[i] {
-				edited[path] = c.ImageColPaths[i]
-			}
-
-			// stop editing if only editing one path
-			if arg != "all" {
-				break
-			}
-		}
+	if align != nil {
+		edited[c.Alignment] = *align
+		c.Alignment = *align
 	}
+	if stretch != nil {
+		edited[c.Stretch] = *stretch
+		c.Stretch = *stretch
+	}
+	if opacity != nil {
+		edited[strconv.FormatFloat(c.Opacity, 'f', -1, 64)] = *opacity
+		opacityFloat, _ := strconv.ParseFloat(*opacity, 64)
+		c.Opacity = opacityFloat
+	}
+
 	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(c)
 	err := template.WriteFile()

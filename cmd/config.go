@@ -37,27 +37,34 @@ func ConfigValidateSubCmd(c *Cmd) error {
 }
 
 func ConfigExecute(c *Cmd) error {
+	// check if flags are set by user
+	profile := ExtractFlagValue(flag.Profile, c.Flags)
+	interval := ExtractFlagValue(flag.Interval, c.Flags)
+	alignment := ExtractFlagValue(flag.Alignment, c.Flags)
+	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
+	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
+
+	configPath, err := config.ConfigPath()
+	if err != nil {
+		return err
+	}
+	yamlFile, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("Failed to read config at %s: %s", configPath, err)
+	}
+	configContents := &config.Config{}
+	err = configContents.Unmarshal(yamlFile)
+	if err != nil {
+		return fmt.Errorf("Failed to unmarshal default config.yaml: %s", err)
+	}
+
 	switch c.Value {
 	// print currently used config
 	case "":
-		configPath, err := config.ConfigPath()
-		if err != nil {
-			return err
-		}
-		yamlFile, err := os.ReadFile(configPath)
-		if err != nil {
-			return fmt.Errorf("Failed to read config at %s: %s", configPath, err)
-		}
-		configContents := &config.Config{}
-		err = configContents.Unmarshal(yamlFile)
-		if err != nil {
-			return fmt.Errorf("Failed to unmarshal default config.yaml: %s", err)
-		}
 		configContents.Log(configPath)
-
 	// edit config fields
 	case "edit":
-
+		configContents.EditConfig(configPath, profile, interval, alignment, opacity, stretch)
 	default:
 		return fmt.Errorf("unexpected error: invalid arg for 'config' after validation: '%s'", c.Value)
 	}
