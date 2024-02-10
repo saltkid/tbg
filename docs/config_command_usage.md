@@ -8,7 +8,7 @@
 ---
 
 # `tbg config [arg]`
-#### args: `path/to/config.yaml`, `default`, no arg
+#### args: `fields`, no arg
 
 `config` command prints the currently used config if no arg is specified. If an arg is specified, it will set the arg as the currently used config after validation, then print it.
 

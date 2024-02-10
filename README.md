@@ -3,7 +3,6 @@
 - [Installation](#installation)
 - [Usage](#usage)
     - [Building from source](#building-from-source)
-- [tbg Profile](#tbg-profile)
 - [Config](#config)
     - [Fields](#fields)
 - [Commands](#commands)
@@ -37,7 +36,7 @@ cd tbg && go build
 ```
 tbg run
 ```
-On initial execution of **tbg**, it will create a [tbg_profile](#tbg_profile) (`tbg_profile.yaml`) and a [default config](#config) (`config.yaml`) in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) to edit these with input validation
+On initial execution of **tbg**, it will create a [default config](#config) (`config.yaml`) in the same directory as the executable. You can edit this manually **or** use [tbg commands](#commands) to edit these with input validation
 
 While **tbg** is running, it takes in optional user input through key presses. Here's a list of commands:
 - `q`: quit
@@ -55,35 +54,11 @@ The image collection dirs wrap around so if you go past the last image in the la
 
 When changing image collection dirs, it always starts at the first image to avoid disorientation.
 
-# tbg Profile
-This is what is used by **tbg** to keep track of what config to use when it runs. There can only be one of this and it must be in the same directory as the **tbg** executable.
-
-`tbg_profile.yaml` will be automatically created on the initial execution of **tbg**, along with the default `config.yaml`. The used config will point to the newly created `config.yaml`
-
-You can point to your own config by editing `tbg_profile.yaml` manually or using the [config command](https://github.com/saltkid/tbg/blob/main/docs/tbg_profile.yaml.md). 
-
-```
-#---------------------------------------------
-# this is a tbg profile. Whenver tbg is ran, it will
-# load this profile to get the currently used config
-#
-# currently, it only has one field: used_config
-# I'll add more if the need arises
-#---------------------------------------------
-
-used_config: ""
-
-#---------------------------------------------
-# Fields:
-#   used_config: path to the config used by tbg
-#------------------------------------------
-```
-
 # Config
-This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. As stated earlier, **tbg** created a `config.yaml` in the same path as the **tbg** executable on intial execution.
+This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. As stated earlier, **tbg** creates a `config.yaml` in the same path as the **tbg** executable on intial execution.
 
 ## Fields
-Although you can edit the fields in the config directly, it is recommended to use the command `config` to edit them.
+Although you can edit the fields in the config directly, it is recommended to use the `config` command to edit them.
 | Field | Valid Values | Description |
 | --- | --- | --- |
 | `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*.<br><br>See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information |
@@ -93,12 +68,10 @@ Although you can edit the fields in the config directly, it is recommended to us
 | `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
 | `default_opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
 
-For the default flag fields, see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)
+For the default flag fields (`default_alignment`, `default_stretch`, and `default_opacity`), see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons) for more information
 
 # Commands
-The commands other than `run` are used to safely edit the currently used config with input validation. If your currently used config is a user config, it will automatically edit the default config as well appropriately.
-
-For a more detailed explanation on each types, follow the command name links
+The commands other than `run` are used to safely edit the config with input validation. For a more detailed explanation on each types, follow the command name links
 
 | Command | Valid Args | Valid Flags/Subcommands | Description |
 | --- | --- | --- | --- |
@@ -106,7 +79,6 @@ For a more detailed explanation on each types, follow the command name links
 | [config](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) | `path/to/user-config-name.yaml` `default` | none | If no arg is given to `config`, it will print out the currently used config to console.<br><br>If an arg is given, it will set the arg as the currently used config after validation.<br><br>If used as a flag, it will let the parent command use te config specified instead of the currently set config|
 | [add](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) | `path/to/dir` | `config`, `--alignment`, `--opacity`, `--stretch` | Add a dir containing images to the currently used config.<br><br>If `config` is specified, it will add the dir to the specific config instead.<br><br>If any of the `--`flags are present, it will add those field values after the dir: eg `path/to/dir \| center fill 0.5`<br>This will override the default flag fields in the config.
 | [remove](https://github.com/saltkid/tbg/blob/main/docs/remove_command_usage.md) | `path/to/dir` | `config` | Remove a dir from the currently used config.<br><br>If `config` is specified, it will remove the dir in the specific config instead. |
-| [edit](https://github.com/saltkid/tbg/blob/main/docs/edit_command_usage.md) | `path/to/dir`<br>`fields`<br>`all` | `config`, `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch` | Edits the flags of the path specified. A path can individually have fields to override the default values in the config.<br>`path/to/dir \| center fill 0.2`<br><br>You can also specify `all` to edit all paths to have the flags you specified.<br><br>If you want to edit the default fields (`default_alignment`, `default_stretch`, and `default_opacity`), the arg should be `fields`<br><br>`--profile` and `--interval` are always edited on a per config basis, not per path since paths only take `--alignment`, `--stretch`, and `--opacity` options. |
 
 ## Flags
 Flags are used to override [field entries in a config](#config), which are then passed to the parent command.
