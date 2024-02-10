@@ -64,7 +64,7 @@ func ConfigExecute(c *Cmd) error {
 		configContents.Log(configPath)
 	// edit config fields
 	case "edit":
-		configContents.EditConfig(configPath, profile, interval, alignment, opacity, stretch)
+		configContents.EditConfig(configPath, profile, interval, alignment, stretch, opacity)
 	default:
 		return fmt.Errorf("unexpected error: invalid arg for 'config' after validation: '%s'", c.Value)
 	}
