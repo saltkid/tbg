@@ -87,7 +87,7 @@ tbg add path/to/images/dir3 --alignment center
 image_col_paths:
 - path/to/images/dir1
 - path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center uniform 0.1
+- path/to/images/dir3 | center _ _
 
 profile: default
 interval: 30
@@ -96,7 +96,7 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 ```
-Note that even though only `--alignment` flag, 3 flags were added. This is by design. The rest of the unspecified fields are inherited from the default flag fields.
+Since only `--alignment` was specified, the other two flags are blanked out. This just means the blanked out flags will inherit their respective default flag field value (`default_stretch` and `default_opacity` in this example)
 
 ### Adding a path to specified configs
 Let's say the config we have been using in the previous walkthroughs is the default `config.yaml`. Let's add a path to another config without setting it as the currently used config.

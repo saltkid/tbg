@@ -82,7 +82,7 @@ tbg remove path/to/images/dir1 --alignment
 ```
 ```
 image_col_paths:
-- path/to/images/dir1 | center fill 0.5
+- path/to/images/dir1 | _ fill 0.5
 
 profile: default
 interval: 30
@@ -91,7 +91,7 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 ```
-Note that it was not removed. When you remove a single flag, it will inherit the default flag field, which in this case is `default_alignment`'s value: `center`.
+When you remove a single flag, it will be blanked out. This just means the blanked out alignment flag will inherit the `default_alignment` value (`center`).
 
 Let's remove stretch next.
 ```
@@ -99,7 +99,7 @@ tbg remove path/to/images/dir1 --stretch
 ```
 ```
 image_col_paths:
-- path/to/images/dir1 | center uniform 0.5
+- path/to/images/dir1 | _ _ 0.5
 
 profile: default
 interval: 30
@@ -108,7 +108,7 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 ```
-The stretch flag of `path/to/images/dir1` turned from `fill` to `uniform`. Again, it was inherited from `default_stretch`'s value: `uniform`.
+The stretch flag of `path/to/images/dir1` is blanked out as well. Again, this will inherit the `default_stretch` value: `uniform`.
 
 Now let's see if we remove opacity:
 ```
@@ -125,9 +125,9 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 ```
-It removed the flags of `path/to/images/dir1`. This is because if we removed opacity, `center uniform 0.5` would've been replaced with `center uniform 0.1`. When removing flags, **tbg** performs a final check to see if all flags of a path is equal to the default flag fields. In this case, it is so **tbg** just removed it.
+It removed the flags of `path/to/images/dir1`. This is because if we removed opacity, all three would've been blank. In this case, **tbg** will just remove the flags of `path/to/images/dir`.
 
-But that seems a lot of prompts just to get rid of flags of one path. See next walkthrough for a "shortcut"
+But that seems a lot of prompts just to get rid of all the flags of one path. See next walkthrough for a *"shortcut"*
 
 ### Removing all flags from a path
 Let's use this config:
@@ -158,7 +158,7 @@ default_alignment: center
 default_stretch: uniform
 default_opacity: 0.1
 ```
-That's it. That's the "shortcut"
+That's it. That's the *"shortcut"*
 
 #### Removing a path from specified configs
 Let's say the config we have been using in the previous walkthroughs is the default `config.yaml`. Let's remove a path from another config without setting it as the currently used config.
