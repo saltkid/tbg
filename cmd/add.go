@@ -73,7 +73,6 @@ func AddExecute(c *Cmd) error {
 	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
 	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
 
-	// check if config subcommand is set by user (empty if not)
 	configPath, err := config.ConfigPath()
 	if err != nil {
 		return err
