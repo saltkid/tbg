@@ -36,13 +36,10 @@ func RemoveValidateFlag(f *flag.Flag) error {
 
 func RemoveValidateSubCmd(c *Cmd) error {
 	switch c.Type {
-	case Config:
-		if c.Value == "" {
-			return fmt.Errorf("'config' subcommand requires a config file path")
-		}
-		return c.ValidateValue(c.Value)
+	case None:
+		return nil
 	default:
-		return fmt.Errorf("invalid sub command for 'remove': '%s'", c.Type.ToString())
+		return fmt.Errorf("'remove' takes no sub commands. got: '%s'", c.Type.ToString())
 	}
 }
 
@@ -56,20 +53,10 @@ func RemoveExecute(c *Cmd) error {
 	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
 
 	// check if config subcommand is set by user (empty if not)
-	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
-	var configPath string
-	var err error
-	if specifiedConfig == nil {
-		configPath, err = config.UsedConfig()
-	} else if *specifiedConfig == "default" {
-		configPath, err = config.DefaultConfigPath()
-	} else {
-		configPath, err = filepath.Abs(*specifiedConfig)
-	}
+	configPath, err := config.ConfigPath()
 	if err != nil {
-		return fmt.Errorf("Failed to get config path: %s", err)
+		return err
 	}
-
 	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
