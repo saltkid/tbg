@@ -19,7 +19,7 @@ type Config struct {
 	Opacity       float64  `yaml:"default_opacity"`
 }
 
-func DefaultConfigPath() (string, error) {
+func ConfigPath() (string, error) {
 	e, err := os.Executable()
 	if err != nil {
 		return "", fmt.Errorf("Failed to get tbg path to get default config: %s", err.Error())
@@ -226,6 +226,7 @@ func (c *Config) RemovePath(absPath string, configPath string, align *string, st
 	c.Log(configPath).LogRemoved(removed)
 	return nil
 }
+
 func (c *Config) EditPath(arg string, configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
 	// key:val = old:new
 	edited := make(map[string]string, 0)

@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 
 	"github.com/saltkid/tbg/config"
 	"github.com/saltkid/tbg/flag"
@@ -27,13 +26,10 @@ func RunValidateFlag(f *flag.Flag) error {
 
 func RunValidateSubCmd(sc *Cmd) error {
 	switch sc.Type {
-	case Config:
-		if sc.Value == "" {
-			return fmt.Errorf("'config' subcommand requires a config file path")
-		}
-		return sc.ValidateValue(sc.Value)
+	case None:
+		return nil
 	default:
-		return fmt.Errorf("invalid sub command for 'run': '%s'", sc.Type.ToString())
+		return fmt.Errorf("'run' takes no sub commands. got: '%s'", sc.Type.ToString())
 	}
 }
 
@@ -47,20 +43,10 @@ func RunExecute(c *Cmd) error {
 	random := ExtractFlagValue(flag.Random, c.Flags)
 
 	// check if config subcommand is set by user (empty if not)
-	specifiedConfig := ExtractSubCmdValue(Config, c.SubCmds)
-	var configPath string
-	var err error
-	if specifiedConfig == nil {
-		configPath, err = config.UsedConfig()
-	} else if *specifiedConfig == "default" {
-		configPath, err = config.DefaultConfigPath()
-	} else {
-		configPath, err = filepath.Abs(*specifiedConfig)
-	}
+	configPath, err := config.ConfigPath()
 	if err != nil {
-		return fmt.Errorf("Failed to get config path: %s", err)
+		return err
 	}
-
 	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
