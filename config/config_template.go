@@ -32,11 +32,8 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 		Path: path,
 		BeginDesc: []byte(`#------------------------------------------
 # this is a tbg config. Whenver tbg is ran, it will load this config file
-# if it's the config in tbg's profile and use the fields below to control
-# the behavior of tbg when changing background images of Windows Terminal
-#
-# to use your own config file, use the 'config' command:
-#   tbg config path/to/config.yaml
+# and use the fields below to control the behavior of tbg when changing
+# background images of Windows Terminal
 #------------------------------------------
 `),
 		YamlContents: []byte(`
@@ -65,13 +62,13 @@ default_opacity: 0.1
 #   interval: time in minutes between each image change
 #
 #------------------------------------------
-#   Below are default options which can be overriden on a per-path basis by putting a pipe (|)
-#   after the path and putting "alignment", "stretch", and "opacity" values after the | in order
+# Below are default options which can be overriden on a per-path basis by putting a pipe (|)
+# after the path and putting "alignment", "stretch", and "opacity" values after the | in order
 #
-#   example: abs/path/to/images/dir | right uniform 0.1
+#  example: abs/path/to/images/dir | right uniform 0.1
 #
-#   whatever values the values below have, the options after the | will override
-#   the values in the default values for that specific path
+# whatever values the values below have, the options after the | will override
+# the values in the default values for that specific path
 #------------------------------------------
 #
 #   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
