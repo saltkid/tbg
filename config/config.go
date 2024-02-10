@@ -46,18 +46,17 @@ func (c *Config) Unmarshal(data []byte) error {
 
 func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch *string, opacity *string) error {
 	var toAddFlags string
-	// set flags after path only if at least one is set
-	if align != nil || opacity != nil || stretch != nil {
-		// inherit default values if not set
+	// keep values blank if not set
+	blank := "_"
+	if align != nil || stretch != nil || opacity != nil {
 		if align == nil {
-			align = &c.Alignment
+			align = &blank
 		}
 		if stretch == nil {
-			stretch = &c.Stretch
+			stretch = &blank
 		}
 		if opacity == nil {
-			tmp := strconv.FormatFloat(c.Opacity, 'f', -1, 64)
-			opacity = &tmp
+			opacity = &blank
 		}
 		toAddFlags = fmt.Sprintf(" | %s %s %s", *align, *stretch, *opacity)
 	}
@@ -73,7 +72,8 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 		}
 	}
 	if len(added) == 0 {
-		c.ImageColPaths = append(c.ImageColPaths, fmt.Sprintf("%s%s", toAdd, toAddFlags))
+		toAdd = fmt.Sprintf("%s%s", toAdd, toAddFlags)
+		c.ImageColPaths = append(c.ImageColPaths, toAdd)
 		added[toAdd] = struct{}{}
 	}
 
