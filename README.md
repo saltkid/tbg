@@ -28,7 +28,7 @@ git clone git@github.com:saltkid/tbg.git
 ```
 - build it:
 ```
-cd tbg && go build
+cd tbg && go mod tidy && go build
 ```
 **Optionally** add the `tbg` executable to your path
 
