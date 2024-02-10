@@ -35,6 +35,8 @@ func ConfigValidateValue(val string) error {
 			}
 		}
 
+	case "edit":
+		return nil
 	case "default":
 		configPath, err = config.DefaultConfigPath()
 	case "":
@@ -49,10 +51,10 @@ func ConfigValidateValue(val string) error {
 
 func ConfigValidateFlag(f *flag.Flag) error {
 	switch f.Type {
-	case flag.None:
+	case flag.Profile, flag.Interval, flag.Alignment, flag.Opacity, flag.Stretch:
 		return f.ValidateValue(f.Value)
 	default:
-		return fmt.Errorf("'config' takes no flags. got: '%s'", f.Type.ToString())
+		return fmt.Errorf("invalid flag for 'config': '%s'", f.Type.ToString())
 	}
 }
 
