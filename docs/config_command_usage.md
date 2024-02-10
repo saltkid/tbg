@@ -1,9 +1,8 @@
 # Table of Contents
 - [Overview](#tbg-config-[arg])
 - [Walkthroughs](#walkthroughs)
-    - [Printing currently used config](#printing-currently-used-config)
-    - [Setting default config as the currently used config](#setting-default-config-as-the-currently-used-config)
-    - [Setting another config as the currently used config](#setting-a-config-as-the-currently-used-config)
+    - [Printing config](#printing-config)
+    - [Editing fields of config](#editing-fields-of-config)
 
 ---
 
