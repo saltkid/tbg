@@ -42,7 +42,6 @@ func RunExecute(c *Cmd) error {
 	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
 	random := ExtractFlagValue(flag.Random, c.Flags)
 
-	// check if config subcommand is set by user (empty if not)
 	configPath, err := config.ConfigPath()
 	if err != nil {
 		return err
