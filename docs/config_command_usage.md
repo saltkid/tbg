@@ -8,14 +8,12 @@
 ---
 
 # `tbg config [arg]`
-#### args: `fields`, no arg
+#### args: `edit`, no arg
 
-`config` command prints the currently used config if no arg is specified. If an arg is specified, it will set the arg as the currently used config after validation, then print it.
-
-The way **tbg** keeps track of the currently used config is by using `tbg_profile.yaml` that was auto generated on initial execution. It is not recommended to edit this. See [`tbg_profile.yaml`](https://github.com/saltkid/tbg/blob/main/docs/tbg_profile.yaml.md) for more information.
+`config` command prints the `config.yaml` if no arg is specified. If `edit` is specified, it will edit the fields of `config.yaml` based on flags passed to it. 
 
 # Walkthroughs
-#### Printing currently used config
+#### Printing config
 To print the currently used config, just do
 ```
 tbg config
@@ -32,55 +30,63 @@ Output on console should look something like this
 |
 | profile:               default
 | interval:              30
+|
 | default_alignment:     center
 | default_stretch:       uniform
 | default_opacity:       0.1
 ------------------------------------------------------------------------------------
 ```
 
-#### Setting default config as the currently used config
-To set the default config as the currently used config, just do
+#### Editing fields of config
+To edit fields of config, specify `edit` as the arg and then specify the fields you want to edit with flags like this this:
 ```
-tbg config default
+tbg config edit --alignment topRight
 ```
-The default config is the `config.yaml` in the same path as the **tbg** executable. It was auto generated on initial execution of **tbg**.
-
-This will edit the `tbg_profile.yaml`'s `used_config` field to the path of the default config. Output on console should look similar to the previous example
+This means we are going to edit the `default_alignment` field in `config.yaml`. This is the before:
 ```
 ------------------------------------------------------------------------------------
 | abs/path/to/default/config.yaml
 ------------------------------------------------------------------------------------
-| image_col_paths:
-|                        abs/path/to/images/dir1
-|                        abs/path/to/images/dir2
-|                        abs/path/to/images/dir3
+| image_col_paths: []
 |
 | profile:               default
 | interval:              30
+|
 | default_alignment:     center
 | default_stretch:       uniform
 | default_opacity:       0.1
 ------------------------------------------------------------------------------------
 ```
-
-#### Setting another config as the currently used config
-This is pretty much the same as the previous example, except instead of `default`, you are passing in the abs path of another `config.yaml` that you want to set as the currently used config
-```
-tbg config path/to/another/config.yaml
-```
-Again, it edits the `tbg_profile.yaml`'s `used_config` field to the path of the specified config. Output looks similar too
+After:
 ```
 ------------------------------------------------------------------------------------
-| abs/path/to/another/config.yaml
+| abs/path/to/default/config.yaml
 ------------------------------------------------------------------------------------
-| image_col_paths:
-|                        abs/path/to/images/dir1
-|                        abs/path/to/images/dir2
+| image_col_paths: []
 |
 | profile:               default
 | interval:              30
-| default_alignment:     center
+|
+| default_alignment:     topRight
 | default_stretch:       uniform
 | default_opacity:       0.1
+------------------------------------------------------------------------------------
+```
+You can do this with the other four fields as well (not `image_col_paths`)
+```
+tbg config edit --profile list-1 --interval 5 --stretch fill --opacity 0.35
+```
+```
+------------------------------------------------------------------------------------
+| abs/path/to/default/config.yaml
+------------------------------------------------------------------------------------
+| image_col_paths: []
+|
+| profile:               list-1
+| interval:              5
+|
+| default_alignment:     topRight
+| default_stretch:       fill
+| default_opacity:       0.35
 ------------------------------------------------------------------------------------
 ```

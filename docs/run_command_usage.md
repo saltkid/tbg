@@ -100,7 +100,7 @@ default_stretch: fill
 default_opacity: 0.1
 ```
 
-The `--profile` and `--interval` flags will override the values in `config-2.yaml`. Again, not edit them. This means instead of changing the background image of the `default` profile every 30 minutes, it will change the background image of the first profile under `list` field in `settings.json`
+The `--profile` and `--interval` flags will override the values in the config. Again, not edit them. This means instead of changing the background image of the `default` profile every 30 minutes, it will change the background image of the first profile under `list` field in `settings.json` every 5 minutes instead
 
 ---
 ### Overriding default flag fields
