@@ -68,7 +68,7 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 		purePath = filepath.ToSlash(purePath)
 
 		if strings.EqualFold(toAdd, purePath) {
-			added["no changes made"] = struct{}{}
+			added[fmt.Sprintf("'%s' already exists in config as '%s'", toAdd, path)] = struct{}{}
 		}
 	}
 	if len(added) == 0 {
