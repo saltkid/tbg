@@ -166,7 +166,8 @@ func (c *Config) RemovePath(absPath string, configPath string, align *string, st
 				}
 			} else if replaceFlags {
 				if !hasOpts {
-					return fmt.Errorf("'%s' does not have any flags set", purePath)
+					removed[fmt.Sprintf("'%s' does not have any flags set", purePath)] = struct{}{}
+					break
 				}
 				optSlice := strings.Split(opts, " ")
 				if len(optSlice) != 3 {
