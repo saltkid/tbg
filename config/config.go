@@ -45,10 +45,12 @@ func (c *Config) Unmarshal(data []byte) error {
 }
 
 func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch *string, opacity *string) error {
-	var toAddFlags string
 	// keep values blank if not set
-	blank := "_"
+	editFlags := false
+	var toAddFlags string
 	if align != nil || stretch != nil || opacity != nil {
+		editFlags = true
+		blank := "_"
 		if align == nil {
 			align = &blank
 		}
@@ -58,21 +60,64 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 		if opacity == nil {
 			opacity = &blank
 		}
-		toAddFlags = fmt.Sprintf(" | %s %s %s", *align, *stretch, *opacity)
+		toAddFlags = fmt.Sprintf("%s %s %s", *align, *stretch, *opacity)
 	}
 
 	added := make(map[string]struct{}, 0)
-	for _, path := range c.ImageColPaths {
-		purePath, _, _ := strings.Cut(path, "|")
-		purePath = strings.TrimSpace(purePath)
+	for i, path := range c.ImageColPaths {
+		purePath, opts, hasOpts := strings.Cut(path, "|")
+		purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
 		purePath = filepath.ToSlash(purePath)
 
 		if strings.EqualFold(toAdd, purePath) {
-			added[fmt.Sprintf("'%s' already exists in config as '%s'", toAdd, path)] = struct{}{}
+			if !editFlags {
+				added[fmt.Sprintf("'%s' already exists in config as '%s'", toAdd, path)] = struct{}{}
+				break
+			}
+			// add flags to path without flags
+			if !hasOpts {
+				toAdd = fmt.Sprintf("%s | %s", toAdd, toAddFlags)
+				c.ImageColPaths[i] = toAdd
+				added[fmt.Sprintf("added flags to '%s': '%s'", purePath, toAddFlags)] = struct{}{}
+				break
+			}
+			// replace flags of path with flags
+			optSlice := strings.Split(opts, " ")
+			if len(optSlice) < 3 {
+				return fmt.Errorf("'%s' are not valid flags for a path", opts)
+			}
+			currAlign, currStretch, currOpacity := optSlice[0], optSlice[1], optSlice[2]
+			// only replace if not equal and not blank
+			changes := 0
+			if currAlign != *align && *align != "_" {
+				currAlign = *align
+				changes++
+			}
+			if currStretch != *stretch && *stretch != "_" {
+				currStretch = *stretch
+				changes++
+			}
+			if currOpacity != *opacity && *opacity != "_" {
+				currOpacity = *opacity
+				changes++
+			}
+			// no replacements
+			if changes == 0 {
+				added["no changes made"] = struct{}{}
+				break
+			}
+			// replaced
+			toAddFlags = fmt.Sprintf("%s %s %s", currAlign, currStretch, currOpacity)
+			c.ImageColPaths[i] = fmt.Sprintf("%s | %s", purePath, toAddFlags)
+			added[fmt.Sprintf("'%s' flags: '%s' --> '%s'", purePath, opts, toAddFlags)] = struct{}{}
+
 		}
 	}
+	// add new path if no collision and not editing flags
 	if len(added) == 0 {
-		toAdd = fmt.Sprintf("%s%s", toAdd, toAddFlags)
+		if toAddFlags != "" {
+			toAdd = fmt.Sprintf("%s | %s", toAdd, toAddFlags)
+		}
 		c.ImageColPaths = append(c.ImageColPaths, toAdd)
 		added[toAdd] = struct{}{}
 	}
@@ -85,10 +130,6 @@ func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch
 	}
 
 	c.Log(configPath).LogAdded(added)
-	if _, ok := added["no changes made"]; ok {
-
-		return fmt.Errorf("'%s' already exists in config", toAdd)
-	}
 	return nil
 }
 
