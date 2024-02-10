@@ -80,26 +80,21 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 			dir := c.ImageColPaths[dirIndex]
 			dir, opts, hasOpts := strings.Cut(dir, "|")
 			dir = strings.TrimSpace(dir)
-			images, err := fetchImages(dir)
-			if err != nil {
-				return err
-			}
-			if random != nil {
-				shuffleFrom(0, images)
-			}
-
-			if startAtFirstImage {
-				imgIndex = 0
-			} else {
-				imgIndex = len(images) - 1
-			}
-
 			if hasOpts {
 				opts = strings.TrimSpace(opts)
 				optSlice := strings.Split(opts, " ")
 				overrideAlign, overrideStretch, overrideOpacity = strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
+				// replace blanks (_) with default flag fields
+				if overrideAlign == "_" {
+					overrideAlign = c.Alignment
+				}
+				if overrideStretch == "_" {
+					overrideStretch = c.Stretch
+				}
+				if overrideOpacity == "_" {
+					overrideOpacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
+				}
 			}
-
 			// flags set by user on execution
 			var intervalInt int
 			if profile == nil {
@@ -120,6 +115,19 @@ func (c *Config) ChangeBgImage(configPath string, profile *string, interval *str
 				overrideOpacity = *opacity
 			}
 
+			images, err := fetchImages(dir)
+			if err != nil {
+				return err
+			}
+			if random != nil {
+				shuffleFrom(0, images)
+			}
+
+			if startAtFirstImage {
+				imgIndex = 0
+			} else {
+				imgIndex = len(images) - 1
+			}
 		imageLoop:
 			for imgIndex >= 0 && imgIndex < len(images) {
 				image := images[imgIndex]
