@@ -7,11 +7,8 @@ This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* u
 ```
 #------------------------------------------
 # this is a tbg config. Whenver tbg is ran, it will load this config file
-# if it's the config in tbg's profile and use the fields below to control
-# the behavior of tbg when changing background images of Windows Terminal
-#
-# to use your own config file, use the 'config' command:
-#   tbg config path/to/config.yaml
+# and use the fields below to control the behavior of tbg when changing
+# background images of Windows Terminal
 #------------------------------------------
 
 image_col_paths: []
@@ -38,13 +35,13 @@ default_opacity: 0.1
 #   interval: time in minutes between each image change
 #
 #------------------------------------------
-#   Below are default options which can be overriden on a per-path basis by putting a pipe (|)
-#   after the path and putting "alignment", "stretch", and "opacity" values after the | in order
+# Below are default options which can be overriden on a per-path basis by putting a pipe (|)
+# after the path and putting "alignment", "stretch", and "opacity" values after the | in order
 #
-#   example: abs/path/to/images/dir | right uniform 0.1
+#  example: abs/path/to/images/dir | right uniform 0.1
 #
-#   whatever values the values below have, the options after the | will override
-#   the values in the default values for that specific path
+# whatever values the values below have, the options after the | will override
+# the values in the default values for that specific path
 #------------------------------------------
 #
 #   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
@@ -69,4 +66,4 @@ Although you can edit the fields in the config directly, it is recommended to us
 | `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
 | `default_opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
 
-For the default flag fields, see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)
+For the default flag fields (`default_alignment`, `default_stretch`, and `default_opacity`), see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons) for more information
