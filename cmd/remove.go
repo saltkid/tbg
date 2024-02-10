@@ -10,14 +10,9 @@ import (
 )
 
 func RemoveValidateValue(val string) error {
-	absPath, err := filepath.Abs(val)
+	_, err := filepath.Abs(val)
 	if err != nil {
 		return fmt.Errorf("Failed to get absolute path of %s: %s", val, err)
-	}
-	if d, err := os.Stat(absPath); os.IsNotExist(err) {
-		return fmt.Errorf("%s does not exist: %s", val, err.Error())
-	} else if !d.IsDir() {
-		return fmt.Errorf("%s is not a directory", val)
 	}
 	return nil
 }
