@@ -3,22 +3,17 @@
 - [Key events](#key-events)
 - [Executing with `--`flags](#executing-with---flags)
     - [Using `--random` flag](#using---random-flag)
-- [Executing with `config` subcommand](#executing-with-config-subcommand)
 - [Walkthroughs](#walkthroughs)
     - [Normal Execution, key events, and path specific flags](#normal-execution)
-    - [Using different config, and overriding `profile` and `interval` fields](#using-different-config)
+    - [Overriding `profile` and `interval` fields](#overriding-profile-and-interval-fields)
     - [Overriding default flag fields](#overriding-default-flag-fields)
 ---
 
 # `tbg run`
 
-`run` command edits the `settings.json` used by *Windows Terminal* using settings from the currently used config.
+`run` command edits the `settings.json` used by *Windows Terminal* using settings from the currently used config. **tbg** will keep running, editing the `settings.json` of *Windows Terminal*, replacing the background image. You can quit by pressing `q` or `ctrl+c`
 
-**tbg** will keep running, editing the `settings.json` of *Windows Terminal*, replacing the background image. You can quit by pressing `q` or `ctrl+c`
-
-On initial execution of **tbg**, it will create the `tbg_profile.yaml` and `config.yaml` in the same directory as the **tbg** executable if it does not exist already. This is so it can safely fallback on a `config.yaml`. **There can only be one `tbg_profile.yaml`**. You can have multiple `config.yaml`s if you want. `tbg_profile.yaml` will keep track of which one you want to use.
-
-For more information, see documentation on [tbg profile.yaml](https://github.com/saltkid/tbg/blob/main/docs/tbg_profile.yaml.md) and [config.yaml](https://github.com/saltkid/tbg/blob/main/docs/config.yaml.md).
+On initial execution of **tbg**, it will create a `config.yaml` in the same directory as the **tbg** executable if it does not exist already. **There can only be one `config.yaml`**. For more information, see documentation on [config.yaml](https://github.com/saltkid/tbg/blob/main/docs/config.yaml.md).
 
 # Key events
 **tbg** takes optional commands during execution:
@@ -54,14 +49,6 @@ For an example, see [overriding default flags walkthrough](#overriding-default-f
 #### Using `--random` flag
 The `--random` flag will randomize the order of image collections dirs **and** the images. Even if you consumed all dirs and wrap around to the first dir again, the dirs will be re-randomized. Even the images: when you go to next dir B, then go to previous dir A, the order will be different from the first time you go to dir A, since images are also re-randomized every time you enter a dir.
 
-# Executing with `config` subcommand
-Using the `config` command will override the `tbg_profile.yaml`'s `used_config` field. This means it will force **tbg** to use the specified config instead of the default behavior of checking `used_config` field of `tbg_profile.yaml`
-
-Note that this will not edit the `used_config` field in `tbg_profile.yaml`, only override it for the current execution.
-
-For an example, see [Using different config walkthrough](#using-different-config)
-
-
 # Walkthroughs
 ### Normal Execution
 This will delve on and key events and path specific flags.
@@ -70,17 +57,14 @@ Let's do:
 ```
 tbg run
 ```
-This means the config we will be using is the config on the `used_config` field set on `tbg_profile.yaml`. Let's say the value of `used_config` is the path of `config.yaml` in the same path as the **tbg** executable (the auto created one)
-
-Let's also say that this is the default config:
+Let's say that this is the config:
 ```
-# config.yaml
-profile: default
-interval: 30
-
 image_col_paths:
 - path/to/dir1
 - path/to/dir2 | right fill 0.35
+
+profile: default
+interval: 30
 
 default_alignment: center
 default_stretch: fill
@@ -98,27 +82,23 @@ When I press `P`, it goes back to the previous image collection dir (`path/to/di
 Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
 ---
-### Using different config
-This will delve on overriding `profile` and `interval` fields in the config.
+### Overriding `profile` and `interval` fields
 
 Instead of `tbg run`, let's do:
 ```
-tbg run config path/to/config-2.yaml --profile list-1 --interval 5
+tbg run --profile list-1 --interval 5
 ```
 ```
-# config-2.yaml
-profile: default
-interval: 30
-
 image_col_paths:
 - path/to/dir1
+
+profile: default
+interval: 30
 
 default_alignment: center
 default_stretch: fill
 default_opacity: 0.1
 ```
-
-The `config` subcommand tells **tbg** to use `path/to/config-2.yaml` instead of whatever `tbg_profile.yaml`'s `used_config` is pointing to. This will not edit `tbg_profile.yaml`'s `used_config` field. 
 
 The `--profile` and `--interval` flags will override the values in `config-2.yaml`. Again, not edit them. This means instead of changing the background image of the `default` profile every 30 minutes, it will change the background image of the first profile under `list` field in `settings.json`
 
@@ -126,15 +106,14 @@ The `--profile` and `--interval` flags will override the values in `config-2.yam
 ### Overriding default flag fields
 This will delve on overriding default flag fields on the config using `--`flags. This will also override the per-path flags
 
-Let's use the default config again.
+Let's use this config:
 ```
-# config.yaml
-profile: default
-interval: 30
-
 image_col_paths:
 - path/to/dir1
 - path/to/dir2 | right fill 0.35
+
+profile: default
+interval: 30
 
 default_alignment: center
 default_stretch: fill
