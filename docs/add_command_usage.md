@@ -5,6 +5,8 @@
 - [Walkthroughs](#walkthroughs)
     - [Adding a path](#adding-a-path)
     - [Adding a path with flags](#adding-a-path-with-flags)
+    - [Adding a flag to an existing path](#adding-a-flag-to-an-existing-path)
+    - [Changing a flag of an existing path](#changing-a-flag-of-an-existing-path)
     - [Adding a path to specified configs](#adding-a-path-to-specified-configs)
 ---
 
@@ -38,12 +40,7 @@ Let's say this is the currently used config:
 ```
 image_col_paths: []
 
-profile: default
-interval: 30
-
-default_alignment: center
-default_stretch: fill
-default_opacity: 0.1
+other fields...
 ```
 If we run:
 ```
@@ -54,17 +51,12 @@ It will add `path/to/images/dir1` to the currently used config's `image_col_path
 image_col_paths:
 - path/to/images/dir1
 
-profile: default
-interval: 30
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
 ### Adding a path with flags
 Let's continue with our config and run this:
 ```
-tbg add path/to/images/dir2 --alignment left --stretch uniformToFill --opacity 0.5
+tbg add path/to/images/dir2 --alignment left --stretch uniform --opacity 0.5
 ```
 It will add `path/to/images/dir2` in `image_col_paths` field and add flags to it like this:
 ```
@@ -72,12 +64,7 @@ image_col_paths:
 - path/to/images/dir1
 - path/to/images/dir2 | left uniform 0.5
 
-profile: default
-interval: 30
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
 Let's add another one:
 ```
@@ -89,14 +76,71 @@ image_col_paths:
 - path/to/images/dir2 | left uniform 0.5
 - path/to/images/dir3 | center _ _
 
-profile: default
-interval: 30
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
 Since only `--alignment` was specified, the other two flags are blanked out. This just means the blanked out flags will inherit their respective default flag field value (`default_stretch` and `default_opacity` in this example)
+
+#### Adding a flag to an existing path
+Let's continue with our config and run this:
+```
+tbg add /path/to/images/dir3 --stretch fill
+```
+This will find if `path/to/images/dir3` is already in `image_col_paths` field and add a stretch flag `fill` to it.
+```
+image_col_paths:
+- path/to/images/dir1
+- path/to/images/dir2 | left uniform 0.5
+- path/to/images/dir3 | center fill _
+
+other fields...
+```
+Let's fill assign the opacity too
+```
+tbg add /path/to/images/dir3 --opacity 0.5
+```
+```
+image_col_paths:
+- path/to/images/dir1
+- path/to/images/dir2 | left uniform 0.5
+- path/to/images/dir3 | center fill 0.5
+
+other fields...
+```
+#### Changing a flag of an existing path
+Let's continue with our config:
+```
+image_col_paths:
+- path/to/images/dir1
+- path/to/images/dir2 | left uniform 0.5
+- path/to/images/dir3 | center fill 0.5
+
+other fields...
+```
+Let's change the opacity and stretch:
+```
+tbg add /path/to/images/dir3 --opacity 1 --stretch none
+```
+This will find if `path/to/images/dir3` is already in `image_col_paths` field and set the opacity to `1` and the stretch to `none`.
+```
+image_col_paths:
+- path/to/images/dir1
+- path/to/images/dir2 | left uniform 0.5
+- path/to/images/dir3 | center none 1
+
+other fieds...
+```
+Let's change the alignment too
+```
+tbg add /path/to/images/dir3 --alignment bottom
+```
+```
+image_col_paths:
+- path/to/images/dir1
+- path/to/images/dir2 | left uniform 0.5
+- path/to/images/dir3 | bottom center none 1
+
+other fields...
+```
 
 ### Adding a path to specified configs
 Let's say the config we have been using in the previous walkthroughs is the default `config.yaml`. Let's add a path to another config without setting it as the currently used config.
@@ -141,7 +185,8 @@ It will not add `path/to/images/dir2` because this already exists, not in `path/
 image_col_paths:
 - path/to/images/dir1
 - path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center uniform 0.1
+- path/to/images/dir3 | bottom center none 1
+
 
 profile: default
 interval: 30
@@ -151,3 +196,4 @@ default_stretch: uniform
 default_opacity: 0.1
 ```
 For more information on setting the currently used config, see [config command usage](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md)
+

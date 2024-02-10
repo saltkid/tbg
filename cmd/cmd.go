@@ -13,7 +13,6 @@ const (
 	Config
 	Add
 	Remove
-	Edit
 	Help
 	Version
 )
@@ -30,8 +29,6 @@ func (c CmdType) ToString() string {
 		return "add"
 	case Remove:
 		return "remove"
-	case Edit:
-		return "edit"
 	case Help:
 		return "help"
 	case Version:
@@ -74,12 +71,6 @@ func ToCommand(s string) (*Cmd, error) {
 			SubCmds: make(map[CmdType]*Cmd, 0),
 			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
 		}, nil
-	case "edit":
-		return &Cmd{
-			Type:    Edit,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
-		}, nil
 	case "help":
 		return &Cmd{
 			Type:    Help,
@@ -111,8 +102,6 @@ func (c *Cmd) ValidateValue(val string) error {
 		return AddValidateValue(val)
 	case Remove:
 		return RemoveValidateValue(val)
-	case Edit:
-		return EditValidateValue(val)
 	case Help:
 		return HelpValidateValue(val)
 	case Version:
@@ -134,8 +123,6 @@ func (c *Cmd) ValidateFlag(f *flag.Flag) error {
 		return AddValidateFlag(f)
 	case Remove:
 		return RemoveValidateFlag(f)
-	case Edit:
-		return EditValidateFlag(f)
 	case Help:
 		return HelpValidateFlag(f)
 	case Version:
@@ -157,8 +144,6 @@ func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
 		return AddValidateSubCmd(sc)
 	case Remove:
 		return RemoveValidateSubCmd(sc)
-	case Edit:
-		return EditValidateSubCmd(sc)
 	case Help:
 		return HelpValidateSubCmd(sc)
 	case Version:
@@ -180,8 +165,6 @@ func (c *Cmd) Execute() error {
 		return AddExecute(c)
 	case Remove:
 		return RemoveExecute(c)
-	case Edit:
-		return EditExecute(c)
 	case Help:
 		return HelpExecute(c)
 	case Version:
