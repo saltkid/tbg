@@ -113,11 +113,12 @@ func (cmd *RunCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	err = configContents.ChangeBgImage(configPath, profile, interval, alignment, stretch, opacity, random)
+	randomFlag := config.determineExecutionFlags(cmd)
+	backgroundState, err := NewBackgroundState(config, configPath, randomFlag)
 	if err != nil {
 		return err
 	}
-	return nil
+	return backgroundState.Start()
 }
 
 func (config *Config) determineExecutionFlags(cmd *RunCommand) bool {
