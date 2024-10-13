@@ -1,206 +1,85 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/eiannone/keyboard"
-	"math/rand"
-	"os"
-	"path/filepath"
-	"strconv"
-	"strings"
 	"time"
 )
 
-func (c *Config) ChangeBgImage(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string, random *string) error {
-	// read settings.json
-	settingsPath, err := settingsJsonPath()
-	if err != nil {
-		return err
-	}
-	settingsData, err := os.ReadFile(settingsPath)
+type TbgState struct {
+	Images               []string
+	ImageIndex           uint16
+	Paths                []ImagesPath
+	PathIndex            uint16
+	Config               *Config
+	ConfigPath           string
+	CurrentPathAlignment string
+	CurrentPathStretch   string
+	CurrentPathOpacity   float32
+	Random               bool
+	Events               *TbgEvents
+	Settings             *WTSettings
+}
 
-	// get all data first to keep unused fields
-	var allData map[string]json.RawMessage
-	err = json.Unmarshal(settingsData, &allData)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal settings.json at %s: %s", settingsPath, err)
-	}
+type TbgEvents struct {
+	Done         chan struct{}
+	ImageChanged chan struct{}
+}
 
+func NewBackgroundState(config *Config, configPath string, randomFlag bool) (*TbgState, error) {
+	wtSettings, err := NewWTSettings()
+	if err != nil {
+		return nil, err
+	}
+	return &TbgState{
+		Images:               make([]string, 2),
+		ImageIndex:           0,
+		Paths:                config.Paths,
+		PathIndex:            0,
+		Config:               config,
+		ConfigPath:           configPath,
+		CurrentPathAlignment: config.Alignment,
+		CurrentPathStretch:   config.Stretch,
+		CurrentPathOpacity:   config.Opacity,
+		Random:               randomFlag,
+		Events: &TbgEvents{
+			Done:         make(chan struct{}),
+			ImageChanged: make(chan struct{}),
+		},
+		Settings: wtSettings,
+	}, nil
+}
+
+func (tbg *TbgState) Start() error {
+	err := tbg.Init()
+	if err != nil {
+		return fmt.Errorf("Failed to initialize tbg: %s", err.Error())
+	}
+	tbg.Settings.Write(tbg.Images[tbg.ImageIndex],
+		tbg.Config.Profile,
+		tbg.CurrentPathAlignment,
+		tbg.CurrentPathStretch,
+		tbg.CurrentPathOpacity,
+	)
+	tbg.Config.Log(tbg.ConfigPath).RunSettings(
+		tbg.Images[tbg.ImageIndex],
+		tbg.Config.Profile,
+		tbg.Config.Interval,
+		tbg.CurrentPathAlignment,
+		tbg.CurrentPathStretch,
+		tbg.CurrentPathOpacity,
+	)
 	keysEvents, err := keyboard.GetKeys(10)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	defer func() {
 		_ = keyboard.Close()
 	}()
+	go tbg.readUserInput(keysEvents)
+	return tbg.Wait()
+}
 
-	done := make(chan struct{})
-	nextDir := make(chan struct{})
-	nextImage := make(chan struct{})
-	prevDir := make(chan struct{})
-	prevImage := make(chan struct{})
-	randomDir := make(chan struct{})
-	randomImage := make(chan struct{})
-	go readUserInput(keysEvents, done, nextDir, nextImage, prevDir, prevImage, randomDir, randomImage)
-
-	for {
-		// indices to allow going to previous dir/image
-		dirIndex, imgIndex := 0, 0
-
-		/* bool to determine direction
-		 *  only applicable in nextImage and prevImage
-		 *  when going nextDir/prevDir, it will always start at the first image (always true)
-		 *
-		 *  if true : when going to next dir, start at first image of next dir
-		 *          : when dirs are exhausted, start at first image of first dir
-		 *  if false: when going to prev  dir, start at last image of prev dir
-		 *          : when dirs are exhausted, start at last image of last dir
-		 */
-		startAtFirstImage := true
-
-		if random != nil {
-			shuffleFrom(0, c.ImageColPaths)
-		}
-
-		for dirIndex >= 0 && dirIndex < len(c.ImageColPaths) {
-			/* the order of flag importance is:
-			 *
-			 * 1. flags set by user on execution      (eg. --alignment, --stretch, etc.)
-			 * 2. per path options set in config.yaml (eg. C:/Users/username/Pictures | right uniform 0.5)
-			 * 3. default fields on config.yaml       (eg. default_alignment, default_stretch, etc.)
-			 */
-
-			// default fields
-			overrideAlign, overrideStretch, overrideOpacity := c.Alignment, c.Stretch, strconv.FormatFloat(c.Opacity, 'f', -1, 64)
-
-			// check if path entry has per path options
-			dir := c.ImageColPaths[dirIndex]
-			dir, opts, hasOpts := strings.Cut(dir, "|")
-			dir = strings.TrimSpace(dir)
-			if hasOpts {
-				opts = strings.TrimSpace(opts)
-				optSlice := strings.Split(opts, " ")
-				overrideAlign, overrideStretch, overrideOpacity = strings.TrimSpace(optSlice[0]), strings.TrimSpace(optSlice[1]), strings.TrimSpace(optSlice[2])
-				// replace blanks (_) with default flag fields
-				if overrideAlign == "_" {
-					overrideAlign = c.Alignment
-				}
-				if overrideStretch == "_" {
-					overrideStretch = c.Stretch
-				}
-				if overrideOpacity == "_" {
-					overrideOpacity = strconv.FormatFloat(c.Opacity, 'f', -1, 64)
-				}
-			}
-			// flags set by user on execution
-			var intervalInt int
-			if profile == nil {
-				profile = &c.Profile
-			}
-			if interval == nil {
-				intervalInt = c.Interval
-			} else {
-				intervalInt, _ = strconv.Atoi(*interval)
-			}
-			if align != nil {
-				overrideAlign = *align
-			}
-			if stretch != nil {
-				overrideStretch = *stretch
-			}
-			if opacity != nil {
-				overrideOpacity = *opacity
-			}
-
-			images, err := fetchImages(dir)
-			if err != nil {
-				return err
-			}
-			if random != nil {
-				shuffleFrom(0, images)
-			}
-
-			if startAtFirstImage {
-				imgIndex = 0
-			} else {
-				imgIndex = len(images) - 1
-			}
-		imageLoop:
-			for imgIndex >= 0 && imgIndex < len(images) {
-				image := images[imgIndex]
-
-				ticker := time.Tick(time.Duration(intervalInt) * time.Minute)
-				// ticker := time.Tick(time.Second * 10) // for debug purposes
-
-				fmt.Println()
-				opacityF, _ := strconv.ParseFloat(overrideOpacity, 64)
-				c.Log(configPath).LogRunSettings(image, *profile, intervalInt, overrideAlign, overrideStretch, opacityF)
-
-				err = updateWtJsonFields(allData, settingsPath, *profile, image, overrideAlign, overrideStretch, overrideOpacity)
-				if err != nil {
-					return err
-				}
-				// prompt
-				fmt.Println("Press a key to execute a command ('c' for list of commands): ")
-
-				select {
-				case <-ticker:
-					imgIndex++
-					if imgIndex == len(images) {
-						fmt.Print("no more images. going to next dir: ")
-						dirIndex++
-						startAtFirstImage = true
-					}
-				case <-done:
-					fmt.Println("Goodbye!")
-					return nil
-				case <-randomImage:
-					fmt.Println("randomizing from current image up to last image...")
-					fmt.Println("(previous images will not be randomized so you can go back)")
-					shuffleFrom(imgIndex, images)
-				case <-randomDir:
-					fmt.Println("randomizing from current dir up to last dir...")
-					fmt.Println("(previous dirs will not be randomized so you can go back)")
-					shuffleFrom(dirIndex, c.ImageColPaths)
-					break imageLoop
-				case <-nextImage:
-					fmt.Println("using next image...")
-					imgIndex++
-					if imgIndex == len(images) {
-						fmt.Print("no more images. going to next dir: ")
-						dirIndex++
-						startAtFirstImage = true
-					}
-				case <-prevImage:
-					fmt.Println("using previous image...")
-					imgIndex--
-					if imgIndex < 0 {
-						fmt.Print("no more images. going to previous dir: ")
-						dirIndex--
-						startAtFirstImage = false
-					}
-				case <-nextDir:
-					fmt.Println("using next dir...")
-					dirIndex++
-					startAtFirstImage = true
-					break imageLoop
-				case <-prevDir:
-					fmt.Println("using previous dir...")
-					dirIndex--
-					startAtFirstImage = true
-					break imageLoop
-				}
-
-			}
-
-			if dirIndex >= len(c.ImageColPaths) {
-				fmt.Println("no more next dirs. going to first dir again: ", c.ImageColPaths[0])
-				dirIndex = 0
-			} else if dirIndex < 0 {
-				fmt.Println("no more previous dirs. going to last dir again: ", c.ImageColPaths[len(c.ImageColPaths)-1])
-				dirIndex = len(c.ImageColPaths) - 1
-			}
 
 		}
 	}
@@ -269,13 +148,14 @@ func fetchImages(dir string) ([]string, error) {
 }
 
 func commandList() {
-	fmt.Println()
-	fmt.Println("q: [q]uit")
-	fmt.Println("n: [n]ext image")
-	fmt.Println("p: [p]revious image")
-	fmt.Println("N: [N]ext dir")
-	fmt.Println("P: [P]revious dir")
-	fmt.Println("r: [r]andomize images (current to last; previous unaffected)")
-	fmt.Println("R: [R]andomize dirs (current to last; previous unaffected)")
-	fmt.Println("c: [c]ommand list")
+	fmt.Print(`
+q: [q]uit
+n: [n]ext image
+p: [p]revious image
+N: [N]ext dir
+P: [P]revious dir
+r: [r]andomize images (current to last; previous unaffected)
+R: [R]andomize dirs (current to last; previous unaffected)
+c: [c]ommand list
+`)
 }
