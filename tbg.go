@@ -93,49 +93,65 @@ func (tbg *TbgState) Start() error {
 	return tbg.Wait()
 }
 
-
-		}
+func (tbg *TbgState) Init() error {
+	if len(tbg.Config.Paths) == 0 {
+		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
 	}
+	if tbg.Random {
+		ShuffleFrom(0, tbg.Paths)
+	}
+	err := tbg.UpdateCurrentPathState()
+	return err
 }
 
-func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{},
-	nextDir chan<- struct{}, nextImage chan<- struct{},
-	prevDir chan<- struct{}, prevImage chan<- struct{},
-	randomDir chan<- struct{}, randomImage chan<- struct{}) {
+func (tbg *TbgState) UpdateCurrentPathState() error {
+	currentPath := tbg.Config.Paths[tbg.PathIndex]
+	tbg.CurrentPathAlignment = Option(currentPath.Alignment).UnwrapOr(tbg.Config.Alignment)
+	tbg.CurrentPathStretch = Option(currentPath.Stretch).UnwrapOr(tbg.Config.Stretch)
+	tbg.CurrentPathOpacity = Option(currentPath.Opacity).UnwrapOr(tbg.Config.Opacity)
+	var err error
+	tbg.Images, err = currentPath.Images()
+	if tbg.Random {
+		ShuffleFrom(0, tbg.Images)
+	}
+	return err
+}
+
+func (tbg *TbgState) readUserInput(keysEvents <-chan keyboard.KeyEvent) {
 	for {
 		event := <-keysEvents
 		if event.Err != nil {
 			panic(event.Err)
 		}
-
-		if keyboard.Key(event.Rune) == keyboard.Key('q') {
-			fmt.Println("Exiting...")
-			close(done)
-			return
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('R') {
-			randomDir <- struct{}{}
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('r') {
-			randomImage <- struct{}{}
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('N') {
-			nextDir <- struct{}{}
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('P') {
-			prevDir <- struct{}{}
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('n') {
-			nextImage <- struct{}{}
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('p') {
-			prevImage <- struct{}{}
-
-		} else if keyboard.Key(event.Rune) == keyboard.Key('c') {
+		switch keyboard.Key(event.Rune) {
+		case keyboard.Key('c'):
 			commandList()
-
-		} else {
-			fmt.Printf("invalid key '%c' ('h' for help)\n", event.Rune)
+		case keyboard.Key('n'):
+			tbg.NextImage()
+			tbg.Events.ImageChanged <- struct{}{}
+		case keyboard.Key('N'):
+			tbg.NextPath()
+			tbg.Events.ImageChanged <- struct{}{}
+		case keyboard.Key('p'):
+			tbg.PreviousImage()
+			tbg.Events.ImageChanged <- struct{}{}
+		case keyboard.Key('P'):
+			tbg.PreviousPath()
+			tbg.Events.ImageChanged <- struct{}{}
+		case keyboard.Key('q'):
+			fmt.Println("Exiting...")
+			close(tbg.Events.Done)
+			return
+		case keyboard.Key('r'):
+			tbg.RandomizeImages()
+			tbg.Events.ImageChanged <- struct{}{}
+		case keyboard.Key('R'):
+			tbg.RandomizePaths()
+			tbg.Events.ImageChanged <- struct{}{}
+		case keyboard.Key('d'):
+			fmt.Println(tbg)
+		default:
+			fmt.Printf("invalid key '%c' ('c' for list of [c]ommand)\n", event.Rune)
 		}
 	}
 }
