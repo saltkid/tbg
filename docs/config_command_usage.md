@@ -1,17 +1,37 @@
 # Table of Contents
 - [Overview](#tbg-config-[arg])
 - [Walkthroughs](#walkthroughs)
+- [Usage](#usage)
     - [Printing config](#printing-config)
     - [Editing fields of config](#editing-fields-of-config)
 
 ---
 
-# `tbg config [arg]`
-#### args: `edit`, no arg
+# `tbg config [--flags]`
+#### args: no arg
 
-`config` command prints the `config.yaml` if no arg is specified. If `edit` is specified, it will edit the fields of `config.yaml` based on flags passed to it. 
+`config` command prints the `config.yaml` if no arg is specified.
+If any of the flags are specified, it will edit the fields of `.tbg.yml`
+based on flags passed to it. 
 
-# Walkthroughs
+# Valid Flags
+1. `--profile [arg]`
+    - args: `default`, `list-1`, `list-2`, ..., `list-n`
+    - edits: `profile`
+2. `--interval [arg]`
+    - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
+    - edits: `interval`
+3. `--alignment [arg]`
+    - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
+    - edits: `alignment` (the top level alignment, not the per path alignment)
+4. `--stretch [arg]`
+    - args: `none`, `fill`, `uniform`, `uniformToFill`
+    - edits: `stretch` (top level stretch)
+5. `--opacity [arg]`
+    - args: any float between 0 and 1 (inclusive)
+    - edits: `opacity` (top level opacity)
+
+# Usage
 #### Printing config
 To print the currently used config, just do
 ```
@@ -22,70 +42,60 @@ Output on console should look something like this
 ------------------------------------------------------------------------------------
 | abs/path/to/currently/used/config.yaml
 ------------------------------------------------------------------------------------
-| image_col_paths:
-|                        abs/path/to/images/dir1
-|                        abs/path/to/images/dir2
-|                        abs/path/to/images/dir3
+| paths:
+| - path: path/to/images/dir
+|   alignment: right
+|   stretch: fill
+|   opacity: 0.250000
 |
 | profile:               default
 | interval:              30
-|
-| default_alignment:     center
-| default_stretch:       uniform
-| default_opacity:       0.1
+| alignment:             center
+| stretch:               uniform
+| opacity:               0.100000
 ------------------------------------------------------------------------------------
 ```
 
 #### Editing fields of config
-To edit fields of config, specify `edit` as the arg and then specify the fields you want to edit with flags like this this:
+To edit fields of config, specify any fields you want to edit with flags like this this:
 ```
-tbg config edit --alignment topRight
+tbg config --alignment topRight
 ```
-This means we are going to edit the `default_alignment` field in `config.yaml`. This is the before:
 ```
 ------------------------------------------------------------------------------------
-| abs/path/to/default/config.yaml
+| abs/path/to/currently/used/config.yaml
 ------------------------------------------------------------------------------------
-| image_col_paths: []
+| paths:
+| - path: path/to/images/dir
+|   alignment: right
+|   stretch: fill
+|   opacity: 0.250000
 |
 | profile:               default
 | interval:              30
-|
-| default_alignment:     center
-| default_stretch:       uniform
-| default_opacity:       0.1
+| alignment:             topRight # used to be center in the above example
+| stretch:               uniform
+| opacity:               0.100000
 ------------------------------------------------------------------------------------
 ```
-After:
-```
-------------------------------------------------------------------------------------
-| abs/path/to/default/config.yaml
-------------------------------------------------------------------------------------
-| image_col_paths: []
-|
-| profile:               default
-| interval:              30
-|
-| default_alignment:     topRight
-| default_stretch:       uniform
-| default_opacity:       0.1
-------------------------------------------------------------------------------------
-```
-You can do this with the other four fields as well (not `image_col_paths`)
+You can do this with the other four fields as well
 ```
 tbg config edit --profile list-1 --interval 5 --stretch fill --opacity 0.35
 ```
 ```
 ------------------------------------------------------------------------------------
-| abs/path/to/default/config.yaml
+| abs/path/to/currently/used/config.yaml
 ------------------------------------------------------------------------------------
-| image_col_paths: []
+| paths:
+| - path: path/to/images/dir
+|   alignment: right
+|   stretch: fill
+|   opacity: 0.250000
 |
-| profile:               list-1
-| interval:              5
-|
-| default_alignment:     topRight
-| default_stretch:       fill
-| default_opacity:       0.35
+| profile:               list-1   # used to be default
+| interval:              5        # used to be 30
+| alignment:             topRight
+| stretch:               fill     # used to be uniform
+| opacity:               0.350000 # used to be 0.100000
 ------------------------------------------------------------------------------------
 ```
