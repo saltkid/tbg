@@ -38,10 +38,10 @@ func (cfg *Config) String() string {
 func ConfigPath() (string, error) {
 	e, err := os.Executable()
 	if err != nil {
-		return "", fmt.Errorf("Failed to get tbg path to get default config: %s", err.Error())
+		return "", fmt.Errorf("Failed to get tbg executable path to get default config: %s", err.Error())
 	}
 
-	configPath := filepath.Join(filepath.Dir(e), "config.yaml")
+	configPath := filepath.Join(filepath.Dir(e), ".tbg.yml")
 	if _, err := os.Stat(configPath); os.IsNotExist(err) {
 		err = NewConfigTemplate(configPath).WriteFile()
 		if err != nil {
@@ -52,100 +52,64 @@ func ConfigPath() (string, error) {
 	return configPath, nil
 }
 
-func (c *Config) Unmarshal(data []byte) error {
-	err := yaml.Unmarshal(data, c)
+func (cfg *Config) Unmarshal(data []byte) error {
+	err := yaml.Unmarshal(data, cfg)
 	if err != nil {
 		return fmt.Errorf("Failed to unmarshal config: %s", err)
 	}
 	return nil
 }
 
-func (c *Config) AddPath(toAdd string, configPath string, align *string, stretch *string, opacity *string) error {
-	// keep values blank if not set
-	editFlags := false
-	var toAddFlags string
-	if align != nil || stretch != nil || opacity != nil {
-		editFlags = true
-		blank := "_"
-		if align == nil {
-			align = &blank
-		}
-		if stretch == nil {
-			stretch = &blank
-		}
-		if opacity == nil {
-			opacity = &blank
-		}
-		toAddFlags = fmt.Sprintf("%s %s %s", *align, *stretch, *opacity)
-	}
-
-	added := make(map[string]struct{}, 0)
-	for i, path := range c.ImageColPaths {
-		purePath, opts, hasOpts := strings.Cut(path, "|")
-		purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
-		purePath = filepath.ToSlash(purePath)
-
-		if strings.EqualFold(toAdd, purePath) {
-			if !editFlags {
-				added[fmt.Sprintf("'%s' already exists in config as '%s'", toAdd, path)] = struct{}{}
+func (cfg *Config) AddPath(
+	configPath string,
+	pathToAdd string,
+	align *string,
+	stretch *string,
+	opacity *float32,
+) error {
+	isEditingOptions := align != nil || stretch != nil || opacity != nil
+	var added *ImagesPath
+	// where key == old, val == new
+	// didn't use make so i can check against nil
+	var edited map[ImagesPath]ImagesPath
+	errors := make([]string, 1)
+	for i, path := range cfg.Paths {
+		cleanPath := filepath.ToSlash(path.Path)
+		if strings.EqualFold(pathToAdd, cleanPath) {
+			if !isEditingOptions {
+				errors = append(errors, fmt.Sprintf("'%s' already exists in config as '%s'", pathToAdd, path.Path))
 				break
 			}
-			// add flags to path without flags
-			if !hasOpts {
-				toAdd = fmt.Sprintf("%s | %s", toAdd, toAddFlags)
-				c.ImageColPaths[i] = toAdd
-				added[fmt.Sprintf("added flags to '%s': '%s'", purePath, toAddFlags)] = struct{}{}
-				break
+			dirToAdd := ImagesPath{
+				Path:      pathToAdd,
+				Alignment: Option(align).Or(path.Alignment).Pointer(),
+				Stretch:   Option(stretch).Or(path.Stretch).Pointer(),
+				Opacity:   Option(opacity).Or(path.Opacity).Pointer(),
 			}
-			// replace flags of path with flags
-			optSlice := strings.Split(opts, " ")
-			if len(optSlice) < 3 {
-				return fmt.Errorf("'%s' are not valid flags for a path", opts)
+			cfg.Paths[i] = dirToAdd
+			edited = map[ImagesPath]ImagesPath{
+				path: dirToAdd,
 			}
-			currAlign, currStretch, currOpacity := optSlice[0], optSlice[1], optSlice[2]
-			// only replace if not equal and not blank
-			changes := 0
-			if currAlign != *align && *align != "_" {
-				currAlign = *align
-				changes++
-			}
-			if currStretch != *stretch && *stretch != "_" {
-				currStretch = *stretch
-				changes++
-			}
-			if currOpacity != *opacity && *opacity != "_" {
-				currOpacity = *opacity
-				changes++
-			}
-			// no replacements
-			if changes == 0 {
-				added["no changes made"] = struct{}{}
-				break
-			}
-			// replaced
-			toAddFlags = fmt.Sprintf("%s %s %s", currAlign, currStretch, currOpacity)
-			c.ImageColPaths[i] = fmt.Sprintf("%s | %s", purePath, toAddFlags)
-			added[fmt.Sprintf("'%s' flags: '%s' --> '%s'", purePath, opts, toAddFlags)] = struct{}{}
-
+			break
 		}
 	}
-	// add new path if no collision and not editing flags
-	if len(added) == 0 {
-		if toAddFlags != "" {
-			toAdd = fmt.Sprintf("%s | %s", toAdd, toAddFlags)
+	noChangesMade := len(edited) == 0
+	if noChangesMade {
+		dirToAdd := ImagesPath{
+			Path:      pathToAdd,
+			Alignment: align,
+			Stretch:   stretch,
+			Opacity:   opacity,
 		}
-		c.ImageColPaths = append(c.ImageColPaths, toAdd)
-		added[toAdd] = struct{}{}
+		cfg.Paths = append(cfg.Paths, dirToAdd)
+		added = &dirToAdd
 	}
-
 	template := NewConfigTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(c)
-	err := template.WriteFile()
-	if err != nil {
-		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
+	template.YamlContents, _ = yaml.Marshal(cfg)
+	if err := template.WriteFile(); err != nil {
+		return err
 	}
-
-	c.Log(configPath).LogAdded(added)
+	cfg.Log(configPath).Added(added, edited)
 	return nil
 }
 
