@@ -4,173 +4,87 @@ import (
 	"fmt"
 )
 
-type CmdType uint8
-
-const (
-	None CmdType = iota
-	Run
-	Config
-	Add
-	Remove
-	Help
-	Version
-)
-
-func (c CmdType) ToString() string {
-	switch c {
-	case None:
-		return "none"
-	case Run:
-		return "run"
-	case Config:
-		return "config"
-	case Add:
-		return "add"
-	case Remove:
-		return "remove"
-	case Help:
-		return "help"
-	case Version:
-		return "version"
-	default:
-		return ""
-	}
+type Command interface {
+	// returns the command type of the command struct
+	Type() CommandType
+	// prints out debug information
+	Debug()
+	//
+	ValidateValue(val *string) error
+	ValidateFlag(f Flag) error
+	ValidateSubCommand(cmd Command) error
+	Execute() error
 }
 
-type Cmd struct {
-	Type    CmdType
-	Value   string
-	SubCmds map[CmdType]*Cmd
-	Flags   map[FlagType]*flag.Flag
-}
-
-func ToCommand(s string) (*Cmd, error) {
+// converts a string to a command struct (case sensitive)
+func ToCommand(s string) (Command, error) {
 	switch s {
 	case "run":
-		return &Cmd{
-			Type:    Run,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[FlagType]*flag.Flag, 0),
-		}, nil
+		return new(RunCommand), nil
 	case "config":
-		return &Cmd{
-			Type:    Config,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[FlagType]*flag.Flag, 0),
-		}, nil
+		return new(ConfigCommand), nil
 	case "add":
-		return &Cmd{
-			Type:    Add,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[FlagType]*flag.Flag, 0),
-		}, nil
+		return new(AddCommand), nil
 	case "remove":
-		return &Cmd{
-			Type:    Remove,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[FlagType]*flag.Flag, 0),
-		}, nil
+		return new(RemoveCommand), nil
 	case "help":
-		return &Cmd{
-			Type:    Help,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[FlagType]*flag.Flag, 0),
-		}, nil
+		return new(HelpCommand), nil
 	case "version":
-		return &Cmd{
-			Type:    Version,
-			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[FlagType]*flag.Flag, 0),
-		}, nil
+		return new(VersionCommand), nil
 	default:
 		return nil, fmt.Errorf("unknown command: %s", s)
 	}
 }
 
-func (c *Cmd) IsNone() bool {
-	return c.Type == None
-}
+type CommandType uint8
 
-func (c *Cmd) ValidateValue(val string) error {
-	switch c.Type {
-	case Run:
-		return RunValidateValue(val)
-	case Config:
-		return ConfigValidateValue(val)
-	case Add:
-		return AddValidateValue(val)
-	case Remove:
-		return RemoveValidateValue(val)
-	case Help:
-		return HelpValidateValue(val)
-	case Version:
-		return nil
-	case None:
-		return nil
+const (
+	NoCommandType CommandType = iota
+	RunCommandType
+	ConfigCommandType
+	AddCommandType
+	RemoveCommandType
+	HelpCommandType
+	VersionCommandType
+)
+
+func (c CommandType) String() string {
+	switch c {
+	case NoCommandType:
+		return "none"
+	case RunCommandType:
+		return "run"
+	case ConfigCommandType:
+		return "config"
+	case AddCommandType:
+		return "add"
+	case RemoveCommandType:
+		return "remove"
+	case HelpCommandType:
+		return "help"
+	case VersionCommandType:
+		return "version"
 	default:
-		return fmt.Errorf("unknown command: %s", val)
+		return fmt.Sprintf("UNKNOWN COMMAND '%d'", c)
 	}
 }
 
-func (c *Cmd) ValidateFlag(f *Flag) error {
-	switch c.Type {
-	case Run:
-		return RunValidateFlag(f)
-	case Config:
-		return ConfigValidateFlag(f)
-	case Add:
-		return AddValidateFlag(f)
-	case Remove:
-		return RemoveValidateFlag(f)
-	case Help:
-		return HelpValidateFlag(f)
-	case Version:
-		return nil
-	case None:
-		return nil
-	default:
-		return fmt.Errorf("unexpected error: unknown command type: %d", c.Type)
-	}
-}
-
-func (c *Cmd) ValidateSubCmd(sc *Cmd) error {
-	switch c.Type {
-	case Run:
-		return RunValidateSubCmd(sc)
-	case Config:
-		return ConfigValidateSubCmd(sc)
-	case Add:
-		return AddValidateSubCmd(sc)
-	case Remove:
-		return RemoveValidateSubCmd(sc)
-	case Help:
-		return HelpValidateSubCmd(sc)
-	case Version:
-		return nil
-	case None:
-		return nil
-	default:
-		return fmt.Errorf("unexpected error: unknown command type: %d", sc.Type)
-	}
-}
-
-func (c *Cmd) Execute() error {
-	switch c.Type {
-	case Run:
-		return RunExecute(c)
-	case Config:
-		return ConfigExecute(c)
-	case Add:
-		return AddExecute(c)
-	case Remove:
-		return RemoveExecute(c)
-	case Help:
-		return HelpExecute(c)
-	case Version:
-		return VersionExecute()
-	case None:
-		return nil
-	default:
-		return fmt.Errorf("unexpected error: unknown command type: %d", c.Type)
+// converts a command type to a command struct
+func (c CommandType) ToCommand() (Command, error) {
+	switch c {
+	case RunCommandType:
+		return new(RunCommand), nil
+	case ConfigCommandType:
+		return new(ConfigCommand), nil
+	case AddCommandType:
+		return new(AddCommand), nil
+	case RemoveCommandType:
+		return new(RemoveCommand), nil
+	case HelpCommandType:
+		return new(HelpCommand), nil
+	case VersionCommandType:
+		return new(VersionCommand), nil
+	default: // case: NoCommandType
+		return nil, fmt.Errorf("Cannot convert CommandType NoCommandType to a Command!")
 	}
 }
