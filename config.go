@@ -113,97 +113,52 @@ func (cfg *Config) AddPath(
 	return nil
 }
 
-func (c *Config) RemovePath(absPath string, configPath string, align *string, stretch *string, opacity *string) error {
-	removePath := true
-	removeAllFlags := false
-	replaceFlags := false
-
-	// if any flags assigned, do not remove path
-	if align != nil || stretch != nil || opacity != nil {
-		removePath = false
-		// specifically, if assigned all, remove all flags
-		if align != nil && stretch != nil && opacity != nil {
-			removeAllFlags = true
-		} else {
-			replaceFlags = true
-		}
-	}
-	removed := make(map[string]struct{})
-	for i, path := range c.ImageColPaths {
-		purePath, opts, hasOpts := strings.Cut(path, "|")
-		purePath, opts = strings.TrimSpace(purePath), strings.TrimSpace(opts)
-		purePath = filepath.ToSlash(purePath)
-
-		if strings.EqualFold(absPath, purePath) {
+func (cfg *Config) RemovePath(
+	configPath string,
+	pathToRemove string,
+	align bool,
+	stretch bool,
+	opacity bool,
+) error {
+	var removed *string
+	for i, path := range cfg.Paths {
+		cleanPath := filepath.ToSlash(path.Path)
+		if strings.EqualFold(pathToRemove, cleanPath) {
+			removePath := !align && !stretch && !opacity
 			if removePath {
-				removed[absPath] = struct{}{}
-				c.ImageColPaths = append(c.ImageColPaths[:i], c.ImageColPaths[i+1:]...)
-
-			} else if removeAllFlags {
-				if hasOpts {
-					removed[fmt.Sprintf("'%s' flags from '%s'", opts, purePath)] = struct{}{}
-					c.ImageColPaths[i] = purePath
+				removed = &pathToRemove
+				cfg.Paths = append(cfg.Paths[:i], cfg.Paths[i+1:]...)
+			} else {
+				removedFlags := ""
+				if align {
+					removedFlags += AlignmentFlag.String() + ", "
 				}
-			} else if replaceFlags {
-				if !hasOpts {
-					removed[fmt.Sprintf("'%s' does not have any flags set", purePath)] = struct{}{}
-					break
+				if stretch {
+					removedFlags += StretchFlag.String() + ", "
 				}
-				optSlice := strings.Split(opts, " ")
-				if len(optSlice) != 3 {
-					return fmt.Errorf("invalid options for '%s': '%s'", purePath, opts)
+				if opacity {
+					removedFlags += OpacityFlag.String() + ", "
 				}
-				alignOpt, stretchOpt, opacityOpt := optSlice[0], optSlice[1], optSlice[2]
-				alignOpt, stretchOpt, opacityOpt = strings.TrimSpace(alignOpt), strings.TrimSpace(stretchOpt), strings.TrimSpace(opacityOpt)
-
-				// if set to remove, keep blank
-				// if not set to remove, keep the current flag
-				blank := "_"
-				if align == nil {
-					align = &alignOpt
-				} else {
-					align = &blank
-				}
-				if stretch == nil {
-					stretch = &stretchOpt
-				} else {
-					stretch = &blank
-				}
-				if opacity == nil {
-					opacity = &opacityOpt
-				} else {
-					opacity = &blank
-				}
-				// final check if all flags are all blank
-				if *align == blank && *stretch == blank && *opacity == blank {
-					// remove flags
-					c.ImageColPaths[i] = purePath
-					removed[fmt.Sprintf("'%s' flags from '%s'", opts, purePath)] = struct{}{}
-					break
-				}
-				// replace flags only if they're different
-				newFlags := fmt.Sprintf("%s %s %s", *align, *stretch, *opacity)
-				if newFlags != opts {
-					c.ImageColPaths[i] = fmt.Sprintf("%s | %s", purePath, newFlags)
-					if hasOpts {
-						removed[fmt.Sprintf("'%s' flags: '%s' --> '%s'", purePath, opts, newFlags)] = struct{}{}
-					}
+				tmp := fmt.Sprintf("'%s' from '%s'", strings.TrimSuffix(removedFlags, ", "), cleanPath)
+				removed = &tmp
+				cfg.Paths[i] = ImagesPath{
+					Path: cleanPath,
 				}
 			}
 			break
 		}
 	}
 	template := NewConfigTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(c)
-	err := template.WriteFile()
+	var err error
+	template.YamlContents, err = yaml.Marshal(cfg)
 	if err != nil {
-		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
+		return fmt.Errorf("Failed to marshal yaml contents: %s", err.Error())
 	}
-	if len(removed) == 0 {
-		removed["no changes made"] = struct{}{}
+	err = template.WriteFile()
+	if err != nil {
+		return fmt.Errorf("Error writing to config at %s: %s", configPath, err.Error())
 	}
-
-	c.Log(configPath).LogRemoved(removed)
+	cfg.Log(configPath).Removed(removed)
 	return nil
 }
 
