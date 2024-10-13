@@ -366,13 +366,3 @@ func commandList() {
 	fmt.Println("R: [R]andomize dirs (current to last; previous unaffected)")
 	fmt.Println("c: [c]ommand list")
 }
-
-// shuffles the string slice from the current index up to the end
-//
-// it does not affect the elements before the current index
-func shuffleFrom(currentIndex int, stringSlice []string) {
-	for range stringSlice[currentIndex:] {
-		i := rand.Intn(len(stringSlice)-currentIndex) + currentIndex
-		stringSlice[i], stringSlice[currentIndex] = stringSlice[currentIndex], stringSlice[i]
-	}
-}
