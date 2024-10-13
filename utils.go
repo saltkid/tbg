@@ -1,6 +1,4 @@
-// common utils
-
-package utils
+package main
 
 import (
 	"fmt"

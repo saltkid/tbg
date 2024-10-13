@@ -1,17 +1,15 @@
-package config
+package main
 
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/eiannone/keyboard"
 	"math/rand"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
-
-	"github.com/eiannone/keyboard"
-	"github.com/saltkid/tbg/utils"
 )
 
 func (c *Config) ChangeBgImage(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string, random *string) error {
@@ -321,7 +319,7 @@ func fetchImages(dir string) ([]string, error) {
 		if d.IsDir() && d.Name() != filepath.Base(dir) {
 			return filepath.SkipDir
 		}
-		if utils.IsImageFile(d.Name()) {
+		if IsImageFile(d.Name()) {
 			images = append(images, path)
 		}
 		return nil

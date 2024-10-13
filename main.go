@@ -3,10 +3,6 @@ package main
 import (
 	"fmt"
 	"os"
-
-	"github.com/saltkid/tbg/cmd"
-	"github.com/saltkid/tbg/flag"
-	"github.com/saltkid/tbg/utils"
 )
 
 func main() {
@@ -23,10 +19,10 @@ func main() {
 	}
 
 	if command.IsNone() {
-		command.Type = cmd.Help
+		command.Type = Help
 	}
 
-	utils.Cls()
+	Cls()
 	err = command.Execute()
 	if err != nil {
 		fmt.Println(err)
@@ -49,14 +45,14 @@ func TokenizeArgs(args []string) ([]Token, error) {
 		// id == 0 means empty token
 
 		if tmpTok.id == 0 {
-			if tmpCmd, err := cmd.ToCommand(arg); err == nil {
+			if tmpCmd, err := ToCommand(arg); err == nil {
 				// is command
 				tmpTok = Token{
 					id:     uint8(tmpCmd.Type),
 					isCmd:  true,
 					isFlag: false,
 				}
-			} else if tmpFlag, err := flag.ToFlag(arg); err == nil {
+			} else if tmpFlag, err := ToFlag(arg); err == nil {
 				// is flag
 				tmpTok = Token{
 					id:     uint8(tmpFlag.Type),
@@ -73,7 +69,7 @@ func TokenizeArgs(args []string) ([]Token, error) {
 				tokens = append(tokens, tmpTok)
 			}
 		} else {
-			if tmpCmd, err := cmd.ToCommand(arg); err == nil {
+			if tmpCmd, err := ToCommand(arg); err == nil {
 				// encountered command instead of value
 				tokens = append(tokens, tmpTok)
 				tmpTok = Token{
@@ -81,7 +77,7 @@ func TokenizeArgs(args []string) ([]Token, error) {
 					isCmd:  true,
 					isFlag: false,
 				}
-			} else if tmpFlag, err := flag.ToFlag(arg); err == nil {
+			} else if tmpFlag, err := ToFlag(arg); err == nil {
 				// encountered flag instead of value
 				tokens = append(tokens, tmpTok)
 				tmpTok = Token{
@@ -105,20 +101,20 @@ func TokenizeArgs(args []string) ([]Token, error) {
 	return tokens, nil
 }
 
-func ParseArgs(tokens []Token) (*cmd.Cmd, error) {
-	mainCommand := cmd.Cmd{
-		Type:    cmd.None,
-		SubCmds: make(map[cmd.CmdType]*cmd.Cmd, 0),
-		Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+func ParseArgs(tokens []Token) (*Cmd, error) {
+	mainCommand := Cmd{
+		Type:    None,
+		SubCmds: make(map[CmdType]*Cmd, 0),
+		Flags:   make(map[FlagType]*Flag, 0),
 	}
 
 	for i, tok := range tokens {
 		if i == 0 && tok.isFlag {
-			return nil, fmt.Errorf("must start with a valid command. got flag: '%s'", flag.FlagType(tok.id).ToString())
+			return nil, fmt.Errorf("must start with a valid command. got flag: '%s'", FlagType(tok.id).ToString())
 		}
 
 		if mainCommand.IsNone() {
-			mainCommand.Type = cmd.CmdType(tok.id)
+			mainCommand.Type = CmdType(tok.id)
 			err := mainCommand.ValidateValue(tok.value)
 			if err != nil {
 				return nil, err
@@ -127,8 +123,8 @@ func ParseArgs(tokens []Token) (*cmd.Cmd, error) {
 
 		} else {
 			if tok.isCmd {
-				subCmd := &cmd.Cmd{
-					Type:  cmd.CmdType(tok.id),
+				subCmd := &Cmd{
+					Type:  CmdType(tok.id),
 					Value: tok.value,
 				}
 				err := mainCommand.ValidateSubCmd(subCmd)
@@ -137,8 +133,8 @@ func ParseArgs(tokens []Token) (*cmd.Cmd, error) {
 				}
 				mainCommand.SubCmds[subCmd.Type] = subCmd
 			} else if tok.isFlag {
-				flag := &flag.Flag{
-					Type:  flag.FlagType(tok.id),
+				flag := &Flag{
+					Type:  FlagType(tok.id),
 					Value: tok.value,
 				}
 				err := mainCommand.ValidateFlag(flag)
@@ -156,22 +152,22 @@ func LogTokens(tokens []Token) {
 	fmt.Println("Tokens:")
 	for _, token := range tokens {
 		if token.isCmd {
-			fmt.Println("|", cmd.CmdType(token.id).ToString(), token.value)
+			fmt.Println("|", CmdType(token.id).ToString(), token.value)
 		} else if token.isFlag {
-			fmt.Println("|", flag.FlagType(token.id).ToString(), token.value)
+			fmt.Println("|", FlagType(token.id).ToString(), token.value)
 		}
 	}
 }
 
-func LogArgs(mainCmd *cmd.Cmd) {
-	fmt.Println("Main Command:", cmd.CmdType(mainCmd.Type).ToString())
+func LogArgs(mainCmd *Cmd) {
+	fmt.Println("Main Command:", CmdType(mainCmd.Type).ToString())
 	fmt.Println("       Value:", mainCmd.Value)
 	fmt.Println("Sub Commands:")
 	for _, c := range mainCmd.SubCmds {
-		fmt.Println("|", cmd.CmdType(c.Type).ToString(), c.Value)
+		fmt.Println("|", CmdType(c.Type).ToString(), c.Value)
 	}
 	fmt.Println("Flags:")
 	for _, f := range mainCmd.Flags {
-		fmt.Println("|", flag.FlagType(f.Type).ToString(), f.Value)
+		fmt.Println("|", FlagType(f.Type).ToString(), f.Value)
 	}
 }

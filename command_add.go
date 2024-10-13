@@ -1,13 +1,9 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/saltkid/tbg/config"
-	"github.com/saltkid/tbg/flag"
-	"github.com/saltkid/tbg/utils"
 )
 
 func AddValidateValue(val string) error {
@@ -31,7 +27,7 @@ func AddValidateValue(val string) error {
 			return filepath.SkipDir
 		}
 		// find at least one
-		if utils.IsImageFile(d.Name()) {
+		if IsImageFile(d.Name()) {
 			hasImageFile = true
 			return filepath.SkipAll
 		}
@@ -46,9 +42,9 @@ func AddValidateValue(val string) error {
 	return nil
 }
 
-func AddValidateFlag(f *flag.Flag) error {
+func AddValidateFlag(f *Flag) error {
 	switch f.Type {
-	case flag.Alignment, flag.Opacity, flag.Stretch:
+	case Alignment, Opacity, Stretch:
 		return f.ValidateValue(f.Value)
 	default:
 		return fmt.Errorf("invalid flag for 'add': '%s'", f.Type.ToString())
@@ -69,11 +65,11 @@ func AddExecute(c *Cmd) error {
 	toAdd = filepath.ToSlash(toAdd)
 
 	// check if flags are set by user (empty if not)
-	align := ExtractFlagValue(flag.Alignment, c.Flags)
-	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
-	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
+	align := ExtractFlagValue(Alignment, c.Flags)
+	opacity := ExtractFlagValue(Opacity, c.Flags)
+	stretch := ExtractFlagValue(Stretch, c.Flags)
 
-	configPath, err := config.ConfigPath()
+	configPath, err := ConfigPath()
 	if err != nil {
 		return err
 	}
@@ -81,7 +77,7 @@ func AddExecute(c *Cmd) error {
 	if err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
-	configContents := &config.Config{}
+	configContents := &Config{}
 	err = configContents.Unmarshal(yamlFile)
 	if err != nil {
 		return err
