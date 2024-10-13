@@ -248,68 +248,6 @@ func readUserInput(keysEvents <-chan keyboard.KeyEvent, done chan<- struct{},
 	}
 }
 
-func updateWtJsonFields(allData map[string]json.RawMessage, settingsPath string, profile string, image string, align string, stretch string, opacity string) error {
-	// normalize fields to be json friendly
-	image = strings.ReplaceAll(image, `\`, `\\`)
-	image = fmt.Sprintf(`"%s"`, image)
-	align = fmt.Sprintf(`"%s"`, align)
-	stretch = fmt.Sprintf(`"%s"`, stretch)
-
-	// read profiles
-	var profiles map[string]json.RawMessage
-	err := json.Unmarshal(allData["profiles"], &profiles)
-	if err != nil {
-		return fmt.Errorf("Failed to unmarshal field \"profiles\" from settings.json: %s", err)
-	}
-
-	// edit profiles
-	if profile == "default" {
-		var defaultProfile map[string]json.RawMessage
-		err = json.Unmarshal(profiles["defaults"], &defaultProfile)
-		if err != nil {
-			return fmt.Errorf("Failed to unmarshal field \"defaults\" from field \"profiles\" in settings.json: %s", err)
-		}
-
-		defaultProfile["backgroundImage"] = json.RawMessage([]byte(image))
-		defaultProfile["backgroundImageAlignment"] = json.RawMessage([]byte(align))
-		defaultProfile["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
-		defaultProfile["backgroundImageOpacity"] = json.RawMessage([]byte(opacity))
-
-		profiles["defaults"], err = json.Marshal(defaultProfile)
-		if err != nil {
-			return fmt.Errorf("Failed to marshal field \"defaults\" to field \"profiles\" in settings.json: %s", err)
-		}
-	} else {
-		var profileList []map[string]json.RawMessage
-		err = json.Unmarshal(profiles["list"], &profileList)
-		if err != nil {
-			return fmt.Errorf("Failed to unmarshal field \"list\" from field \"profiles\" in settings.json: %s", err)
-		}
-		_, num, _ := strings.Cut(profile, "-")
-		profileNum, _ := strconv.Atoi(num)
-		profileList[profileNum-1]["backgroundImage"] = json.RawMessage([]byte(image))
-		profileList[profileNum-1]["backgroundImageAlignment"] = json.RawMessage([]byte(align))
-		profileList[profileNum-1]["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
-		profileList[profileNum-1]["backgroundImageOpacity"] = json.RawMessage([]byte(opacity))
-
-		profiles["list"], err = json.Marshal(profileList)
-		if err != nil {
-			return fmt.Errorf("Failed to marshal field \"list\" to field \"profiles\" in settings.json: %s", err)
-		}
-	}
-
-	// write profiles
-	updatedProfiles, err := json.Marshal(profiles)
-	if err != nil {
-		return fmt.Errorf("Failed to marshal field \"profiles\" in settings.json: %s", err)
-	}
-	allData["profiles"] = updatedProfiles
-	updatedJson, err := json.Marshal(allData)
-	err = os.WriteFile(settingsPath, updatedJson, 0666)
-
-	return nil
-}
-
 func fetchImages(dir string) ([]string, error) {
 	images := make([]string, 0)
 	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
@@ -328,31 +266,6 @@ func fetchImages(dir string) ([]string, error) {
 		return nil, fmt.Errorf("Failed to walk directory %s: %s", dir, err)
 	}
 	return images, nil
-}
-
-func settingsJsonPath() (string, error) {
-	localAppDataPath := os.Getenv("LOCALAPPDATA")
-
-	// stable release
-	settingsJson := filepath.Join(localAppDataPath, "Packages", "Microsoft.WindowsTerminal_8wekyb3d8bbwe", "LocalState", "settings.json")
-	if _, err := os.Stat(settingsJson); !os.IsNotExist(err) {
-		return settingsJson, nil
-	}
-
-	// preview release
-	settingsJson = filepath.Join(localAppDataPath, "Packages", "Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe", "LocalState", "settings.json")
-	if _, err := os.Stat(settingsJson); !os.IsNotExist(err) {
-		return settingsJson, nil
-	}
-
-	// through package managers (chocolatey, scoop, etc)
-	settingsJson = filepath.Join(localAppDataPath, "Microsoft", "Windows Terminal", "settings.json")
-	if _, err := os.Stat(settingsJson); !os.IsNotExist(err) {
-		return settingsJson, nil
-	}
-
-	return "", fmt.Errorf("settings.json not found")
-
 }
 
 func commandList() {
