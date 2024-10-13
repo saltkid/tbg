@@ -156,14 +156,34 @@ func (tbg *TbgState) readUserInput(keysEvents <-chan keyboard.KeyEvent) {
 	}
 }
 
-func fetchImages(dir string) ([]string, error) {
-	images := make([]string, 0)
-	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
-		if err != nil {
-			return err
+func (tbg *TbgState) Wait() error {
+	ticker := time.Tick(time.Duration(tbg.Config.Interval) * time.Minute)
+	// ticker := time.Tick(time.Second * 10) // for debug purposes
+	for {
+		select {
+		case <-ticker:
+			tbg.NextImage()
+		case <-tbg.Events.Done:
+			fmt.Println("Goodbye!")
+			return nil
+		case <-tbg.Events.ImageChanged:
+			tbg.Settings.Write(tbg.Images[tbg.ImageIndex],
+				tbg.Config.Profile,
+				tbg.CurrentPathAlignment,
+				tbg.CurrentPathStretch,
+				tbg.CurrentPathOpacity,
+			)
+			tbg.Config.Log(tbg.ConfigPath).RunSettings(
+				tbg.Images[tbg.ImageIndex],
+				tbg.Config.Profile,
+				tbg.Config.Interval,
+				tbg.CurrentPathAlignment,
+				tbg.CurrentPathStretch,
+				tbg.CurrentPathOpacity,
+			)
 		}
-		if d.IsDir() && d.Name() != filepath.Base(dir) {
-			return filepath.SkipDir
+	}
+}
 		}
 		if IsImageFile(d.Name()) {
 			images = append(images, path)
