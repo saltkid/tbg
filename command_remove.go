@@ -6,44 +6,74 @@ import (
 	"path/filepath"
 )
 
-func RemoveValidateValue(val string) error {
-	_, err := filepath.Abs(val)
+type RemoveCommand struct {
+	Path      string
+	Alignment bool
+	Stretch   bool
+	Opacity   bool
+}
+
+func (cmd *RemoveCommand) Type() CommandType { return RemoveCommandType }
+
+func (cmd *RemoveCommand) Debug() {
+	fmt.Println("Remove Command")
+	fmt.Println("Flags:")
+	if cmd.Alignment {
+		fmt.Println(" ", AlignmentFlag)
+	}
+	if cmd.Stretch {
+		fmt.Println(" ", StretchFlag)
+	}
+	if cmd.Opacity {
+		fmt.Println(" ", OpacityFlag)
+	}
+}
+
+func (cmd *RemoveCommand) ValidateValue(val *string) error {
+	if val == nil {
+		return fmt.Errorf("'remove' must have an argument. got none")
+	}
+	absPath, err := filepath.Abs(*val)
 	if err != nil {
-		return fmt.Errorf("Failed to get absolute path of %s: %s", val, err)
+		return fmt.Errorf("Failed to get absolute path of %s: %s", *val, err)
+	}
+	cmd.Path = filepath.ToSlash(absPath)
+	return nil
+}
+
+func (cmd *RemoveCommand) ValidateFlag(f Flag) error {
+	switch f.Type {
+	case AlignmentFlag:
+		if f.Value != nil {
+			return fmt.Errorf("'%s' for 'remove' does not take any arguments. got %s", AlignmentFlag, *f.Value)
+		}
+		cmd.Alignment = true
+	case OpacityFlag:
+		if f.Value != nil {
+			return fmt.Errorf("'%s' for 'remove' does not take any arguments. got %s", OpacityFlag, *f.Value)
+		}
+		cmd.Opacity = true
+	case StretchFlag:
+		if f.Value != nil {
+			return fmt.Errorf("'%s' for 'remove' does not take any arguments. got %s", StretchFlag, *f.Value)
+		}
+		cmd.Stretch = true
+	default:
+		return fmt.Errorf("invalid flag for 'remove': '%s'", f.Type)
 	}
 	return nil
 }
 
-func RemoveValidateFlag(f *Flag) error {
-	switch f.Type {
-	case Alignment, Opacity, Stretch:
-		if f.Value != "" {
-			return fmt.Errorf("'remove' flags don't take any values. flag '%s' has value: '%s'", f.Type.ToString(), f.Value)
-		}
+func (cmd *RemoveCommand) ValidateSubCommand(sc Command) error {
+	switch sc.Type() {
+	case NoCommandType:
 		return nil
 	default:
-		return fmt.Errorf("invalid flag for 'remove': '%s'", f.Type.ToString())
+		return fmt.Errorf("'remove' takes no sub commands. got: '%s'", sc.Type())
 	}
 }
 
-func RemoveValidateSubCmd(c *Cmd) error {
-	switch c.Type {
-	case None:
-		return nil
-	default:
-		return fmt.Errorf("'remove' takes no sub commands. got: '%s'", c.Type.ToString())
-	}
-}
-
-func RemoveExecute(c *Cmd) error {
-	toRemove, _ := filepath.Abs(c.Value)
-	toRemove = filepath.ToSlash(toRemove)
-
-	// check if flags are set by user (empty if not)
-	align := ExtractFlagValue(Alignment, c.Flags)
-	opacity := ExtractFlagValue(Opacity, c.Flags)
-	stretch := ExtractFlagValue(Stretch, c.Flags)
-
+func (cmd *RemoveCommand) Execute() error {
 	configPath, err := ConfigPath()
 	if err != nil {
 		return err
@@ -52,13 +82,12 @@ func RemoveExecute(c *Cmd) error {
 	if err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
-	configContents := &Config{}
+	configContents := new(Config)
 	err = configContents.Unmarshal(yamlFile)
 	if err != nil {
 		return err
 	}
-
-	err = configContents.RemovePath(toRemove, configPath, align, stretch, opacity)
+	err = configContents.RemovePath(configPath, cmd.Path, cmd.Alignment, cmd.Stretch, cmd.Opacity)
 	if err != nil {
 		return err
 	}
