@@ -2,21 +2,37 @@ package main
 
 import (
 	"fmt"
+	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
-
-	"gopkg.in/yaml.v3"
 )
 
 type Config struct {
-	ImageColPaths []string `yaml:"image_col_paths"`
-	Interval      int      `yaml:"interval"`
-	Profile       string   `yaml:"profile"`
-	Alignment     string   `yaml:"default_alignment"`
-	Stretch       string   `yaml:"default_stretch"`
-	Opacity       float64  `yaml:"default_opacity"`
+	Paths     []ImagesPath `yaml:"paths"`
+	Interval  uint16       `yaml:"interval"`
+	Profile   string       `yaml:"profile"`
+	Alignment string       `yaml:"alignment"`
+	Stretch   string       `yaml:"stretch"`
+	Opacity   float32      `yaml:"opacity"`
+}
+
+func (cfg *Config) String() string {
+	return fmt.Sprint(`
+    Paths: `, func() string {
+		ret := ""
+		for _, path := range cfg.Paths {
+			ret += path.String()
+		}
+		return ret
+	}(), `
+    Interval: `, cfg.Interval, `
+    Profile: `, cfg.Profile, `
+    Alignment: `, cfg.Alignment, `
+    Stretch: `, cfg.Stretch, `
+    Opacity: `, cfg.Opacity,
+	)
 }
 
 func ConfigPath() (string, error) {
@@ -267,6 +283,46 @@ func (c *Config) EditConfig(configPath string, profile *string, interval *string
 }
 
 func (c *Config) Log(configPath string) *Config {
+type ImagesPath struct {
+	Path      string   `yaml:"path"`
+	Alignment *string  `yaml:"alignment,omitempty"`
+	Stretch   *string  `yaml:"stretch,omitempty"`
+	Opacity   *float32 `yaml:"opacity,omitempty"`
+}
+
+func (path *ImagesPath) String() string {
+	return fmt.Sprint(`
+       Path: `, path.Path, `
+       Alignment: `, Option(path.Alignment).UnwrapOr("not set"), `; Stretch: `, Option(path.Stretch).UnwrapOr("not set"), `; Opacity: `, func() string {
+		if path.Opacity == nil {
+			return "not set"
+		}
+		return strconv.FormatFloat(float64(*path.Opacity), 'f', -1, 32)
+	}(),
+	)
+}
+
+func (path *ImagesPath) Images() ([]string, error) {
+	dir := path.Path
+	images := make([]string, 0)
+	err := filepath.WalkDir(dir, func(path string, d os.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		if d.IsDir() && d.Name() != filepath.Base(dir) {
+			return filepath.SkipDir
+		}
+		if IsImageFile(d.Name()) {
+			images = append(images, path)
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("Failed to walk directory %s: %s", dir, err)
+	}
+	return images, nil
+}
+
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
