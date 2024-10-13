@@ -5,65 +5,109 @@ import (
 	"os"
 )
 
-func ConfigValidateValue(val string) error {
-	// default config
-	switch val {
-	case "edit", "":
-		return nil
-	default:
-		return fmt.Errorf("invalid arg for 'config': '%s'", val)
+type ConfigCommand struct {
+	Profile   *string
+	Interval  *uint16
+	Alignment *string
+	Stretch   *string
+	Opacity   *float32
+}
+
+func (cmd *ConfigCommand) Type() CommandType { return ConfigCommandType }
+
+func (cmd *ConfigCommand) Debug() {
+	fmt.Println("Config Command:", cmd.Type())
+	fmt.Println("Flags:")
+	if cmd.Profile != nil {
+		fmt.Println(" ", ProfileFlag, *cmd.Profile)
+	}
+	if cmd.Interval != nil {
+		fmt.Println(" ", IntervalFlag, *cmd.Interval)
+	}
+	if cmd.Alignment != nil {
+		fmt.Println(" ", AlignmentFlag, *cmd.Alignment)
+	}
+	if cmd.Stretch != nil {
+		fmt.Println(" ", StretchFlag, *cmd.Stretch)
+	}
+	if cmd.Opacity != nil {
+		fmt.Println(" ", OpacityFlag, *cmd.Opacity)
 	}
 }
 
-func ConfigValidateFlag(f *Flag) error {
+func (cmd *ConfigCommand) ValidateValue(val *string) error {
+	if val == nil || *val == "" {
+		return nil
+	}
+	return fmt.Errorf("'run' takes no arguments. got: '%s'", *val)
+}
+
+func (cmd *ConfigCommand) ValidateFlag(f Flag) error {
 	switch f.Type {
-	case Profile, Interval, Alignment, Opacity, Stretch:
-		return f.ValidateValue(f.Value)
+	case ProfileFlag:
+		val, err := ValidateProfile(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Profile = val
+	case IntervalFlag:
+		val, err := ValidateInterval(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Interval = val
+	case AlignmentFlag:
+		val, err := ValidateAlignment(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Alignment = val
+	case OpacityFlag:
+		val, err := ValidateOpacity(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Opacity = val
+	case StretchFlag:
+		val, err := ValidateStretch(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Stretch = val
 	default:
-		return fmt.Errorf("invalid flag for 'config': '%s'", f.Type.ToString())
+		return fmt.Errorf("invalid flag for 'run': '%s'", f.Type)
 	}
+	return nil
 }
 
-func ConfigValidateSubCmd(c *Cmd) error {
-	switch c.Type {
-	case None:
+func (cmd *ConfigCommand) ValidateSubCommand(sc Command) error {
+	switch sc.Type() {
+	case NoCommandType:
 		return nil
 	default:
-		return fmt.Errorf("'config' takes no sub commands. got: '%s'", c.Type.ToString())
+		return fmt.Errorf("'config' takes no sub commands. got: '%s'", sc.Type())
 	}
 }
 
-func ConfigExecute(c *Cmd) error {
-	// check if flags are set by user
-	profile := ExtractFlagValue(Profile, c.Flags)
-	interval := ExtractFlagValue(Interval, c.Flags)
-	alignment := ExtractFlagValue(Alignment, c.Flags)
-	stretch := ExtractFlagValue(Stretch, c.Flags)
-	opacity := ExtractFlagValue(Opacity, c.Flags)
-
+func (cmd *ConfigCommand) Execute() error {
 	configPath, err := ConfigPath()
 	if err != nil {
 		return err
 	}
 	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("Failed to read config at %s: %s", configPath, err)
+		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
-	configContents := &Config{}
-	err = configContents.Unmarshal(yamlFile)
+	config := new(Config)
+	err = config.Unmarshal(yamlFile)
 	if err != nil {
-		return fmt.Errorf("Failed to unmarshal default yaml: %s", err)
+		return err
 	}
-
-	switch c.Value {
-	// print currently used config
-	case "":
-		configContents.Log(configPath)
-	// edit config fields
-	case "edit":
-		configContents.EditConfig(configPath, profile, interval, alignment, stretch, opacity)
-	default:
-		return fmt.Errorf("unexpected error: invalid arg for 'config' after validation: '%s'", c.Value)
+	isEditingConfig := cmd.Profile != nil || cmd.Interval != nil || cmd.Alignment != nil || cmd.Stretch != nil || cmd.Opacity != nil
+	if isEditingConfig {
+		config.EditConfig(configPath, cmd.Profile, cmd.Interval, cmd.Alignment, cmd.Stretch, cmd.Opacity)
+	} else {
+		config.Log(configPath)
 	}
 	return nil
 }
