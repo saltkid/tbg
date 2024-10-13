@@ -1,42 +1,43 @@
 # Table of Contents
 - [Overview](#tbg-remove-[arg])
 - [Valid Flags](#valid-flags)
-- [Walkthroughs](#walkthroughs)
+- [Usage](#usage)
     - [Removing a path](#removing-a-path)
     - [Removing flags from a path](#removing-flags-from-a-path)
     - [Removing all flags from a path](#removing-all-flags-from-a-path)
 ---
 
-# `tbg remove [arg]`
+# `tbg remove [arg] [--flags]`
 #### args: `path/to/images/dir`
 `remove` command removes a path to **tbg**'s currently used config.
-
-You can remove flags from a path using `--`flags (see [valid flags](#valid-flags))
+You can remove flags from a path using `--`flags
 
 # Valid Flags
 1. `--alignment [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
-    - it will remove the alignment flag of the path specified and replace it with the `default_alignment` value
+    - it will remove the alignment flag of the path specified and replace it
+    with the `alignment` value
 2. `--stretch [arg]`
     - args: `none`, `fill`, `uniform`, `uniformToFill`
-    - it will remove the stretch flag of the path specified and replace it with the `default_stretch` value
+    - it will remove the stretch flag of the path specified and replace it
+    with the `stretch` value
 3. `--opacity [arg]`
     - args: any float between 0 and 1 (inclusive)
-    - it will remove the opacity flag of the path specified and replace it with the `default_opacity` value
+    - it will remove the opacity flag of the path specified and replace it
+    with the `opacity` value
 
-# Walkthroughs
+# Usage
 ### Removing a path
 Let's say this is the currently used config:
 ```
-image_col_paths:
-- path/to/images/dir1
+paths:
+- path: path/to/images/dir1
 
-profile: default
-interval: 30
+alignment: center
+stretch: uniform
+opacity: 0.5
 
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
 If we run:
 ```
@@ -44,59 +45,54 @@ tbg remove path/to/images/dir1
 ```
 It will remove `path/to/images/dir1` from the currently used config's `image_col_paths` field like this:
 ```
-image_col_paths: []
+paths: []
 
-profile: default
-interval: 30
+alignment: center
+stretch: uniform
+opacity: 0.5
 
-default_alignment: center
-default_stretch: fill
-default_opacity: 0.1
+other fields...
 ```
 ### Removing flags from a path
 Let's use this config
 ```
-image_col_paths:
-- path/to/images/dir1 | left fill 0.5
+paths:
+- path: path/to/images/dir1
+  alignment: left
+  stretch: fill
+  opacity: 0.5
 
-profile: default
-interval: 30
+alignment: center
+stretch: uniform
+opacity: 0.5
 
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
 Let's "remove" the alignment flag of `path/to/images/dir1`:
 ```
 tbg remove path/to/images/dir1 --alignment
 ```
 ```
-image_col_paths:
-- path/to/images/dir1 | _ fill 0.5
+paths:
+- path: path/to/images/dir2 
+  stretch: fill
+  opacity: 0.5
 
-profile: default
-interval: 30
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
-When you remove a single flag, it will be blanked out. This just means the blanked out alignment flag will inherit the `default_alignment` value (`center`).
+The path will now inherit the top level `alignment` value (`center`).
 
 Let's remove stretch next.
 ```
 tbg remove path/to/images/dir1 --stretch
 ```
 ```
-image_col_paths:
-- path/to/images/dir1 | _ _ 0.5
+paths:
+- path: path/to/images/dir2 
+  stretch: fill
+  opacity: 0.5
 
-profile: default
-interval: 30
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+other fields...
 ```
 The stretch flag of `path/to/images/dir1` is blanked out as well. Again, this will inherit the `default_stretch` value: `uniform`.
 

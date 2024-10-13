@@ -1,18 +1,17 @@
 # Table of Contents
 - [Overview](#tbg-add-[arg])
 - [Valid Flags](#valid-flags)
-- [Walkthroughs](#walkthroughs)
+- [Usage](#Usage)
     - [Adding a path](#adding-a-path)
     - [Adding a path with flags](#adding-a-path-with-flags)
     - [Adding a flag to an existing path](#adding-a-flag-to-an-existing-path)
     - [Changing a flag of an existing path](#changing-a-flag-of-an-existing-path)
 ---
 
-# `tbg add [arg]`
+# `tbg add [arg] [--flags]`
 #### args: `path/to/images/dir`
 `add` command adds a path to **tbg**'s currently used config.
-
-You can add flags to a path to be added using `--`flags (see [valid flags](#valid-flags))
+You can add flags to a path to be added using `--`flags
 
 # Valid Flags
 1. `--alignment [arg]`
@@ -26,11 +25,15 @@ You can add flags to a path to be added using `--`flags (see [valid flags](#vali
     - args: any float between 0 and 1 (inclusive)
     - it will add flags to the path being added after a pipe `|`
 
-# Walkthroughs
+# Usage
 ### Adding a path
 Let's say this is the currently used config:
 ```
-image_col_paths: []
+paths: []
+
+alignment: center
+stretch: uniform
+opacity: 0.5
 
 other fields...
 ```
@@ -38,98 +41,123 @@ If we run:
 ```
 tbg add path/to/images/dir1
 ```
-It will add `path/to/images/dir1` to the currently used config's `image_col_paths` field like this:
+It will add `path/to/images/dir1` to the currently used config's `paths` field like this:
 ```
-image_col_paths:
-- path/to/images/dir1
+paths:
+- path: path/to/images/dir1
+
+alignment: center
+stretch: uniform
+opacity: 0.5
 
 other fields...
 ```
 ### Adding a path with flags
 Let's continue with our config and run this:
 ```
-tbg add path/to/images/dir2 --alignment left --stretch uniform --opacity 0.5
+tbg add path/to/images/dir2 --alignment left --stretch fill --opacity 0.5
 ```
-It will add `path/to/images/dir2` in `image_col_paths` field and add flags to it like this:
+It will add `path/to/images/dir2` in `paths` field and add flags to it like this:
 ```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
+paths:
+- path: path/to/images/dir1
+- path: path/to/images/dir2 
+  alignment: left
+  stretch: fill
+  opacity: 0.5
+
+alignment: center
+stretch: uniform
+opacity: 0.5
 
 other fields...
 ```
 Let's add another one:
 ```
-tbg add path/to/images/dir3 --alignment center
+tbg add path/to/images/dir3 --alignment right
 ```
 ```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center _ _
+paths:
+- path: path/to/images/dir1
+- path: path/to/images/dir2 
+  alignment: left
+  stretch: fill
+  opacity: 0.5
+- path: path/to/images/dir3
+  alignment: right
 
-other fields...
+alignment: center
+stretch: uniform
+opacity: 0.5
 ```
-Since only `--alignment` was specified, the other two flags are blanked out. This just means the blanked out flags will inherit their respective default flag field value (`default_stretch` and `default_opacity` in this example)
+Flags that were not specified will inherit their respective default flag field value
+(`stretch` and `opacity` in this example)
 
 #### Adding a flag to an existing path
 Let's continue with our config and run this:
 ```
 tbg add /path/to/images/dir3 --stretch fill
 ```
-This will find if `path/to/images/dir3` is already in `image_col_paths` field and add a stretch flag `fill` to it.
+This will find if `path/to/images/dir3` is already in `paths` field and add a stretch flag `fill` to it.
 ```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center fill _
+paths:
+- other paths ...
+- path: path/to/images/dir3
+  alignment: right
+  stretch: fill # this path only had alignment in the example above
 
-other fields...
+alignment: center
+stretch: uniform
+opacity: 0.5
 ```
 Let's fill assign the opacity too
 ```
-tbg add /path/to/images/dir3 --opacity 0.5
+tbg add /path/to/images/dir3 --opacity 0.25
 ```
 ```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center fill 0.5
+paths:
+- other paths ...
+- path: path/to/images/dir3
+  alignment: right
+  stretch: fill
+  opacity: 0.25
 
-other fields...
+alignment: center
+stretch: uniform
+opacity: 0.5
 ```
 #### Changing a flag of an existing path
-Let's continue with our config:
-```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center fill 0.5
-
-other fields...
-```
 Let's change the opacity and stretch:
 ```
 tbg add /path/to/images/dir3 --opacity 1 --stretch none
 ```
-This will find if `path/to/images/dir3` is already in `image_col_paths` field and set the opacity to `1` and the stretch to `none`.
+This will find if `path/to/images/dir3` is already in `paths` field and set
+the opacity to `1` and the stretch to `none`.
 ```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | center none 1
+paths:
+- other paths ...
+- path: path/to/images/dir3
+  alignment: right
+  stretch: none # used to be fill
+  opacity: 1    # used to be 0.25
 
-other fieds...
+alignment: center
+stretch: uniform
+opacity: 0.5
 ```
 Let's change the alignment too
 ```
 tbg add /path/to/images/dir3 --alignment bottom
 ```
 ```
-image_col_paths:
-- path/to/images/dir1
-- path/to/images/dir2 | left uniform 0.5
-- path/to/images/dir3 | bottom center none 1
+paths:
+- other paths ...
+- path: path/to/images/dir3
+  alignment: bottom # used to be right
+  stretch: none 
+  opacity: 1
 
-other fields...
+alignment: center
+stretch: uniform
+opacity: 0.5
 ```
