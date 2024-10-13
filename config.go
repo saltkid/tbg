@@ -282,7 +282,6 @@ func (c *Config) EditConfig(configPath string, profile *string, interval *string
 	return nil
 }
 
-func (c *Config) Log(configPath string) *Config {
 type ImagesPath struct {
 	Path      string   `yaml:"path"`
 	Alignment *string  `yaml:"alignment,omitempty"`
@@ -323,30 +322,99 @@ func (path *ImagesPath) Images() ([]string, error) {
 	return images, nil
 }
 
+type ConfigLogger struct{}
+
+func (cfg *Config) Log(configPath string) ConfigLogger {
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Println("|", configPath)
 	fmt.Println("------------------------------------------------------------------------------------")
-	fmt.Println("| image_col_paths:")
-	for _, path := range c.ImageColPaths {
-		fmt.Printf("%-25s%s\n", "|", path)
+	fmt.Println("| paths:")
+	for _, dir := range cfg.Paths {
+		fmt.Printf("%-25spath: %s\n", "|", dir.Path)
+		if dir.Alignment != nil {
+			fmt.Printf("%-25s- alignment: %s\n", "|", *dir.Alignment)
+		}
+		if dir.Stretch != nil {
+			fmt.Printf("%-25s- stretch: %s\n", "|", *dir.Stretch)
+		}
+		if dir.Opacity != nil {
+			fmt.Printf("%-25s- opacity: %f\n", "|", *dir.Opacity)
+		}
 	}
-	fmt.Printf("|\n%-25s%s\n", "| profile:", c.Profile)
-	fmt.Printf("%-25s%s\n", "| interval:", strconv.Itoa(c.Interval))
-	fmt.Printf("%-25s%s\n", "| default_alignment:", c.Alignment)
-	fmt.Printf("%-25s%s\n", "| default_stretch:", c.Stretch)
-	fmt.Printf("%-25s%s\n", "| default_opacity:", strconv.FormatFloat(c.Opacity, 'f', -1, 64))
+	fmt.Printf("|\n%-25s%s\n", "| profile:", cfg.Profile)
+	fmt.Printf("%-25s%d\n", "| interval:", cfg.Interval)
+	fmt.Printf("%-25s%s\n", "| alignment:", cfg.Alignment)
+	fmt.Printf("%-25s%s\n", "| stretch:", cfg.Stretch)
+	fmt.Printf("%-25s%f\n", "| opacity:", cfg.Opacity)
 	fmt.Println("------------------------------------------------------------------------------------")
-
-	return c
+	return ConfigLogger{}
 }
 
-func (c *Config) LogEdited(editedPaths map[string]string) *Config {
-	fmt.Println("| edited: ")
-	fmt.Println("------------------------------------------------------------------------------------")
-	if _, ok := editedPaths["no changes made"]; ok {
+func (log ConfigLogger) Added(added *ImagesPath, edited map[ImagesPath]ImagesPath) ConfigLogger {
+	noChangesMade := len(edited) == 0
+	if noChangesMade {
 		fmt.Println("| no changes made")
 	} else {
-		for old, edited := range editedPaths {
+		if added != nil {
+			fmt.Println("| added: ")
+			fmt.Printf("%-25sadded path: %s\n", "|", added.Path)
+			if added.Alignment != nil {
+				fmt.Printf("%-25s- alignment: %s\n", "|", *added.Alignment)
+			}
+			if added.Stretch != nil {
+				fmt.Printf("%-25s- stretch: %s\n", "|", *added.Stretch)
+			}
+			if added.Opacity != nil {
+				fmt.Printf("%-25s- opacity: %f\n", "|", *added.Opacity)
+			}
+		}
+		for old, new := range edited {
+			fmt.Println("| edited: ")
+			fmt.Printf("%-25sedited path: %s\n", "|", added.Path)
+			if new.Alignment != nil {
+				if old.Alignment != nil {
+					fmt.Printf("%-25s- old alignment: %s\n", "|", *old.Alignment)
+				}
+				fmt.Printf("%-25s- new alignment: %s\n", "|", *new.Alignment)
+			}
+			if new.Stretch != nil {
+				if old.Stretch != nil {
+					fmt.Printf("%-25s- old stretch: %s\n", "|", *old.Stretch)
+				}
+				fmt.Printf("%-25s- new stretch: %s\n", "|", *new.Stretch)
+			}
+			if new.Opacity != nil {
+				if old.Opacity != nil {
+					fmt.Printf("%-25s- old opacity: %f\n", "|", *old.Opacity)
+				}
+				fmt.Printf("%-25s- new opacity: %f\n", "|", *new.Opacity)
+			}
+		}
+	}
+	fmt.Println("------------------------------------------------------------------------------------")
+	return log
+}
+
+func (log ConfigLogger) Removed(removed *string) ConfigLogger {
+	noChangesMade := removed == nil
+	if noChangesMade {
+		fmt.Println("| no changes made")
+	} else {
+		fmt.Println("| removed: ")
+		fmt.Println("|", *removed)
+	}
+	fmt.Println("------------------------------------------------------------------------------------")
+	return log
+}
+
+func (log ConfigLogger) Edited(edited map[string]string) ConfigLogger {
+	fmt.Println("| edited: ")
+	fmt.Println("------------------------------------------------------------------------------------")
+	noChangesMade := len(edited) == 0
+	if noChangesMade {
+		fmt.Println("| no changes made")
+	} else {
+		for old, edited := range edited {
 			if old != edited {
 				fmt.Printf("%-25s%s\n", "| old:", old)
 				fmt.Printf("%-25s%s\n", "| new:", edited)
@@ -355,48 +423,25 @@ func (c *Config) LogEdited(editedPaths map[string]string) *Config {
 		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")
-
-	return c
+	return log
 }
 
-func (c *Config) LogAdded(path map[string]struct{}) *Config {
-	fmt.Println("| added: ")
-	if _, ok := path["no changes made"]; ok {
-		fmt.Println("| no changes made")
-	} else {
-		for path := range path {
-			fmt.Println("|", path)
-		}
-	}
-	fmt.Println("------------------------------------------------------------------------------------")
-
-	return c
-}
-
-func (c *Config) LogRemoved(path map[string]struct{}) *Config {
-	fmt.Println("| removed: ")
-	if _, ok := path["no changes made"]; ok {
-		fmt.Println("| no changes made")
-	} else {
-		for path := range path {
-			fmt.Println("|", path)
-		}
-	}
-	fmt.Println("------------------------------------------------------------------------------------")
-
-	return c
-}
-
-func (c *Config) LogRunSettings(imagePath string, profile string, interval int, align string, stretch string, opacity float64) *Config {
+func (log ConfigLogger) RunSettings(
+	imagePath string,
+	profile string,
+	interval uint16,
+	alignment string,
+	stretch string,
+	opacity float32,
+) ConfigLogger {
 	fmt.Println("| editing", profile, "profile")
 	fmt.Println("| image collection:", filepath.Dir(imagePath))
 	fmt.Println("|   image:", filepath.Base(imagePath))
 	fmt.Println("------------------------------------------------------------------------------------")
 	fmt.Printf("%-25s%d%s\n", "| change image every: ", interval, " minutes")
-	fmt.Printf("%-25s%s\n", "| alignment:", align)
+	fmt.Printf("%-25s%s\n", "| alignment:", alignment)
 	fmt.Printf("%-25s%s\n", "| stretch:", stretch)
 	fmt.Printf("%-25s%f\n", "| opacity:", opacity)
 	fmt.Println("------------------------------------------------------------------------------------")
-
-	return c
+	return log
 }
