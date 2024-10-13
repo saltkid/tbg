@@ -21,6 +21,19 @@ type TbgState struct {
 	Settings             *WTSettings
 }
 
+func (tbg *TbgState) String() string {
+	return fmt.Sprint(`TbgState
+  ConfigPath: `, tbg.ConfigPath, `
+  Config: `, tbg.Config, `
+  CurrentPathAlignment: `, tbg.CurrentPathAlignment, `
+  CurrentPathStretch: `, tbg.CurrentPathStretch, `
+  CurrentPathOpacity: `, tbg.CurrentPathOpacity, `
+  Images: `, tbg.Images[0], `...`, tbg.Images[len(tbg.Images)-1], `
+  ImageIndex: `, tbg.ImageIndex, `
+  PathIndex: `, tbg.PathIndex,
+	)
+}
+
 type TbgEvents struct {
 	Done         chan struct{}
 	ImageChanged chan struct{}
