@@ -13,19 +13,29 @@ type ConfigTemplate struct {
 	EndDesc      []byte
 }
 
-func (c *ConfigTemplate) WriteFile() error {
-	toWrite := append(append(c.BeginDesc, c.YamlContents...), c.EndDesc...)
-	return os.WriteFile(c.Path, toWrite, 0666)
+func (cfg *ConfigTemplate) WriteFile() error {
+	toWrite := append(append(cfg.BeginDesc, cfg.YamlContents...), cfg.EndDesc...)
+	if err := os.WriteFile(cfg.Path, toWrite, 0666); err != nil {
+		return fmt.Errorf("Error writing to config at %s: %s", cfg.Path, err.Error())
+	}
+	return nil
 }
 
 func NewConfigTemplate(path string) *ConfigTemplate {
 	// put C:\Users\username\Pictures as an initial value
 	userProfile, err := os.UserHomeDir()
-	imageColPaths := `image_col_paths : []`
+	paths := `image_col_paths : []`
 	if err == nil {
 		picturesDir := filepath.Join(userProfile, "Pictures")
 		picturesDir = filepath.ToSlash(picturesDir)
-		imageColPaths = fmt.Sprintf("image_col_paths:\n- %s", picturesDir)
+		paths = fmt.Sprintf(`
+paths:
+- path: %s
+  # alignment: right # uncomment this if you want to override the alignment field below
+  # stretch: fill    # uncomment this if you want to override the stretch field below
+  # opacity: 0.25    # uncomment this if you want to override the opacity field below
+`,
+			picturesDir)
 	}
 
 	return &ConfigTemplate{
@@ -36,50 +46,43 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 # background images of Windows Terminal
 #------------------------------------------
 `),
-		YamlContents: []byte(`
-` + imageColPaths + `
-
+		YamlContents: []byte(paths + `
 profile: default
 interval: 30
 
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+alignment: center
+stretch: uniform
+opacity: 0.1
 `),
 		EndDesc: []byte(`
 #------------------------------------------
 # Fields:
-#   image_col_paths: list of image collection paths
-#      notes:
-#        - put directories that contain images, not image filepaths
-#        - can override default options for a specific path by putting a | after the path
-#          and putting "alignment", "stretch", and "opacity" after the |
-#          eg. abs/path/to/images/dir | right uniform 0.1
+#   paths: list of image collection paths
+#     - path: directory that contain images
+#       alignment: optional alignment value applied only to this path.
+#                  uses default alignment (see "alignment" field) if not specified
+#       stretch:   optional stretch value applied only to this path
+#                  uses default stretch (see "stretch" field) if not specified
+#       opacity:   poptional opacity value applied only to this path
+#                  uses default opacity (see "opacity" field) if not specified
 #
-#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc...)
-#      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
+#   profile: profile profile in Windows Terminal
+#      valid values: default, list-0, list-1, ..., list-n
+#      https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general
 #
 #   interval: time in minutes between each image change
 #
-#------------------------------------------
-# Below are default options which can be overriden on a per-path basis by putting a pipe (|)
-# after the path and putting "alignment", "stretch", and "opacity" values after the | in order
+#   alignment: image alignment in Windows Terminal
+#     valid values: topLeft, top, topRight, left, center, right, bottomLeft, bottom, bottomRight
+#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment
 #
-#  example: abs/path/to/images/dir | right uniform 0.1
+#   opacity: image opacity of background images in Windows Terminal
+#     valid values: 0.0 - 1.0 (inclusive)
+#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity
 #
-# whatever values the values below have, the options after the | will override
-# the values in the default values for that specific path
-#------------------------------------------
-#
-#   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
-#
-#   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
-#
-#   default_stretch: image stretch in Windows Terminal (uniform, fill, etc...)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
-#
+#   stretch: image stretch in Windows Terminal
+#     valid values: fill, none, uniform, uniformToFill
+#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode 
 #------------------------------------------
 `),
 	}
