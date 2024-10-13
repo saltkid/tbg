@@ -162,42 +162,43 @@ func (cfg *Config) RemovePath(
 	return nil
 }
 
-func (c *Config) EditConfig(configPath string, profile *string, interval *string, align *string, stretch *string, opacity *string) error {
+func (cfg *Config) EditConfig(
+	configPath string,
+	profile *string,
+	interval *uint16,
+	align *string,
+	stretch *string,
+	opacity *float32,
+) error {
 	// key:val = old:new
 	edited := make(map[string]string, 0)
 	if profile != nil {
-		edited[c.Profile] = *profile
-		c.Profile = *profile
+		edited[cfg.Profile] = *profile
+		cfg.Profile = *profile
 	}
 	if interval != nil {
-		intervalInt, _ := strconv.Atoi(*interval)
-		edited[strconv.Itoa(c.Interval)] = *interval
-		c.Interval = intervalInt
+		edited[strconv.Itoa(int(cfg.Interval))] = strconv.Itoa(int(*interval))
+		cfg.Interval = *interval
 	}
 	if align != nil {
-		edited[c.Alignment] = *align
-		c.Alignment = *align
+		edited[cfg.Alignment] = *align
+		cfg.Alignment = *align
 	}
 	if stretch != nil {
-		edited[c.Stretch] = *stretch
-		c.Stretch = *stretch
+		edited[cfg.Stretch] = *stretch
+		cfg.Stretch = *stretch
 	}
 	if opacity != nil {
-		edited[strconv.FormatFloat(c.Opacity, 'f', -1, 64)] = *opacity
-		opacityFloat, _ := strconv.ParseFloat(*opacity, 64)
-		c.Opacity = opacityFloat
+		edited[strconv.FormatFloat(float64(cfg.Opacity), 'f', -1, 64)] = strconv.FormatFloat(float64(*opacity), 'f', -1, 64)
+		cfg.Opacity = *opacity
 	}
-
 	template := NewConfigTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(c)
+	template.YamlContents, _ = yaml.Marshal(cfg)
 	err := template.WriteFile()
 	if err != nil {
 		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
 	}
-	if len(edited) == 0 {
-		edited["no changes made"] = ""
-	}
-	c.Log(configPath).LogEdited(edited)
+	cfg.Log(configPath).Edited(edited)
 	return nil
 }
 
