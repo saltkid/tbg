@@ -9,24 +9,27 @@ import (
 type AnsiCode string
 
 const (
-	reset       AnsiCode = "\033[0m"
-	Bold        AnsiCode = "\033[1m"
-	Italic      AnsiCode = "\033[3m"
-	Underline   AnsiCode = "\033[4m"
-	Red         AnsiCode = "\033[31m"
-	Yellow      AnsiCode = "\033[33m"
-	Blue        AnsiCode = "\033[34m"
-	ClearScreen AnsiCode = "\033[H\033[2J"
+	reset     AnsiCode = "\033[0m"
+	Bold      AnsiCode = "\033[1m"
+	Italic    AnsiCode = "\033[3m"
+	Underline AnsiCode = "\033[4m"
+	Red       AnsiCode = "\033[31m"
+	Yellow    AnsiCode = "\033[33m"
+	Blue      AnsiCode = "\033[34m"
 )
 
-type AnsiString string
+type Styled string
 
-func Decorate(s string) *AnsiString {
-	tmp := AnsiString(s)
+func Decorate(s string) *Styled {
+	tmp := Styled(s)
 	return &tmp
 }
 
-func (s *AnsiString) Format(codes ...AnsiCode) *AnsiString {
+func (s *Styled) String() string {
+	return string(*s)
+}
+
+func (s *Styled) Format(codes ...AnsiCode) *Styled {
 	var sb strings.Builder
 	for _, code := range codes {
 		sb.WriteString(string(code))
@@ -39,20 +42,20 @@ func (s *AnsiString) Format(codes ...AnsiCode) *AnsiString {
 	return Decorate(sb.String())
 }
 
-func (s *AnsiString) Bold() *AnsiString {
+func (s *Styled) Bold() *Styled {
 	return s.Format(Bold)
 }
 
-func (s *AnsiString) Underline() *AnsiString {
+func (s *Styled) Underline() *Styled {
 	return s.Format(Underline)
 }
 
-func (s *AnsiString) Italic() *AnsiString {
+func (s *Styled) Italic() *Styled {
 	return s.Format(Italic)
 }
 
-func Cls() {
-	fmt.Println(ClearScreen)
+func ClearScreen() {
+	fmt.Println("\033[H\033[2J")
 }
 
 func IsImageFile(f string) bool {
