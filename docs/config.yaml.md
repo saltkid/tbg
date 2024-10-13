@@ -3,7 +3,9 @@
 - [Fields](#fields)
 
 # Config
-This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* uses. **tbg** creates a `config.yaml` in the same path as the **tbg** executable on initial execution. This is what it should look like:
+This is what is used by **tbg** to edit the `settings.json` *Windows Terminal*
+uses. **tbg** creates a `.tbg.yml` in the same path as the **tbg** executable
+on initial execution. This is what it should look like:
 ```
 #------------------------------------------
 # this is a tbg config. Whenver tbg is ran, it will load this config file
@@ -11,48 +13,47 @@ This is what is used by **tbg** to edit the `settings.json` *Windows Terminal* u
 # background images of Windows Terminal
 #------------------------------------------
 
-image_col_paths: []
+paths:
+- path: path/to/images/dir
+  # alignment: right # uncomment to override the alignment field for this specific image path
+  # stretch: fill    # override stretch
+  # opacity: 0.25    # override opacity
 
 profile: default
 interval: 30
 
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+alignment: center
+stretch: uniform
+opacity: 0.1
 
 #------------------------------------------
 # Fields:
-#   image_col_paths: list of image collection paths
-#      notes:
-#        - put directories that contain images, not image filepaths
-#        - can override default options for a specific path by putting a | after the path
-#          and putting "alignment", "stretch", and "opacity" after the |
-#          eg. abs/path/to/images/dir | right uniform 0.1
+#   paths: list of image collection paths
+#     - path: directory that contain images
+#       alignment: optional alignment value applied only to this path.
+#                  uses default alignment (see "alignment" field) if not specified
+#       stretch:   optional stretch value applied only to this path
+#                  uses default stretch (see "stretch" field) if not specified
+#       opacity:   poptional opacity value applied only to this path
+#                  uses default opacity (see "opacity" field) if not specified
 #
-#   profile: profile profile in Windows Terminal (default, list-0, list-1, etc...)
-#      see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general for more information
+#   profile: profile profile in Windows Terminal
+#      valid values: default, list-0, list-1, ..., list-n
+#      https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general
 #
 #   interval: time in minutes between each image change
 #
-#------------------------------------------
-# Below are default options which can be overriden on a per-path basis by putting a pipe (|)
-# after the path and putting "alignment", "stretch", and "opacity" values after the | in order
+#   alignment: image alignment in Windows Terminal
+#     valid values: topLeft, top, topRight, left, center, right, bottomLeft, bottom, bottomRight
+#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment
 #
-#  example: abs/path/to/images/dir | right uniform 0.1
+#   opacity: image opacity of background images in Windows Terminal
+#     valid values: 0.0 - 1.0 (inclusive)
+#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity
 #
-# whatever values the values below have, the options after the | will override
-# the values in the default values for that specific path
-#------------------------------------------
-#
-#   default_alignment: image alignment in Windows Terminal (left, center, right, etc...)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment for more information
-#
-#   default_opacity: image opacity of background images in Windows Terminal (0.0 - 1.0)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity for more information
-#
-#   default_stretch: image stretch in Windows Terminal (uniform, fill, etc...)
-#     see https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode for more information
-#
+#   stretch: image stretch in Windows Terminal
+#     valid values: fill, none, uniform, uniformToFill
+#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode 
 #------------------------------------------
 ```
 ## Fields
@@ -61,9 +62,9 @@ Although you can edit the fields in the config directly, it is recommended to us
 | --- | --- | --- |
 | `profile` | `default`, `list-0`, `list-1` | target profile in *Windows Terminal*.<br><br>To change background images in user created profiles, set `profile` to `list-<n>` where n is the index used by *Windows Terminal* to identify the profile.<br><br>See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information |
 | `interval` | any positive integer | time in minutes between each image change. |
-| `image_col_paths` | `[]`<br>`- path/to/dir1`<br>`- path/to/dir2 \| center uniform 0.1` | list of image collection paths. Must be directories containing images, not image paths.<br><br>Each dir can override the default fields by putting all 3 options after a pipe `\|`. See [add command](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) and [edit command](https://github.com/saltkid/tbg/blob/main/docs/edit_command_usage.md)<br><br>Example:<br>`path/to/dir \| center fill 0.2` |
-| `default_alignment` | `top`, `top-left`, `top-right`, `left`, `center`, `right`, `bottom`, `bottom-left`, `bottom-right` | image alignment in Windows Terminal.|
-| `default_stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
-| `default_opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
+| `paths` | `[]`<br>`- path: path/to/dir1` | list of image collection paths. Must be directories containing images, not image paths.<br><br>Each path can override the default fields below. See [add command](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) and [edit command](https://github.com/saltkid/tbg/blob/main/docs/edit_command_usage.md)
+| `alignment` | `top`, `top-left`, `top-right`, `left`, `center`, `right`, `bottom`, `bottom-left`, `bottom-right` | image alignment in Windows Terminal. Can be overriden on a per-dir basis |
+| `stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
+| `opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
 
 For the default flag fields (`default_alignment`, `default_stretch`, and `default_opacity`), see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons) for more information
