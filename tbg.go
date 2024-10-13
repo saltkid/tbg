@@ -184,16 +184,63 @@ func (tbg *TbgState) Wait() error {
 		}
 	}
 }
-		}
-		if IsImageFile(d.Name()) {
-			images = append(images, path)
-		}
-		return nil
-	})
-	if err != nil {
-		return nil, fmt.Errorf("Failed to walk directory %s: %s", dir, err)
+func (tbg *TbgState) NextImage() {
+	fmt.Println("using next image...")
+	tbg.ImageIndex++
+	if tbg.ImageIndex == uint16(len(tbg.Images)) {
+		fmt.Print("no more images. going to next path: ")
+		tbg.NextPath()
+		return
 	}
-	return images, nil
+}
+func (tbg *TbgState) PreviousImage() {
+	fmt.Println("using previous image...")
+	switch tbg.ImageIndex {
+	case 0:
+		fmt.Print("no more images. going to previous path: ")
+		tbg.PreviousPath()
+	default:
+		tbg.ImageIndex--
+	}
+}
+func (tbg *TbgState) RandomizeImages() {
+	fmt.Println("randomizing from current image up to last image...")
+	fmt.Println("(previous images will not be randomized so you can go back)")
+	ShuffleFrom(int(tbg.ImageIndex), tbg.Images)
+}
+func (tbg *TbgState) NextPath() {
+	fmt.Println("using next dir...")
+	tbg.ImageIndex = 0
+	tbg.PathIndex++
+	if tbg.PathIndex >= uint16(len(tbg.Config.Paths)) {
+		fmt.Println("no more next dirs. going to first dir again: ", tbg.Config.Paths[0].Path)
+		if tbg.Random {
+			ShuffleFrom(0, tbg.Paths)
+		}
+		tbg.PathIndex = 0
+	}
+	tbg.UpdateCurrentPathState()
+}
+func (tbg *TbgState) PreviousPath() {
+	fmt.Println("using previous path...")
+	tbg.ImageIndex = 0
+	switch tbg.PathIndex {
+	case 0:
+		fmt.Println("no more previous dirs. going to last dir again: ", tbg.Config.Paths[len(tbg.Config.Paths)-1].Path)
+		if tbg.Random {
+			ShuffleFrom(0, tbg.Paths)
+		}
+		tbg.PathIndex = uint16(len(tbg.Config.Paths) - 1)
+	default:
+		tbg.PathIndex--
+	}
+	tbg.UpdateCurrentPathState()
+}
+func (tbg *TbgState) RandomizePaths() {
+	fmt.Println("randomizing from current path up to last path...")
+	fmt.Println("(previous paths will not be randomized so you can go back)")
+	ShuffleFrom(int(tbg.PathIndex), tbg.Config.Paths)
+	tbg.UpdateCurrentPathState()
 }
 
 func commandList() {
