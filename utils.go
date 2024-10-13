@@ -1,66 +1,15 @@
 package main
 
 import (
-	"fmt"
-	"path/filepath"
-	"strings"
+	"math/rand/v2"
 )
 
-type AnsiCode string
-
-const (
-	reset     AnsiCode = "\033[0m"
-	Bold      AnsiCode = "\033[1m"
-	Italic    AnsiCode = "\033[3m"
-	Underline AnsiCode = "\033[4m"
-	Red       AnsiCode = "\033[31m"
-	Yellow    AnsiCode = "\033[33m"
-	Blue      AnsiCode = "\033[34m"
-)
-
-type Styled string
-
-func Decorate(s string) *Styled {
-	tmp := Styled(s)
-	return &tmp
-}
-
-func (s *Styled) String() string {
-	return string(*s)
-}
-
-func (s *Styled) Format(codes ...AnsiCode) *Styled {
-	var sb strings.Builder
-	for _, code := range codes {
-		sb.WriteString(string(code))
+// shuffles the slice from the current index up to the end
+//
+// it does not affect the elements before the current index
+func ShuffleFrom[T any](currentIndex int, slice []T) {
+	for range slice[currentIndex:] {
+		i := rand.IntN(len(slice)-currentIndex) + currentIndex
+		slice[i], slice[currentIndex] = slice[currentIndex], slice[i]
 	}
-	sb.WriteString(string(*s))
-	if strings.HasSuffix(sb.String(), string(reset)) {
-		return Decorate(sb.String())
-	}
-	sb.WriteString(string(reset))
-	return Decorate(sb.String())
-}
-
-func (s *Styled) Bold() *Styled {
-	return s.Format(Bold)
-}
-
-func (s *Styled) Underline() *Styled {
-	return s.Format(Underline)
-}
-
-func (s *Styled) Italic() *Styled {
-	return s.Format(Italic)
-}
-
-func ClearScreen() {
-	fmt.Println("\033[H\033[2J")
-}
-
-func IsImageFile(f string) bool {
-	f = strings.ToLower(filepath.Ext(f))
-	return f == ".png" ||
-		f == ".jpg" ||
-		f == ".jpeg"
 }
