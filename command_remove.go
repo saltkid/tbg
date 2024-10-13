@@ -1,12 +1,9 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"os"
 	"path/filepath"
-
-	"github.com/saltkid/tbg/config"
-	"github.com/saltkid/tbg/flag"
 )
 
 func RemoveValidateValue(val string) error {
@@ -17,9 +14,9 @@ func RemoveValidateValue(val string) error {
 	return nil
 }
 
-func RemoveValidateFlag(f *flag.Flag) error {
+func RemoveValidateFlag(f *Flag) error {
 	switch f.Type {
-	case flag.Alignment, flag.Opacity, flag.Stretch:
+	case Alignment, Opacity, Stretch:
 		if f.Value != "" {
 			return fmt.Errorf("'remove' flags don't take any values. flag '%s' has value: '%s'", f.Type.ToString(), f.Value)
 		}
@@ -43,11 +40,11 @@ func RemoveExecute(c *Cmd) error {
 	toRemove = filepath.ToSlash(toRemove)
 
 	// check if flags are set by user (empty if not)
-	align := ExtractFlagValue(flag.Alignment, c.Flags)
-	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
-	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
+	align := ExtractFlagValue(Alignment, c.Flags)
+	opacity := ExtractFlagValue(Opacity, c.Flags)
+	stretch := ExtractFlagValue(Stretch, c.Flags)
 
-	configPath, err := config.ConfigPath()
+	configPath, err := ConfigPath()
 	if err != nil {
 		return err
 	}
@@ -55,7 +52,7 @@ func RemoveExecute(c *Cmd) error {
 	if err != nil {
 		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
 	}
-	configContents := &config.Config{}
+	configContents := &Config{}
 	err = configContents.Unmarshal(yamlFile)
 	if err != nil {
 		return err

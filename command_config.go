@@ -1,11 +1,8 @@
-package cmd
+package main
 
 import (
 	"fmt"
 	"os"
-
-	"github.com/saltkid/tbg/config"
-	"github.com/saltkid/tbg/flag"
 )
 
 func ConfigValidateValue(val string) error {
@@ -18,9 +15,9 @@ func ConfigValidateValue(val string) error {
 	}
 }
 
-func ConfigValidateFlag(f *flag.Flag) error {
+func ConfigValidateFlag(f *Flag) error {
 	switch f.Type {
-	case flag.Profile, flag.Interval, flag.Alignment, flag.Opacity, flag.Stretch:
+	case Profile, Interval, Alignment, Opacity, Stretch:
 		return f.ValidateValue(f.Value)
 	default:
 		return fmt.Errorf("invalid flag for 'config': '%s'", f.Type.ToString())
@@ -38,13 +35,13 @@ func ConfigValidateSubCmd(c *Cmd) error {
 
 func ConfigExecute(c *Cmd) error {
 	// check if flags are set by user
-	profile := ExtractFlagValue(flag.Profile, c.Flags)
-	interval := ExtractFlagValue(flag.Interval, c.Flags)
-	alignment := ExtractFlagValue(flag.Alignment, c.Flags)
-	stretch := ExtractFlagValue(flag.Stretch, c.Flags)
-	opacity := ExtractFlagValue(flag.Opacity, c.Flags)
+	profile := ExtractFlagValue(Profile, c.Flags)
+	interval := ExtractFlagValue(Interval, c.Flags)
+	alignment := ExtractFlagValue(Alignment, c.Flags)
+	stretch := ExtractFlagValue(Stretch, c.Flags)
+	opacity := ExtractFlagValue(Opacity, c.Flags)
 
-	configPath, err := config.ConfigPath()
+	configPath, err := ConfigPath()
 	if err != nil {
 		return err
 	}
@@ -52,10 +49,10 @@ func ConfigExecute(c *Cmd) error {
 	if err != nil {
 		return fmt.Errorf("Failed to read config at %s: %s", configPath, err)
 	}
-	configContents := &config.Config{}
+	configContents := &Config{}
 	err = configContents.Unmarshal(yamlFile)
 	if err != nil {
-		return fmt.Errorf("Failed to unmarshal default config.yaml: %s", err)
+		return fmt.Errorf("Failed to unmarshal default yaml: %s", err)
 	}
 
 	switch c.Value {

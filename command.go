@@ -1,8 +1,7 @@
-package cmd
+package main
 
 import (
 	"fmt"
-	"github.com/saltkid/tbg/flag"
 )
 
 type CmdType uint8
@@ -42,7 +41,7 @@ type Cmd struct {
 	Type    CmdType
 	Value   string
 	SubCmds map[CmdType]*Cmd
-	Flags   map[flag.FlagType]*flag.Flag
+	Flags   map[FlagType]*flag.Flag
 }
 
 func ToCommand(s string) (*Cmd, error) {
@@ -51,37 +50,37 @@ func ToCommand(s string) (*Cmd, error) {
 		return &Cmd{
 			Type:    Run,
 			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+			Flags:   make(map[FlagType]*flag.Flag, 0),
 		}, nil
 	case "config":
 		return &Cmd{
 			Type:    Config,
 			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+			Flags:   make(map[FlagType]*flag.Flag, 0),
 		}, nil
 	case "add":
 		return &Cmd{
 			Type:    Add,
 			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+			Flags:   make(map[FlagType]*flag.Flag, 0),
 		}, nil
 	case "remove":
 		return &Cmd{
 			Type:    Remove,
 			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+			Flags:   make(map[FlagType]*flag.Flag, 0),
 		}, nil
 	case "help":
 		return &Cmd{
 			Type:    Help,
 			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+			Flags:   make(map[FlagType]*flag.Flag, 0),
 		}, nil
 	case "version":
 		return &Cmd{
 			Type:    Version,
 			SubCmds: make(map[CmdType]*Cmd, 0),
-			Flags:   make(map[flag.FlagType]*flag.Flag, 0),
+			Flags:   make(map[FlagType]*flag.Flag, 0),
 		}, nil
 	default:
 		return nil, fmt.Errorf("unknown command: %s", s)
@@ -113,7 +112,7 @@ func (c *Cmd) ValidateValue(val string) error {
 	}
 }
 
-func (c *Cmd) ValidateFlag(f *flag.Flag) error {
+func (c *Cmd) ValidateFlag(f *Flag) error {
 	switch c.Type {
 	case Run:
 		return RunValidateFlag(f)
