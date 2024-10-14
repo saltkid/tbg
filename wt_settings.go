@@ -54,6 +54,9 @@ func (wt *WTSettings) Write(
 	default:
 		err = writeToListProfile(profiles, profile, image, alignment, stretch, opacity)
 	}
+	if err != nil {
+		return err
+	}
 	// write profiles
 	updatedProfiles, err := json.Marshal(profiles)
 	if err != nil {
