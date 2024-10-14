@@ -1,8 +1,9 @@
 # Table of Contents
 - [Overview](#tbg-run)
 - [Key events](#key-events)
+    - [Order Behavior](#ordering-behavior)
+    - [Order Behavior Using `--random` flag](#ordering-behavior-using-random-flag)
 - [Executing with flags](#executing-with-flags)
-    - [Using `--random` flag](#using---random-flag)
 - [Usage](#usage)
     - [Normal Execution, key events, and path specific options](#normal-execution)
     - [Overriding `profile` and `interval` fields](#overriding-profile-and-interval-fields)
@@ -41,7 +42,7 @@ current collection
 This means even if all images are exhausted, **tbg** will wrap back around.
 For an example, see [usage with key events](#normal-execution)
 
-## Order Behavior
+## Ordering Behavior
 The order of paths **and** the images in that path are randomized on
 initialize. However, you'd still have to consume all the images in a path
 before going to the next one. When you consumed all paths and wrap around to
@@ -50,7 +51,7 @@ the first path again, the paths will be re-randomized. Even the images: from
 of images in `path A` will be different from the first time you went to it,
 since images are also re-randomized every time you enter an images path.
 
-#### Order Behavior using `--random` flag
+## Ordering Behavior using `--random` flag
 The `--random` flag will ensure that whenever you go to the next image, it
 always will pick a random images path, then a random image from there. This
 means going to the next image `[n]` is the only valid command by the user. You

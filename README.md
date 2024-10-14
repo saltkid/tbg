@@ -60,26 +60,20 @@ Here's a list of commands:
 
 See [fields](#fields) for more information about images paths.
 
-The images paths wrap around so if you go past the last image in the last images
-path, it will go back to the first image in the first images path. Same goes for
-the reverse direction.
+The images paths wrap around so if you go past the last image in the last path,
+it will go back to the first image in the first images path. Same goes for the
+reverse direction.
 
 # Config
-This is what is used by **tbg** to edit the `settings.json` *Windows Terminal*
-uses. As stated earlier, **tbg** creates a `.tbg.yml` in the same path as the
-**tbg** executable on intial execution.
+`.tbg.yml` is what is used by **tbg** to edit the `settings.json` *Windows
+Terminal* uses.
 
 ## Fields
 Although you can edit the fields in the config directly, it is recommended to
-use the `config` command to edit them.
+use the [`config`](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) command to edit them.
 1. **profile**
     - *args*: `default`, `list-0`, `list-1`, ...
     - target profile in *Windows Terminal*.
-    - To change background images in user created profiles, set `profile` to
-    `list-<n>` where n is the index used by *Windows Terminal* to identify the
-    profile.
-    - See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general)
-    for more information
 2. **interval**
     - *args*: any positive integer 
     - time in minutes between each image change.
@@ -92,38 +86,29 @@ use the `config` command to edit them.
               alignment: center      # optional
               stretch: uniformToFill # optional
               opacity: 1.0           # optional
-    - list of paths containing subdirectories that contain images.
-    - Each path can override the default fields below.
-    - default values for per-path options if not specified are:
-        - `alignment: center`
-        - `stretch: uniformToFill`
-        - `opacity: 1.0`
+    - paths containing images used in changing the background image of Windows Terminal
 4. **alignment**
     - ( args ): `top`, `topLeft`, `topRight`, `left`, `center`, `right`, `bottom`, `bottomLeft`, `bottomRight` 
     - image alignment in Windows Terminal.
     - Can be overriden on a per-path basis
 5. `stretch` 
     - *args*: `uniform`, `fill`, `uniformToFill`, `none` 
-    - image stretch in Windows Terminal. Can be overriden on a per-path basis |
+    - image stretch in Windows Terminal. Can be overriden on a per-path basis
 6. `opacity` 
     - *args*: inclusive range between `0` and `1` 
     - image opacity of background images in Windows Terminal.
     - Can be overriden on a per-path basis
-
-For the default flag fields (`alignment`, `stretch`, and `opacity`), see
-[Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)
-for more information
 
 # Commands
 For a more detailed explanation on each command, follow the command name links
 
 1. [run](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md) 
     - *args*: none 
-    - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
-    - edit `settings.json` used by *Windows Terminal* using settings from the
-    currently used config. If any of the flags are specified, it will use those
-    values in editing `settings.json` instead of what's specified in the
-    currently used config
+    - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`, `-r, --random`
+    - edit `settings.json` used by *Windows Terminal* using settings from
+    `.tbg.yml`. If any of the flags are specified, it will use those values in
+    editing `settings.json` instead of what's specified in the currently used
+    config
 2. [config](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) 
     - *args*: none 
     - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
