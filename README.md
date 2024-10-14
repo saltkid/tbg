@@ -107,24 +107,23 @@ For a more detailed explanation on each command, follow the command name links
     - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`, `-r, --random`
     - edit `settings.json` used by *Windows Terminal* using settings from
     `.tbg.yml`. If any of the flags are specified, it will use those values in
-    editing `settings.json` instead of what's specified in the currently used
-    config
+    editing `settings.json` instead of what's specified in the `.tbg.yml`
 2. [config](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) 
     - *args*: none 
     - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
-    - If no flags are present, it will print out the currently used config to
-    console. If any of the flags are present, it will edit the fields of the
-    config based on the flags and values passed
+    - If no flags are present, it will print out `.tbg.yml` to console. If any
+    of the flags are present, it will edit the fields of the config based on
+    the flags and values passed
 3. [add](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) 
     - `path/to/dir` 
     - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
-    - Add a path containing images to the currently used config.
+    - Add a path containing images to `.tbg.yml`.
     - If any flags are present, it will add those options to that path,
     regardless of whether the path exists or not
 4. [remove](https://github.com/saltkid/tbg/blob/main/docs/remove_command_usage.md) 
     - `path/to/dir` 
     - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
-    - Remove a path from the currently used config.
+    - Remove a path from `.tbg.yml`.
     - If any flags are present, it will remove only those options of that path
 5. help
     - args: no arg, or any command or any flag (can be multiple)
@@ -134,8 +133,8 @@ For a more detailed explanation on each command, follow the command name links
 Flags are used to override [field entries in a config](#config), which are then
 passed to the parent command.
 
-Flags behave differently based on the parent command so for more detailed
-explanation, go to the documentation of the command instead.
+Flags behave differently based on the command so for more detailed explanation,
+go to the documentation of the command instead.
 | Flag | Field Overriden |
 | --- | --- |
 | `-p, --profile` | `profile` |

@@ -8,7 +8,7 @@
 
 # `tbg remove [arg] [--flags]`
 #### args: `path/to/images/dir`
-`remove` command removes a path to **tbg**'s currently used config.
+`remove` command removes a path to **tbg**'s `.tbg.yml`.
 You can remove flags from a path using `--`flags
 
 # Valid Flags
@@ -24,7 +24,7 @@ You can remove flags from a path using `--`flags
 
 # Usage
 ### Removing a path
-Let's say this is the currently used config:
+Let's say this is the `.tbg.yml`:
 ```yml
 paths:
 - path: path/to/images/dir1
@@ -39,7 +39,7 @@ If we run:
 ```bash
 tbg remove path/to/images/dir1
 ```
-It will remove `path/to/images/dir1` from the currently used config's `paths`
+It will remove `path/to/images/dir1` from the `.tbg.yml`'s `paths`
 field like this:
 ```yml
 paths: []
