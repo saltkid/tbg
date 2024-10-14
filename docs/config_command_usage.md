@@ -33,7 +33,7 @@ based on flags passed to it.
 
 # Usage
 #### Printing config
-To print the currently used config, just do
+To print the `.tbg.yml`, just do
 ```bash
 tbg config
 ```
