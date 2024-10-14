@@ -153,13 +153,17 @@ func (tbg *TbgState) readUserInput() {
 	}
 }
 
+
+// Handles events emitted by various TbgState methods
 func (tbg *TbgState) Wait() error {
-	ticker := time.Tick(time.Duration(tbg.Config.Interval) * time.Minute)
-	// ticker := time.Tick(time.Second * 10) // for debug purposes
 	for {
+		ticker := time.Tick(time.Duration(tbg.Config.Interval) * time.Minute)
+		// ticker := time.Tick(time.Second * 5) // for debug purposes
 		select {
 		case <-ticker:
-			tbg.NextImage()
+			// in a go routine since NextImage can emit TbgState.Events.Errors
+			// and we want to catch that same event in this same loop
+			go tbg.NextImage()
 		case <-tbg.Events.Done:
 			fmt.Println("Goodbye!")
 			return nil
