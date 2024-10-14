@@ -51,8 +51,8 @@ profile: default
 interval: 30
 
 alignment: center
-stretch: uniform
-opacity: 0.1
+stretch: uniformToFill
+opacity: 1.0
 `),
 		EndDesc: []byte(`
 #------------------------------------------
