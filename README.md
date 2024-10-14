@@ -29,10 +29,12 @@ or
 - clone the repo
 ```
 git clone git@github.com:saltkid/tbg.git
+cd tbg
 ```
 - build it:
 ```
-cd tbg && go mod tidy && go build -ldflags '-s'
+go mod tidy
+go build -ldflags '-s'
 ```
 **Optionally** add the `tbg` executable to your path
 
@@ -73,8 +75,11 @@ use the `config` command to edit them.
 1. **profile**
     - *args*: `default`, `list-0`, `list-1`, ...
     - target profile in *Windows Terminal*.
-    - To change background images in user created profiles, set `profile` to `list-<n>` where n is the index used by *Windows Terminal* to identify the profile.
-    - See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general) for more information
+    - To change background images in user created profiles, set `profile` to
+    `list-<n>` where n is the index used by *Windows Terminal* to identify the
+    profile.
+    - See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general)
+    for more information
 2. **interval**
     - *args*: any positive integer 
     - time in minutes between each image change.
@@ -115,11 +120,16 @@ For a more detailed explanation on each command, follow the command name links
 1. [run](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md) 
     - *args*: none 
     - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
-    - edit `settings.json` used by *Windows Terminal* using settings from the currently used config.<br><br>If any of the `--`flags are specified, it will use those values in editing `settings.json` instead of what's specified in the currently used config
+    - edit `settings.json` used by *Windows Terminal* using settings from the
+    currently used config. If any of the flags are specified, it will use those
+    values in editing `settings.json` instead of what's specified in the
+    currently used config
 2. [config](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) 
     - *args*: none 
     - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
-    - If no flags are present, it will print out the currently used config to console.<br><br>If any of the flags are present, it will edit the fields of the config based on the flags and values passed
+    - If no flags are present, it will print out the currently used config to
+    console. If any of the flags are present, it will edit the fields of the
+    config based on the flags and values passed
 3. [add](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) 
     - `path/to/dir` 
     - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
@@ -143,11 +153,11 @@ Flags behave differently based on the parent command so for more detailed
 explanation, go to the documentation of the command instead.
 | Flag | Field Overriden |
 | --- | --- |
-| `--profile`<br>`-p` | `profile` |
-| `--interval`<br>`-i` | `interval` |
-| `--alignment`<br>`-a` | `alignment` |
-| `--opacity`<br>`-o` | `opacity` |
-| `--stretch`<br>`-s` | `stretch` |
+| `-p, --profile` | `profile` |
+| `-i, --interval` | `interval` |
+| `-a, --alignment` | `alignment` |
+| `-o, --opacity` | `opacity` |
+| `-s, --stretch` | `stretch` |
 
 ---
 # Credits

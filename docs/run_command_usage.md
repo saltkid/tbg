@@ -16,10 +16,10 @@ settings from the currently used config. **tbg** will keep running, editing the
 `settings.json` of *Windows Terminal*, replacing the background image. You can
 quit by pressing `q` or `ctrl+c`
 
-On initial execution of **tbg**, it will create a `config.yaml` in the same
+On initial execution of **tbg**, it will create a `.tbg.yml` in the same
 directory as the **tbg** executable if it does not exist already. **There can
-only be one `config.yaml`**. For more information, see documentation on
-[config.yaml](https://github.com/saltkid/tbg/blob/main/docs/config.yaml.md).
+only be one `.tbg.yml`**. For more information, see documentation on
+[tbg.yml](https://github.com/saltkid/tbg/blob/main/docs/tbg.yml.md).
 
 # Key events
 **tbg** takes optional commands during execution:
@@ -27,18 +27,36 @@ only be one `config.yaml`**. For more information, see documentation on
 - `c`: shows the available commands
 - `n`: goes to next image
 - `p`: goes to previous image
-- `N`: goes to next image collection
-- `P`: goes to previous image collection
-- `r`: randomizes the images in the current image collection starting from the
+- `N`: goes to next images path
+- `P`: goes to previous images path
+- `r`: randomizes the images in the current images path starting from the
 current image
-    - this does not affect the order of the previous images
-- `R`: randomizes the images in the current image collection starting from the
+    - this does not affect the order of the previous images so you can go to
+    the same previous image/s
+- `R`: randomizes the images in the current images path starting from the
 current collection
     - this does not affect the order of the previous collections
 
 **tbg** will continue running until you press `q` or `ctrl+c`.
 This means even if all images are exhausted, **tbg** will wrap back around.
 For an example, see [usage with key events](#normal-execution)
+
+## Order Behavior
+The order of paths **and** the images in that path are randomized on
+initialize. However, you'd still have to consume all the images in a path
+before going to the next one. When you consumed all paths and wrap around to
+the first path again, the paths will be re-randomized. Even the images: from
+`path A`, when you go to next `path B`, then go to previous `path A`, the order
+of images in `path A` will be different from the first time you went to it,
+since images are also re-randomized every time you enter an images path.
+
+#### Order Behavior using `--random` flag
+The `--random` flag will ensure that whenever you go to the next image, it
+always will pick a random images path, then a random image from there. This
+means going to the next image `[n]` is the only valid command by the user. You
+cannot go to the next path `[N]`, previous image `[p]`, previous path `[P]`,
+randomize images `[r]`, or randomize paths `[R]`. More info about flags in the
+next section
 
 # Executing with flags
 #### Valid Flags: `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch`, `--random`
@@ -56,14 +74,6 @@ The order of importance is:
 3. default options fields in config
 
 For an example, see [overriding default flags walkthrough](#overriding-default-option-fields)
-
-#### Using `--random` flag
-The `--random` flag will randomize the order of image collections dirs **and**
-the images. Even if you consumed all paths and wrap around to the first path
-again, the paths will be re-randomized. Even the images: when you go to next
-dir B, then go to previous dir A, the order will be different from the first
-time you go to dir A, since images are also re-randomized every time you enter
-a dir.
 
 # Usage
 ### Normal Execution
@@ -95,7 +105,7 @@ first few images will be from `path/to/dir1`. The image will be at the
 **center**, **fill** the entire screen without regard of the original aspect
 ratio, with an opacity of **10%**. 
 
-When I press `n`, it goes to the next images without waiting for 30 minutes. I
+When I press `n`, it goes to the next image without waiting for 30 minutes. I
 can go back by pressing `p`.
 
 When I press `N`, it goes to the next image collection dir. This means we are
