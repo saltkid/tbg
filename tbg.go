@@ -97,9 +97,7 @@ func (tbg *TbgState) Init() error {
 	if len(tbg.Config.Paths) == 0 {
 		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
 	}
-	if tbg.Random {
-		ShuffleFrom(0, tbg.Paths)
-	}
+	ShuffleFrom(0, tbg.Paths)
 	err := tbg.UpdateCurrentPathState()
 	return err
 }
@@ -111,9 +109,7 @@ func (tbg *TbgState) UpdateCurrentPathState() error {
 	tbg.CurrentPathOpacity = Option(currentPath.Opacity).UnwrapOr(tbg.Config.Opacity)
 	var err error
 	tbg.Images, err = currentPath.Images()
-	if tbg.Random {
-		ShuffleFrom(0, tbg.Images)
-	}
+	ShuffleFrom(0, tbg.Images)
 	return err
 }
 
@@ -214,9 +210,7 @@ func (tbg *TbgState) NextPath() {
 	tbg.PathIndex++
 	if tbg.PathIndex >= uint16(len(tbg.Config.Paths)) {
 		fmt.Println("no more next dirs. going to first dir again: ", tbg.Config.Paths[0].Path)
-		if tbg.Random {
-			ShuffleFrom(0, tbg.Paths)
-		}
+		ShuffleFrom(0, tbg.Paths)
 		tbg.PathIndex = 0
 	}
 	tbg.UpdateCurrentPathState()
@@ -227,9 +221,7 @@ func (tbg *TbgState) PreviousPath() {
 	switch tbg.PathIndex {
 	case 0:
 		fmt.Println("no more previous dirs. going to last dir again: ", tbg.Config.Paths[len(tbg.Config.Paths)-1].Path)
-		if tbg.Random {
-			ShuffleFrom(0, tbg.Paths)
-		}
+		ShuffleFrom(0, tbg.Paths)
 		tbg.PathIndex = uint16(len(tbg.Config.Paths) - 1)
 	default:
 		tbg.PathIndex--
