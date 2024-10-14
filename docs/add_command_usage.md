@@ -3,32 +3,31 @@
 - [Valid Flags](#valid-flags)
 - [Usage](#Usage)
     - [Adding a path](#adding-a-path)
-    - [Adding a path with flags](#adding-a-path-with-flags)
-    - [Adding a flag to an existing path](#adding-a-flag-to-an-existing-path)
-    - [Changing a flag of an existing path](#changing-a-flag-of-an-existing-path)
+    - [Adding a path with options](#adding-a-path-with-options)
+    - [Adding an option to an existing path](#adding-an-option-to-an-existing-path)
+    - [Changing an option of an existing path](#changing-an-option-of-an-existing-path)
 ---
 
 # `tbg add [arg] [--flags]`
 #### args: `path/to/images/dir`
 `add` command adds a path to **tbg**'s currently used config.
-You can add flags to a path to be added using `--`flags
+You can add options to a path to be added using flags
 
 # Valid Flags
-1. `--alignment [arg]`
+1. `-a, --alignment [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
-    - it will add flags to the path being added after a pipe `|`
-        - example: `path/to/images/dir | center fill 0.5`
-2. `--stretch [arg]`
+    - it will add alignment option to the path being added
+2. `-s, --stretch [arg]`
     - args: `none`, `fill`, `uniform`, `uniformToFill`
-    - it will add flags to the path being added after a pipe `|`
-3. `--opacity [arg]`
+    - it will add stretch option to the path being added
+3. `-o, --opacity [arg]`
     - args: any float between 0 and 1 (inclusive)
-    - it will add flags to the path being added after a pipe `|`
+    - it will add opacity option to the path being added
 
 # Usage
 ### Adding a path
 Let's say this is the currently used config:
-```
+```yml
 paths: []
 
 alignment: center
@@ -38,11 +37,12 @@ opacity: 0.5
 other fields...
 ```
 If we run:
-```
+```bash
 tbg add path/to/images/dir1
 ```
-It will add `path/to/images/dir1` to the currently used config's `paths` field like this:
-```
+It will add `path/to/images/dir1` to the currently used config's `paths` field
+like this:
+```yml
 paths:
 - path: path/to/images/dir1
 
@@ -52,13 +52,13 @@ opacity: 0.5
 
 other fields...
 ```
-### Adding a path with flags
+### Adding a path with options
 Let's continue with our config and run this:
-```
+```bash
 tbg add path/to/images/dir2 --alignment left --stretch fill --opacity 0.5
 ```
-It will add `path/to/images/dir2` in `paths` field and add flags to it like this:
-```
+It will add `path/to/images/dir2` in `paths` field and add options to it like this:
+```yml
 paths:
 - path: path/to/images/dir1
 - path: path/to/images/dir2 
@@ -73,10 +73,10 @@ opacity: 0.5
 other fields...
 ```
 Let's add another one:
-```
+```bash
 tbg add path/to/images/dir3 --alignment right
 ```
-```
+```yml
 paths:
 - path: path/to/images/dir1
 - path: path/to/images/dir2 
@@ -90,16 +90,17 @@ alignment: center
 stretch: uniform
 opacity: 0.5
 ```
-Flags that were not specified will inherit their respective default flag field value
+Options that were not specified will inherit their respective default value
 (`stretch` and `opacity` in this example)
 
-#### Adding a flag to an existing path
+#### Adding an option to an existing path
 Let's continue with our config and run this:
-```
+```bash
 tbg add /path/to/images/dir3 --stretch fill
 ```
-This will find if `path/to/images/dir3` is already in `paths` field and add a stretch flag `fill` to it.
-```
+This will find if `path/to/images/dir3` is already in `paths` field and add a
+stretch option `fill` to it.
+```yml
 paths:
 - other paths ...
 - path: path/to/images/dir3
@@ -111,10 +112,10 @@ stretch: uniform
 opacity: 0.5
 ```
 Let's fill assign the opacity too
-```
+```bash
 tbg add /path/to/images/dir3 --opacity 0.25
 ```
-```
+```yml
 paths:
 - other paths ...
 - path: path/to/images/dir3
@@ -126,14 +127,14 @@ alignment: center
 stretch: uniform
 opacity: 0.5
 ```
-#### Changing a flag of an existing path
+#### Changing an option of an existing path
 Let's change the opacity and stretch:
-```
+```bash
 tbg add /path/to/images/dir3 --opacity 1 --stretch none
 ```
 This will find if `path/to/images/dir3` is already in `paths` field and set
 the opacity to `1` and the stretch to `none`.
-```
+```yml
 paths:
 - other paths ...
 - path: path/to/images/dir3
@@ -146,10 +147,10 @@ stretch: uniform
 opacity: 0.5
 ```
 Let's change the alignment too
-```
+```bash
 tbg add /path/to/images/dir3 --alignment bottom
 ```
-```
+```yml
 paths:
 - other paths ...
 - path: path/to/images/dir3

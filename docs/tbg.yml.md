@@ -67,4 +67,4 @@ Although you can edit the fields in the config directly, it is recommended to us
 | `stretch` | `uniform`, `fill`, `uniform-fill`, `none` | image stretch in Windows Terminal. Can be overriden on a per-dir basis |
 | `opacity` | inclusive range between `0` and `1` | image opacity of background images in Windows Terminal. Can be overriden on a per-dir basis |
 
-For the default flag fields (`default_alignment`, `default_stretch`, and `default_opacity`), see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons) for more information
+For the default flag fields (`alignment`, `stretch`, and `opacity`), see [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons) for more information

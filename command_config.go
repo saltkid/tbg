@@ -39,7 +39,7 @@ func (cmd *ConfigCommand) ValidateValue(val *string) error {
 	if val == nil || *val == "" {
 		return nil
 	}
-	return fmt.Errorf("'run' takes no arguments. got: '%s'", *val)
+	return fmt.Errorf("'config' takes no arguments. got: '%s'", *val)
 }
 
 func (cmd *ConfigCommand) ValidateFlag(f Flag) error {

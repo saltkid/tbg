@@ -16,7 +16,7 @@ based on flags passed to it.
 
 # Valid Flags
 1. `--profile [arg]`
-    - args: `default`, `list-1`, `list-2`, ..., `list-n`
+    - args: `default`, `list-1`, `list-2`, ..., `list-<n>`
     - edits: `profile`
 2. `--interval [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
@@ -34,11 +34,11 @@ based on flags passed to it.
 # Usage
 #### Printing config
 To print the currently used config, just do
-```
+```bash
 tbg config
 ```
 Output on console should look something like this
-```
+```bash
 ------------------------------------------------------------------------------------
 | abs/path/to/currently/used/config.yaml
 ------------------------------------------------------------------------------------
@@ -58,10 +58,10 @@ Output on console should look something like this
 
 #### Editing fields of config
 To edit fields of config, specify any fields you want to edit with flags like this this:
-```
+```bash
 tbg config --alignment topRight
 ```
-```
+```bash
 ------------------------------------------------------------------------------------
 | abs/path/to/currently/used/config.yaml
 ------------------------------------------------------------------------------------
@@ -79,10 +79,10 @@ tbg config --alignment topRight
 ------------------------------------------------------------------------------------
 ```
 You can do this with the other four fields as well
+```bash
+tbg config --profile list-1 --interval 5 --stretch fill --opacity 0.35
 ```
-tbg config edit --profile list-1 --interval 5 --stretch fill --opacity 0.35
-```
-```
+```bash
 ------------------------------------------------------------------------------------
 | abs/path/to/currently/used/config.yaml
 ------------------------------------------------------------------------------------
