@@ -140,12 +140,7 @@ func RunHelp(verbose bool) {
 		fmt.Print(`
   `, Decorate("Args").Bold(), `: run takes no args
 
-  `, Decorate("Subcommands").Bold(), `
-  1. config [arg]
-     [default, path/to/a/config.yaml]
-     You can specify which config to read from using the 'config' subcommand.
-     If you do not specify a config, the currently used config will be used.
-
+  `, Decorate("Subcommands").Bold(), `: run takes no sub-commands
   `, Decorate("Flags").Bold(), `:,
   You can specify alignment, stretch, and opacity using flags.
   These will override the values in the used config (not edit)
@@ -176,14 +171,9 @@ func RunHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run
-     This will use the currently used config's values to edit Windows Terminal's settings.json
+     This will use .tbg.yml's values to edit Windows Terminal's settings.json
 
-  2. tbg run config path/to/a/config.yaml 
-     tbg run config default 
-     These two are similar in the sense that this will have tbg use whatever
-     config was specified to edit Windows Terminal's settings.json
-
-  3. tbg run --profile list-2 --interval 5 --alignment center
+  2. tbg run --profile list-2 --interval 5 --alignment center
       used_config                      values used to edit settings.json
       --------------------------       --------------------------------
       | paths:                         | paths:
@@ -213,7 +203,7 @@ func RunHelp(verbose bool) {
 func AddHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  add").Bold(),
-		"Adds a path containing images to currently used config\n",
+		"Adds a path containing images to .tbg.yml\n",
 	)
 	if verbose {
 		fmt.Print(`
@@ -222,12 +212,7 @@ func AddHelp(verbose bool) {
      Path to images dir should have at least one image
      file under it. All subdirectories will be ignored.
 
-  `, Decorate("Subcommands").Bold(), `:
-  1. config [arg]
-     [default, path/to/a/config.yaml]
-     You can specify which config to add to using the 'config' subcommand.
-     If you do not specify a config, the currently used config will be used.
-
+  `, Decorate("Subcommands").Bold(), `: add takes no sub-commands
   `, Decorate("Flags").Bold(), `:
   You can specify alignment, stretch, and opacity using flags. See example 2 and 3
   1. -a, --alignment [arg]
@@ -297,19 +282,14 @@ func AddHelp(verbose bool) {
 func RemoveHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  remove").Bold(),
-		"Removes a path from the currently used config\n",
+		"Removes a path from .tbg.yml\n",
 	)
 	if verbose {
 		fmt.Print(`
   `, Decorate("Args").Bold(), `:
   1. path/to/images/dir
 
-  `, Decorate("Subcommands").Bold(), `:
-  1. config [arg]
-     [default, path/to/a/config.yaml]
-     You can specify which config to remove from using the 'config' subcommand.
-     If you do not specify a config, the currently used config will be used.
-
+  `, Decorate("Subcommands").Bold(), `: remove takes no sub-commands
   `, Decorate("Flags").Bold(), `:
   You can remove alignment, stretch, and opacity flags from a path by specifying flags
   See example 2 and 3
@@ -369,19 +349,12 @@ func RemoveHelp(verbose bool) {
 func ConfigHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  config").Bold(),
-		"Prints the currently used config if no arg.\n",
+		"Prints .tbg.yml if no flags.\n",
 	)
 	if verbose {
 		fmt.Print(`
-  `, Decorate("Args").Bold(), `:
-  1. path/to/a-config.yaml
-     Sets this path as the currently used config.
-     It does this by editing the 'used_config' field on tbg_profile.yaml
-     in the same directory as the tbg executable (auto generated)
-  2. no arg
-     Prints the currently used config.
-
-  `, Decorate("Subcommands").Bold(), `: config takes no subcommands
+  `, Decorate("Args").Bold(), `: config takes no args
+  `, Decorate("Subcommands").Bold(), `: config takes no sub-commands
   `, Decorate("Flags").Bold(), `:
   1. -a, --alignment [arg]
          [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
@@ -398,7 +371,7 @@ func ConfigHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg config
-      print currently used config:
+      print .tbg.yml:
       --------------------------
       | paths:
       |   - path: /path/to/images/dir
@@ -454,7 +427,7 @@ func HelpHelp(verbose bool) {
 
 func VersionHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
-		Decorate("  version").Bold(),
+		Decorate("  -v, --version").Bold(),
 		"Prints the version of tbg\n",
 	)
 	if verbose {
@@ -484,7 +457,7 @@ func ProfileHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --profile default
-     whatever value the "profile" field in the currently used config will
+     whatever value the "profile" field in .tbg.yml will
      be ignored and tbg will edit the default Windows Terminal profile instead
 
   2. tbg edit --profile list-2 config /path/to/a/config.yaml
@@ -506,7 +479,7 @@ func IntervalHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --interval 30
-     whatever value the \"interval\" field in the currently used config will
+     whatever value the \"interval\" field in .tbg.yml will
      be ignored and tbg change images every 30 minutes instead.
 
   2. tbg edit --interval 30 config /path/to/a/config.yaml
@@ -530,7 +503,7 @@ func AlignmentHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --alignment center
-     whatever value the "alignment" field in the currently used config will
+     whatever value the "alignment" field in .tbg.yml will
      be ignored and tbg will center the image instead
 
   2. tbg edit --alignment center config /path/to/a/config.yaml
@@ -552,7 +525,7 @@ func StretchHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --stretch fill
-     whatever value the \"stretch\" field in the currently used config will
+     whatever value the \"stretch\" field in .tbg.yml will
      be ignored and tbg will upscale the image to exactly fill the screen instead
 
   2. tbg edit --stretch fill config /path/to/a/config.yaml
@@ -574,7 +547,7 @@ func OpacityHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --opacity 0.5
-     whatever value the "opacity" field in the currently used config will
+     whatever value the "opacity" field in .tbg.yml will
      be ignored and tbg will set the image opacity to 0.5
 
   2. tbg edit --opacity 0.5 config /path/to/a/config.yaml
@@ -596,7 +569,7 @@ func RandomHelp(verbose bool) {
   `, Decorate("Examples").Bold(), `:
   1. tbg run --random
      This will randomize the order of the image collections read
-     from the currently used config. It randomizes the order the
+     from .tbg.yml. It randomizes the order the
      images in each collection.
 
      When image collections are exhausted and tbg wraps around, the

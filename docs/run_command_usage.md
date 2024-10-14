@@ -13,7 +13,7 @@
 # `tbg run`
 
 `run` command edits the `settings.json` used by *Windows Terminal* using
-settings from the currently used config. **tbg** will keep running, editing the
+settings from `.tbg.yml`. **tbg** will keep running, editing the
 `settings.json` of *Windows Terminal*, replacing the background image. You can
 quit by pressing `q` or `ctrl+c`
 
