@@ -37,6 +37,7 @@ func (tbg *TbgState) String() string {
 type TbgEvents struct {
 	Done         chan struct{}
 	ImageChanged chan struct{}
+	Error        chan error
 }
 
 func NewBackgroundState(config *Config, configPath string, randomFlag bool) (*TbgState, error) {
@@ -58,6 +59,7 @@ func NewBackgroundState(config *Config, configPath string, randomFlag bool) (*Tb
 		Events: &TbgEvents{
 			Done:         make(chan struct{}),
 			ImageChanged: make(chan struct{}),
+			Error:        make(chan error),
 		},
 		Settings: wtSettings,
 	}, nil
@@ -82,14 +84,7 @@ func (tbg *TbgState) Start() error {
 		tbg.CurrentPathStretch,
 		tbg.CurrentPathOpacity,
 	)
-	keysEvents, err := keyboard.GetKeys(10)
-	if err != nil {
-		return err
-	}
-	defer func() {
-		_ = keyboard.Close()
-	}()
-	go tbg.readUserInput(keysEvents)
+	go tbg.readUserInput()
 	return tbg.Wait()
 }
 
@@ -98,8 +93,7 @@ func (tbg *TbgState) Init() error {
 		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
 	}
 	ShuffleFrom(0, tbg.Paths)
-	err := tbg.UpdateCurrentPathState()
-	return err
+	return tbg.UpdateCurrentPathState()
 }
 
 func (tbg *TbgState) UpdateCurrentPathState() error {
@@ -113,11 +107,18 @@ func (tbg *TbgState) UpdateCurrentPathState() error {
 	return err
 }
 
-func (tbg *TbgState) readUserInput(keysEvents <-chan keyboard.KeyEvent) {
+func (tbg *TbgState) readUserInput() {
+	keysEvents, err := keyboard.GetKeys(10)
+	if err != nil {
+		tbg.Events.Error <- err
+	}
+	defer func() {
+		_ = keyboard.Close()
+	}()
 	for {
 		event := <-keysEvents
 		if event.Err != nil {
-			panic(event.Err)
+			tbg.Events.Error <- event.Err
 		}
 		switch keyboard.Key(event.Rune) {
 		case keyboard.Key('c'):
@@ -162,6 +163,8 @@ func (tbg *TbgState) Wait() error {
 		case <-tbg.Events.Done:
 			fmt.Println("Goodbye!")
 			return nil
+		case err := <-tbg.Events.Error:
+			return err
 		case <-tbg.Events.ImageChanged:
 			tbg.Settings.Write(tbg.Images[tbg.ImageIndex],
 				tbg.Config.Profile,
@@ -180,15 +183,25 @@ func (tbg *TbgState) Wait() error {
 		}
 	}
 }
+
+// emits TbgState.Events.ImageChanged
+//
+// may emit TbgState.Events.Error through TbgState.NextPath()
 func (tbg *TbgState) NextImage() {
 	fmt.Println("using next image...")
 	tbg.ImageIndex++
-	if tbg.ImageIndex == uint16(len(tbg.Images)) {
+	switch tbg.ImageIndex {
+	case uint16(len(tbg.Images)):
 		fmt.Print("no more images. going to next path: ")
 		tbg.NextPath()
-		return
+	default:
+		tbg.Events.ImageChanged <- struct{}{}
 	}
 }
+
+// emits TbgState.Events.ImageChanged
+//
+// may emit TbgState.Events.Error through TbgState.PreviousPath()
 func (tbg *TbgState) PreviousImage() {
 	fmt.Println("using previous image...")
 	switch tbg.ImageIndex {
@@ -197,13 +210,21 @@ func (tbg *TbgState) PreviousImage() {
 		tbg.PreviousPath()
 	default:
 		tbg.ImageIndex--
+		tbg.Events.ImageChanged <- struct{}{}
 	}
 }
+
+// emits TbgState.Events.ImageChanged
 func (tbg *TbgState) RandomizeImages() {
 	fmt.Println("randomizing from current image up to last image...")
 	fmt.Println("(previous images will not be randomized so you can go back)")
 	ShuffleFrom(int(tbg.ImageIndex), tbg.Images)
+	tbg.Events.ImageChanged <- struct{}{}
 }
+
+// emits TbgState.Events.ImageChanged
+//
+// may emit TbgState.Events.Error
 func (tbg *TbgState) NextPath() {
 	fmt.Println("using next dir...")
 	tbg.ImageIndex = 0
@@ -213,8 +234,16 @@ func (tbg *TbgState) NextPath() {
 		ShuffleFrom(0, tbg.Paths)
 		tbg.PathIndex = 0
 	}
-	tbg.UpdateCurrentPathState()
+	err := tbg.UpdateCurrentPathState()
+	if err != nil {
+		tbg.Events.Error <- err
+	}
+	tbg.Events.ImageChanged <- struct{}{}
 }
+
+// emits TbgState.Events.ImageChanged
+//
+// emits TbgState.Events.Error
 func (tbg *TbgState) PreviousPath() {
 	fmt.Println("using previous path...")
 	tbg.ImageIndex = 0
@@ -226,13 +255,25 @@ func (tbg *TbgState) PreviousPath() {
 	default:
 		tbg.PathIndex--
 	}
-	tbg.UpdateCurrentPathState()
+	err := tbg.UpdateCurrentPathState()
+	if err != nil {
+		tbg.Events.Error <- err
+	}
+	tbg.Events.ImageChanged <- struct{}{}
 }
+
+// emits TbgState.Events.ImageChanged
+//
+// may emit TbgState.Events.Error
 func (tbg *TbgState) RandomizePaths() {
 	fmt.Println("randomizing from current path up to last path...")
 	fmt.Println("(previous paths will not be randomized so you can go back)")
 	ShuffleFrom(int(tbg.PathIndex), tbg.Config.Paths)
-	tbg.UpdateCurrentPathState()
+	err := tbg.UpdateCurrentPathState()
+	if err != nil {
+		tbg.Events.Error <- err
+	}
+	tbg.Events.ImageChanged <- struct{}{}
 }
 
 func commandList() {
