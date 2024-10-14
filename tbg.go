@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"github.com/eiannone/keyboard"
+	"math/rand/v2"
 	"time"
 )
 
@@ -70,14 +71,18 @@ func (tbg *TbgState) Start() error {
 	if err != nil {
 		return fmt.Errorf("Failed to initialize tbg: %s", err.Error())
 	}
-	tbg.Settings.Write(tbg.Images[tbg.ImageIndex],
+	currentImage, err := tbg.CurrentImage()
+	if err != nil {
+		return err
+	}
+	tbg.Settings.Write(currentImage,
 		tbg.Config.Profile,
 		tbg.CurrentPathAlignment,
 		tbg.CurrentPathStretch,
 		tbg.CurrentPathOpacity,
 	)
 	tbg.Config.Log(tbg.ConfigPath).RunSettings(
-		tbg.Images[tbg.ImageIndex],
+		currentImage,
 		tbg.Config.Profile,
 		tbg.Config.Interval,
 		tbg.CurrentPathAlignment,
@@ -122,29 +127,23 @@ func (tbg *TbgState) readUserInput() {
 		}
 		switch keyboard.Key(event.Rune) {
 		case keyboard.Key('c'):
-			commandList()
+			commandList(tbg.Random)
 		case keyboard.Key('n'):
 			tbg.NextImage()
-			tbg.Events.ImageChanged <- struct{}{}
 		case keyboard.Key('N'):
-			tbg.NextPath()
-			tbg.Events.ImageChanged <- struct{}{}
+			invalidKeyForRandom(tbg.NextPath, event.Rune, tbg.Random)
 		case keyboard.Key('p'):
-			tbg.PreviousImage()
-			tbg.Events.ImageChanged <- struct{}{}
+			invalidKeyForRandom(tbg.PreviousImage, event.Rune, tbg.Random)
 		case keyboard.Key('P'):
-			tbg.PreviousPath()
-			tbg.Events.ImageChanged <- struct{}{}
+			invalidKeyForRandom(tbg.PreviousPath, event.Rune, tbg.Random)
 		case keyboard.Key('q'):
 			fmt.Println("Exiting...")
 			close(tbg.Events.Done)
 			return
 		case keyboard.Key('r'):
-			tbg.RandomizeImages()
-			tbg.Events.ImageChanged <- struct{}{}
+			invalidKeyForRandom(tbg.RandomizeImages, event.Rune, tbg.Random)
 		case keyboard.Key('R'):
-			tbg.RandomizePaths()
-			tbg.Events.ImageChanged <- struct{}{}
+			invalidKeyForRandom(tbg.RandomizePaths, event.Rune, tbg.Random)
 		case keyboard.Key('d'):
 			fmt.Println(tbg)
 		default:
@@ -152,7 +151,6 @@ func (tbg *TbgState) readUserInput() {
 		}
 	}
 }
-
 
 // Handles events emitted by various TbgState methods
 func (tbg *TbgState) Wait() error {
@@ -170,14 +168,18 @@ func (tbg *TbgState) Wait() error {
 		case err := <-tbg.Events.Error:
 			return err
 		case <-tbg.Events.ImageChanged:
-			tbg.Settings.Write(tbg.Images[tbg.ImageIndex],
+			currentImage, err := tbg.CurrentImage()
+			if err != nil {
+				return err
+			}
+			tbg.Settings.Write(currentImage,
 				tbg.Config.Profile,
 				tbg.CurrentPathAlignment,
 				tbg.CurrentPathStretch,
 				tbg.CurrentPathOpacity,
 			)
 			tbg.Config.Log(tbg.ConfigPath).RunSettings(
-				tbg.Images[tbg.ImageIndex],
+				currentImage,
 				tbg.Config.Profile,
 				tbg.Config.Interval,
 				tbg.CurrentPathAlignment,
@@ -186,6 +188,18 @@ func (tbg *TbgState) Wait() error {
 			)
 		}
 	}
+}
+
+func (tbg *TbgState) CurrentImage() (string, error) {
+	if tbg.Random {
+		tbg.PathIndex = uint16(rand.IntN(len(tbg.Config.Paths)))
+		err := tbg.UpdateCurrentPathState()
+		if err != nil {
+			return "", err
+		}
+		tbg.ImageIndex = uint16(rand.IntN(len(tbg.Images)))
+	}
+	return tbg.Images[tbg.ImageIndex], nil
 }
 
 // emits TbgState.Events.ImageChanged
@@ -280,15 +294,43 @@ func (tbg *TbgState) RandomizePaths() {
 	tbg.Events.ImageChanged <- struct{}{}
 }
 
-func commandList() {
+func commandList(isRandom bool) {
 	fmt.Print(`
 q: [q]uit
 n: [n]ext image
-p: [p]revious image
-N: [N]ext dir
-P: [P]revious dir
-r: [r]andomize images (current to last; previous unaffected)
-R: [R]andomize dirs (current to last; previous unaffected)
+`, invalidCommandForRandom("p: [p]revious image", isRandom), `
+`, invalidCommandForRandom("N: [N]ext dir", isRandom), `
+`, invalidCommandForRandom("P: [P]revious dir", isRandom), `
+`, invalidCommandForRandom("r: [r]andomize images (current to last; previous unaffected)", isRandom), `
+`, invalidCommandForRandom("R: [R]andomize dirs (current to last; previous unaffected)", isRandom), `
 c: [c]ommand list
 `)
+}
+
+//// TBG HELPER FUNCTIONS
+
+// Helper function that calls the passed in function if isRandom is false.
+// Otherwise prints out an invalid key error message
+//
+// use this to assert that a keypress is invalid for tbg in a random state
+func invalidKeyForRandom(fn func(), r rune, isRandom bool) {
+	if isRandom {
+		fmt.Printf("invalid key '%c' ('c' for list of [c]ommand)\n", r)
+	} else {
+		fn()
+	}
+}
+
+// Helper function that returns the passed in string if isRandom is false.
+// Otherwise moves the cursor back up
+//
+// use this to assert that a help message is invalid for tbg in a random state
+func invalidCommandForRandom(msg string, isRandom bool) string {
+	cursorUp := "\033[F"
+	if isRandom {
+		return cursorUp
+	} else {
+		return `p: [p]revious image`
+	}
+
 }
