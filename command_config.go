@@ -6,11 +6,8 @@ import (
 )
 
 type ConfigCommand struct {
-	Profile   *string
-	Interval  *uint16
-	Alignment *string
-	Stretch   *string
-	Opacity   *float32
+	Profile  *string
+	Interval *uint16
 }
 
 func (cmd *ConfigCommand) Type() CommandType { return ConfigCommandType }
@@ -23,15 +20,6 @@ func (cmd *ConfigCommand) Debug() {
 	}
 	if cmd.Interval != nil {
 		fmt.Println(" ", IntervalFlag, *cmd.Interval)
-	}
-	if cmd.Alignment != nil {
-		fmt.Println(" ", AlignmentFlag, *cmd.Alignment)
-	}
-	if cmd.Stretch != nil {
-		fmt.Println(" ", StretchFlag, *cmd.Stretch)
-	}
-	if cmd.Opacity != nil {
-		fmt.Println(" ", OpacityFlag, *cmd.Opacity)
 	}
 }
 
@@ -56,26 +44,8 @@ func (cmd *ConfigCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Interval = val
-	case AlignmentFlag:
-		val, err := ValidateAlignment(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Alignment = val
-	case OpacityFlag:
-		val, err := ValidateOpacity(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Opacity = val
-	case StretchFlag:
-		val, err := ValidateStretch(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Stretch = val
 	default:
-		return fmt.Errorf("invalid flag for 'run': '%s'", f.Type)
+		return fmt.Errorf("invalid flag for 'config': '%s'", f.Type)
 	}
 	return nil
 }
@@ -103,9 +73,9 @@ func (cmd *ConfigCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	isEditingConfig := cmd.Profile != nil || cmd.Interval != nil || cmd.Alignment != nil || cmd.Stretch != nil || cmd.Opacity != nil
+	isEditingConfig := cmd.Profile != nil || cmd.Interval != nil
 	if isEditingConfig {
-		config.EditConfig(configPath, cmd.Profile, cmd.Interval, cmd.Alignment, cmd.Stretch, cmd.Opacity)
+		config.EditConfig(configPath, cmd.Profile, cmd.Interval)
 	} else {
 		config.Log(configPath)
 	}

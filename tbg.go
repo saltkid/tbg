@@ -41,7 +41,7 @@ type TbgEvents struct {
 	Error        chan error
 }
 
-func NewBackgroundState(config *Config, configPath string, randomFlag bool) (*TbgState, error) {
+func NewBackgroundState(config *Config, configPath string, alignment string, stretch string, opacity float32, randomFlag bool) (*TbgState, error) {
 	wtSettings, err := NewWTSettings()
 	if err != nil {
 		return nil, err
@@ -53,9 +53,9 @@ func NewBackgroundState(config *Config, configPath string, randomFlag bool) (*Tb
 		PathIndex:            0,
 		Config:               config,
 		ConfigPath:           configPath,
-		CurrentPathAlignment: config.Alignment,
-		CurrentPathStretch:   config.Stretch,
-		CurrentPathOpacity:   config.Opacity,
+		CurrentPathAlignment: alignment,
+		CurrentPathStretch:   stretch,
+		CurrentPathOpacity:   opacity,
 		Random:               randomFlag,
 		Events: &TbgEvents{
 			Done:         make(chan struct{}),
@@ -103,9 +103,9 @@ func (tbg *TbgState) Init() error {
 
 func (tbg *TbgState) UpdateCurrentPathState() error {
 	currentPath := tbg.Config.Paths[tbg.PathIndex]
-	tbg.CurrentPathAlignment = Option(currentPath.Alignment).UnwrapOr(tbg.Config.Alignment)
-	tbg.CurrentPathStretch = Option(currentPath.Stretch).UnwrapOr(tbg.Config.Stretch)
-	tbg.CurrentPathOpacity = Option(currentPath.Opacity).UnwrapOr(tbg.Config.Opacity)
+	tbg.CurrentPathAlignment = Option(currentPath.Alignment).UnwrapOr(DefaultAlignment)
+	tbg.CurrentPathStretch = Option(currentPath.Stretch).UnwrapOr(DefaultStretch)
+	tbg.CurrentPathOpacity = Option(currentPath.Opacity).UnwrapOr(DefaultOpacity)
 	var err error
 	tbg.Images, err = currentPath.Images()
 	ShuffleFrom(0, tbg.Images)
@@ -330,7 +330,7 @@ func invalidCommandForRandom(msg string, isRandom bool) string {
 	if isRandom {
 		return cursorUp
 	} else {
-		return `p: [p]revious image`
+		return msg
 	}
 
 }

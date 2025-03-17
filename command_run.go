@@ -113,19 +113,19 @@ func (cmd *RunCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	randomFlag := config.determineExecutionFlags(cmd)
-	backgroundState, err := NewBackgroundState(config, configPath, randomFlag)
+	alignment, stretch, opacity, randomFlag := config.determineExecutionFlags(cmd)
+	backgroundState, err := NewBackgroundState(config, configPath, alignment, stretch, opacity, randomFlag)
 	if err != nil {
 		return err
 	}
 	return backgroundState.Start()
 }
 
-func (config *Config) determineExecutionFlags(cmd *RunCommand) bool {
+func (config *Config) determineExecutionFlags(cmd *RunCommand) (string, string, float32, bool) {
 	config.Profile = Option(cmd.Profile).UnwrapOr(config.Profile)
 	config.Interval = Option(cmd.Interval).UnwrapOr(config.Interval)
-	config.Alignment = Option(cmd.Alignment).UnwrapOr(config.Alignment)
-	config.Stretch = Option(cmd.Stretch).UnwrapOr(config.Stretch)
-	config.Opacity = Option(cmd.Opacity).UnwrapOr(config.Opacity)
-	return Option(cmd.Random).UnwrapOr(false)
+	return Option(cmd.Alignment).UnwrapOr(DefaultAlignment),
+		Option(cmd.Stretch).UnwrapOr(DefaultStretch),
+		Option(cmd.Opacity).UnwrapOr(DefaultOpacity),
+		Option(cmd.Random).UnwrapOr(false)
 }

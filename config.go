@@ -9,13 +9,16 @@ import (
 	"strings"
 )
 
+const (
+	DefaultAlignment string  = "center"
+	DefaultStretch   string  = "uniform"
+	DefaultOpacity   float32 = 1.0
+)
+
 type Config struct {
-	Paths     []ImagesPath `yaml:"paths"`
-	Interval  uint16       `yaml:"interval"`
-	Profile   string       `yaml:"profile"`
-	Alignment string       `yaml:"alignment"`
-	Stretch   string       `yaml:"stretch"`
-	Opacity   float32      `yaml:"opacity"`
+	Paths    []ImagesPath `yaml:"paths"`
+	Interval uint16       `yaml:"interval"`
+	Profile  string       `yaml:"profile"`
 }
 
 func (cfg *Config) String() string {
@@ -28,10 +31,7 @@ func (cfg *Config) String() string {
 		return ret
 	}(), `
     Interval: `, cfg.Interval, `
-    Profile: `, cfg.Profile, `
-    Alignment: `, cfg.Alignment, `
-    Stretch: `, cfg.Stretch, `
-    Opacity: `, cfg.Opacity,
+    Profile: `, cfg.Profile,
 	)
 }
 
@@ -166,9 +166,6 @@ func (cfg *Config) EditConfig(
 	configPath string,
 	profile *string,
 	interval *uint16,
-	align *string,
-	stretch *string,
-	opacity *float32,
 ) error {
 	// key:val = old:new
 	edited := make(map[string]string, 0)
@@ -179,18 +176,6 @@ func (cfg *Config) EditConfig(
 	if interval != nil {
 		edited[strconv.Itoa(int(cfg.Interval))] = strconv.Itoa(int(*interval))
 		cfg.Interval = *interval
-	}
-	if align != nil {
-		edited[cfg.Alignment] = *align
-		cfg.Alignment = *align
-	}
-	if stretch != nil {
-		edited[cfg.Stretch] = *stretch
-		cfg.Stretch = *stretch
-	}
-	if opacity != nil {
-		edited[strconv.FormatFloat(float64(cfg.Opacity), 'f', -1, 64)] = strconv.FormatFloat(float64(*opacity), 'f', -1, 64)
-		cfg.Opacity = *opacity
 	}
 	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(cfg)
@@ -263,9 +248,6 @@ func (cfg *Config) Log(configPath string) ConfigLogger {
 	}
 	fmt.Printf("|\n%-25s%s\n", "| profile:", cfg.Profile)
 	fmt.Printf("%-25s%d\n", "| interval:", cfg.Interval)
-	fmt.Printf("%-25s%s\n", "| alignment:", cfg.Alignment)
-	fmt.Printf("%-25s%s\n", "| stretch:", cfg.Stretch)
-	fmt.Printf("%-25s%f\n", "| opacity:", cfg.Opacity)
 	fmt.Println("------------------------------------------------------------------------------------")
 	return ConfigLogger{}
 }
