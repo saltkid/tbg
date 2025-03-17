@@ -13,9 +13,9 @@ const (
 	Bold      AnsiCode = "\033[1m"
 	Italic    AnsiCode = "\033[3m"
 	Underline AnsiCode = "\033[4m"
+	Blue      AnsiCode = "\033[34m"
 	Red       AnsiCode = "\033[31m"
 	Yellow    AnsiCode = "\033[33m"
-	Blue      AnsiCode = "\033[34m"
 )
 
 type Styled string

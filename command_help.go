@@ -96,16 +96,16 @@ func (cmd *HelpCommand) Execute() error {
 	fmt.Println("------------------------------------------------------------------------------------")
 	for _, subCmd := range cmd.Commands {
 		switch subCmd.Type() {
-		case RunCommandType:
-			RunHelp(true)
 		case AddCommandType:
 			AddHelp(true)
-		case RemoveCommandType:
-			RemoveHelp(true)
 		case ConfigCommandType:
 			ConfigHelp(true)
 		case HelpCommandType:
 			HelpHelp(true)
+		case RemoveCommandType:
+			RemoveHelp(true)
+		case RunCommandType:
+			RunHelp(true)
 		case VersionCommandType:
 			VersionHelp(true)
 		}
@@ -113,18 +113,18 @@ func (cmd *HelpCommand) Execute() error {
 	}
 	for _, f := range cmd.Flags {
 		switch f.Type {
-		case ProfileFlag:
-			ProfileHelp(true)
-		case IntervalFlag:
-			IntervalHelp(true)
 		case AlignmentFlag:
 			AlignmentHelp(true)
-		case StretchFlag:
-			StretchHelp(true)
+		case IntervalFlag:
+			IntervalHelp(true)
 		case OpacityFlag:
 			OpacityHelp(true)
+		case ProfileFlag:
+			ProfileHelp(true)
 		case RandomFlag:
 			RandomHelp(true)
+		case StretchFlag:
+			StretchHelp(true)
 		}
 		fmt.Println("------------------------------------------------------------------------------------")
 	}

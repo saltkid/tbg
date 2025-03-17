@@ -5,18 +5,16 @@ import (
 	"strconv"
 )
 
-func ValidateProfile(val *string) (*string, error) {
+func ValidateAlignment(val *string) (*string, error) {
 	if val == nil {
-		return nil, fmt.Errorf("--profile must have an argument. got none")
+		return nil, fmt.Errorf("--interval must have an argument. got none")
 	}
-	if *val == "default" {
+	switch *val {
+	case "topLeft", "top", "topRight", "left", "center", "right", "bottomLeft", "bottom", "bottomRight":
 		return val, nil
+	default:
+		return nil, fmt.Errorf("invalid arg '%s' for --alignment: unknown alignment", *val)
 	}
-	_, err := strconv.Atoi(*val)
-	if err != nil {
-		return nil, fmt.Errorf("invalid arg '%s' for --profile: must be a number. %s", *val, err.Error())
-	}
-	return val, nil
 }
 
 func ValidateInterval(val *string) (*uint16, error) {
@@ -34,18 +32,6 @@ func ValidateInterval(val *string) (*uint16, error) {
 	return &ret, nil
 }
 
-func ValidateAlignment(val *string) (*string, error) {
-	if val == nil {
-		return nil, fmt.Errorf("--interval must have an argument. got none")
-	}
-	switch *val {
-	case "topLeft", "top", "topRight", "left", "center", "right", "bottomLeft", "bottom", "bottomRight":
-		return val, nil
-	default:
-		return nil, fmt.Errorf("invalid arg '%s' for --alignment: unknown alignment", *val)
-	}
-}
-
 func ValidateOpacity(val *string) (*float32, error) {
 	if val == nil {
 		return nil, fmt.Errorf("--interval must have an argument. got none")
@@ -61,16 +47,18 @@ func ValidateOpacity(val *string) (*float32, error) {
 	return &ret, nil
 }
 
-func ValidateStretch(val *string) (*string, error) {
+func ValidateProfile(val *string) (*string, error) {
 	if val == nil {
-		return nil, fmt.Errorf("--stretch must have an argument. got none")
+		return nil, fmt.Errorf("--profile must have an argument. got none")
 	}
-	switch *val {
-	case "none", "fill", "uniform", "uniformToFill":
+	if *val == "default" {
 		return val, nil
-	default:
-		return nil, fmt.Errorf("invalid arg '%s' for --stretch: unknown stretch", *val)
 	}
+	_, err := strconv.Atoi(*val)
+	if err != nil {
+		return nil, fmt.Errorf("invalid arg '%s' for --profile: must be a number. %s", *val, err.Error())
+	}
+	return val, nil
 }
 
 func ValidateRandom(val *string) (*bool, error) {
@@ -83,5 +71,17 @@ func ValidateRandom(val *string) (*bool, error) {
 		return &ret, nil
 	default:
 		return nil, fmt.Errorf("'--random' flag does not take any arguments. got '%s'", *val)
+	}
+}
+
+func ValidateStretch(val *string) (*string, error) {
+	if val == nil {
+		return nil, fmt.Errorf("--stretch must have an argument. got none")
+	}
+	switch *val {
+	case "none", "fill", "uniform", "uniformToFill":
+		return val, nil
+	default:
+		return nil, fmt.Errorf("invalid arg '%s' for --stretch: unknown stretch", *val)
 	}
 }

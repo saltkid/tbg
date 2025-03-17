@@ -21,11 +21,11 @@ func (cmd *RemoveCommand) Debug() {
 	if cmd.Alignment {
 		fmt.Println(" ", AlignmentFlag)
 	}
-	if cmd.Stretch {
-		fmt.Println(" ", StretchFlag)
-	}
 	if cmd.Opacity {
 		fmt.Println(" ", OpacityFlag)
+	}
+	if cmd.Stretch {
+		fmt.Println(" ", StretchFlag)
 	}
 }
 

@@ -8,30 +8,30 @@ type FlagType uint8
 
 const (
 	NoFlag FlagType = iota
-	ProfileFlag
-	IntervalFlag
 	AlignmentFlag
+	IntervalFlag
 	OpacityFlag
-	StretchFlag
+	ProfileFlag
 	RandomFlag
+	StretchFlag
 )
 
 func (f FlagType) String() string {
 	switch f {
-	case NoFlag:
-		return "none"
-	case ProfileFlag:
-		return "--profile"
-	case IntervalFlag:
-		return "--interval"
 	case AlignmentFlag:
 		return "--alignment"
+	case IntervalFlag:
+		return "--interval"
+	case NoFlag:
+		return "none"
 	case OpacityFlag:
 		return "--opacity"
-	case StretchFlag:
-		return "--stretch"
+	case ProfileFlag:
+		return "--profile"
 	case RandomFlag:
 		return "--random"
+	case StretchFlag:
+		return "--stretch"
 	default:
 		return "unknown"
 	}
@@ -44,18 +44,18 @@ type Flag struct {
 
 func ToFlag(s string) (*Flag, error) {
 	switch s {
-	case "--profile", "-p":
-		return &Flag{Type: ProfileFlag}, nil
-	case "--interval", "-i":
-		return &Flag{Type: IntervalFlag}, nil
 	case "--alignment", "-a":
 		return &Flag{Type: AlignmentFlag}, nil
+	case "--interval", "-i":
+		return &Flag{Type: IntervalFlag}, nil
 	case "--opacity", "-o":
 		return &Flag{Type: OpacityFlag}, nil
-	case "--stretch", "-s":
-		return &Flag{Type: StretchFlag}, nil
+	case "--profile", "-p":
+		return &Flag{Type: ProfileFlag}, nil
 	case "--random", "-r":
 		return &Flag{Type: RandomFlag}, nil
+	case "--stretch", "-s":
+		return &Flag{Type: StretchFlag}, nil
 	default:
 		return nil, fmt.Errorf("unknown flag: %s", s)
 	}

@@ -11,8 +11,8 @@ import (
 
 const (
 	DefaultAlignment string  = "center"
-	DefaultStretch   string  = "uniform"
 	DefaultOpacity   float32 = 1.0
+	DefaultStretch   string  = "uniform"
 )
 
 type Config struct {
@@ -190,8 +190,8 @@ func (cfg *Config) EditConfig(
 type ImagesPath struct {
 	Path      string   `yaml:"path"`
 	Alignment *string  `yaml:"alignment,omitempty"`
-	Stretch   *string  `yaml:"stretch,omitempty"`
 	Opacity   *float32 `yaml:"opacity,omitempty"`
+	Stretch   *string  `yaml:"stretch,omitempty"`
 }
 
 func (path *ImagesPath) String() string {

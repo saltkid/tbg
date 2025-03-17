@@ -32,18 +32,18 @@ func (cmd *ConfigCommand) ValidateValue(val *string) error {
 
 func (cmd *ConfigCommand) ValidateFlag(f Flag) error {
 	switch f.Type {
-	case ProfileFlag:
-		val, err := ValidateProfile(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Profile = val
 	case IntervalFlag:
 		val, err := ValidateInterval(f.Value)
 		if err != nil {
 			return err
 		}
 		cmd.Interval = val
+	case ProfileFlag:
+		val, err := ValidateProfile(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Profile = val
 	default:
 		return fmt.Errorf("invalid flag for 'config': '%s'", f.Type)
 	}

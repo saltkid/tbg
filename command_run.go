@@ -19,23 +19,23 @@ func (cmd *RunCommand) Type() CommandType { return RunCommandType }
 func (cmd *RunCommand) Debug() {
 	fmt.Println("Run Command")
 	fmt.Println("Flags:")
-	if cmd.Profile != nil {
-		fmt.Println(" ", ProfileFlag, *cmd.Profile)
+	if cmd.Alignment != nil {
+		fmt.Println(" ", AlignmentFlag, *cmd.Alignment)
 	}
 	if cmd.Interval != nil {
 		fmt.Println(" ", IntervalFlag, *cmd.Interval)
 	}
-	if cmd.Alignment != nil {
-		fmt.Println(" ", AlignmentFlag, *cmd.Alignment)
-	}
-	if cmd.Stretch != nil {
-		fmt.Println(" ", StretchFlag, *cmd.Stretch)
-	}
 	if cmd.Opacity != nil {
 		fmt.Println(" ", OpacityFlag, *cmd.Opacity)
 	}
+	if cmd.Profile != nil {
+		fmt.Println(" ", ProfileFlag, *cmd.Profile)
+	}
 	if cmd.Random != nil {
 		fmt.Println(" ", RandomFlag, *cmd.Random)
+	}
+	if cmd.Stretch != nil {
+		fmt.Println(" ", StretchFlag, *cmd.Stretch)
 	}
 }
 
@@ -48,42 +48,42 @@ func (cmd *RunCommand) ValidateValue(val *string) error {
 
 func (cmd *RunCommand) ValidateFlag(f Flag) error {
 	switch f.Type {
-	case ProfileFlag:
-		val, err := ValidateProfile(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Profile = val
-	case IntervalFlag:
-		val, err := ValidateInterval(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Interval = val
 	case AlignmentFlag:
 		val, err := ValidateAlignment(f.Value)
 		if err != nil {
 			return err
 		}
 		cmd.Alignment = val
+	case IntervalFlag:
+		val, err := ValidateInterval(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Interval = val
 	case OpacityFlag:
 		val, err := ValidateOpacity(f.Value)
 		if err != nil {
 			return err
 		}
 		cmd.Opacity = val
-	case StretchFlag:
-		val, err := ValidateStretch(f.Value)
+	case ProfileFlag:
+		val, err := ValidateProfile(f.Value)
 		if err != nil {
 			return err
 		}
-		cmd.Stretch = val
+		cmd.Profile = val
 	case RandomFlag:
 		val, err := ValidateRandom(f.Value)
 		if err != nil {
 			return err
 		}
 		cmd.Random = val
+	case StretchFlag:
+		val, err := ValidateStretch(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Stretch = val
 	default:
 		return fmt.Errorf("invalid flag for 'run': '%s'", f.Type)
 	}
