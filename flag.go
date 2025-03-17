@@ -60,30 +60,3 @@ func ToFlag(s string) (*Flag, error) {
 		return nil, fmt.Errorf("unknown flag: %s", s)
 	}
 }
-
-func (f *Flag) ValidateValue(val *string) error {
-	switch f.Type {
-	case ProfileFlag:
-		_, err := ValidateProfile(val)
-		return err
-	case IntervalFlag:
-		_, err := ValidateInterval(val)
-		return err
-	case AlignmentFlag:
-		_, err := ValidateAlignment(val)
-		return err
-	case OpacityFlag:
-		_, err := ValidateOpacity(val)
-		return err
-	case StretchFlag:
-		_, err := ValidateStretch(val)
-		return err
-	case RandomFlag:
-		_, err := ValidateRandom(val)
-		return err
-	case NoFlag:
-		return nil
-	default:
-		return fmt.Errorf("unexpected error: unknown flag: %d", f.Type)
-	}
-}
