@@ -21,15 +21,6 @@ based on flags passed to it.
 2. `--interval [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
     - edits: `interval`
-3. `--alignment [arg]`
-    - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
-    - edits: `alignment` (the top level alignment, not the per path alignment)
-4. `--stretch [arg]`
-    - args: `none`, `fill`, `uniform`, `uniformToFill`
-    - edits: `stretch` (top level stretch)
-5. `--opacity [arg]`
-    - args: any float between 0 and 1 (inclusive)
-    - edits: `opacity` (top level opacity)
 
 # Usage
 #### Printing config
@@ -50,16 +41,13 @@ Output on console should look something like this
 |
 | profile:               default
 | interval:              30
-| alignment:             center
-| stretch:               uniform
-| opacity:               0.100000
 ------------------------------------------------------------------------------------
 ```
 
 #### Editing fields of config
 To edit fields of config, specify any fields you want to edit with flags like this this:
 ```bash
-tbg config --alignment topRight
+tbg config --profile 1
 ```
 ```bash
 ------------------------------------------------------------------------------------
@@ -71,16 +59,13 @@ tbg config --alignment topRight
 |   stretch: fill
 |   opacity: 0.250000
 |
-| profile:               default
+| profile:               1 # used to be default
 | interval:              30
-| alignment:             topRight # used to be center in the above example
-| stretch:               uniform
-| opacity:               0.100000
 ------------------------------------------------------------------------------------
 ```
-You can do this with the other four fields as well
+You can do this with interval as well
 ```bash
-tbg config --profile 1 --interval 5 --stretch fill --opacity 0.35
+tbg config --interval 5
 ```
 ```bash
 ------------------------------------------------------------------------------------
@@ -92,10 +77,7 @@ tbg config --profile 1 --interval 5 --stretch fill --opacity 0.35
 |   stretch: fill
 |   opacity: 0.250000
 |
-| profile:               1        # used to be default
-| interval:              5        # used to be 30
-| alignment:             topRight
-| stretch:               fill     # used to be uniform
-| opacity:               0.350000 # used to be 0.100000
+| profile:               1        
+| interval:              5 # used to be 30
 ------------------------------------------------------------------------------------
 ```

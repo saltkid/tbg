@@ -87,17 +87,6 @@ use the [`config`](https://github.com/saltkid/tbg/blob/main/docs/config_command_
               stretch: uniformToFill # optional
               opacity: 1.0           # optional
     - paths containing images used in changing the background image of Windows Terminal
-4. **alignment**
-    - ( args ): `top`, `topLeft`, `topRight`, `left`, `center`, `right`, `bottom`, `bottomLeft`, `bottomRight` 
-    - image alignment in Windows Terminal.
-    - Can be overriden on a per-path basis
-5. `stretch` 
-    - *args*: `uniform`, `fill`, `uniformToFill`, `none` 
-    - image stretch in Windows Terminal. Can be overriden on a per-path basis
-6. `opacity` 
-    - *args*: inclusive range between `0` and `1` 
-    - image opacity of background images in Windows Terminal.
-    - Can be overriden on a per-path basis
 
 # Commands
 For a more detailed explanation on each command, follow the command name links
@@ -110,7 +99,7 @@ For a more detailed explanation on each command, follow the command name links
     editing `settings.json` instead of what's specified in the `.tbg.yml`
 2. [config](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) 
     - *args*: none 
-    - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
+    - *flags*: `-p, --profile`, `-i, --interval`
     - If no flags are present, it will print out `.tbg.yml` to console. If any
     of the flags are present, it will edit the fields of the config based on
     the flags and values passed

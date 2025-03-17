@@ -29,11 +29,8 @@ Let's say this is the `.tbg.yml`:
 paths:
 - path: path/to/images/dir1
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
 If we run:
 ```bash
@@ -44,11 +41,8 @@ field like this:
 ```yml
 paths: []
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
 ### Removing options from a path
 Let's use this config
@@ -59,11 +53,8 @@ paths:
   stretch: fill
   opacity: 0.5
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
 Let's "remove" the alignment flag of `path/to/images/dir1`:
 ```bash
@@ -75,13 +66,10 @@ paths:
   stretch: fill
   opacity: 0.5
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
-The path will now inherit the top level `alignment` value (`center`).
+The path will now inherit the default `alignment` value (`center`).
 Let's remove stretch next.
 ```bash
 tbg remove path/to/images/dir1 --stretch
@@ -92,13 +80,10 @@ paths:
   stretch: fill
   opacity: 0.5
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
-The path will now inherit the top level `stretch` value (`uniform`).
+The path will now inherit the default `stretch` value (`uniform`).
 
 Now let's see if we remove opacity:
 ```bash
@@ -108,11 +93,8 @@ tbg remove path/to/images/dir1 --opacity
 paths:
 - path: path/to/images/dir1
 
-profile: default
 interval: 30
-
-default_alignment: center
-default_stretch: uniform
-default_opacity: 0.1
+profile: default
 ```
-Now all the path will inehrit the top level alignment, stretch, and opacity.
+Now all the path will inehrit the default alignment (`center`), stretch
+(`uniform`), and opacity (`1.0`).

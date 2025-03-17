@@ -7,7 +7,7 @@
 - [Usage](#usage)
     - [Normal Execution, key events, and path specific options](#normal-execution)
     - [Overriding `profile` and `interval` fields](#overriding-profile-and-interval-fields)
-    - [Overriding default option fields](#overriding-default-option-fields)
+    - [Overriding default values](#overriding-default-values)
 ---
 
 # `tbg run`
@@ -72,7 +72,7 @@ will use the flags instead of that or the default options fields.
 The order of importance is:
 1. flags (`--alignment`, `--opacity`, `--stretch`)
 2. per path options in config
-3. default options fields in config
+3. default values
 
 For an example, see [overriding default flags walkthrough](#overriding-default-option-fields)
 
@@ -95,27 +95,22 @@ paths:
 
 profile: default
 interval: 30
-
-alignment: center
-stretch: fill
-opacity: 0.1
 ```
 This just means that when we do `tbg run`, we want to change the background
 image of the **default** *Windows Terminal* profile every **30 minutes**. The
 first few images will be from `path/to/dir1`. The image will be at the
-**center**, **fill** the entire screen without regard of the original aspect
-ratio, with an opacity of **10%**. 
+**center**, with the stretch **uniform** to fill the screen while keeping
+aspect ratio, with an opacity of **100%**. 
 
 When I press `n`, it goes to the next image without waiting for 30 minutes. I
 can go back by pressing `p`.
 
 When I press `N`, it goes to the next image collection dir. This means we are
 now in `path/to/dir2`. This path has flags specific to it so these values will
-be used instead of the default flag fields. This means instead of the image
-being at the **center**, it will be at the **right**. - Instead of having an
-opacity of **10%**, it the images will have **35%** opacity. However, since
-stretch is the same, it will still **fill** the screen without regard of the
-orignal aspect ratio.
+be used instead of the defaults. This means instead of the image being at the
+**center**, it will be at the **right**. - Instead of having an opacity of
+**10%**, it the images will have **35%** opacity. The image will **fill** the
+screen, without regard for aspect ratio.
 
 When I press `P`, it goes back to the previous image collection dir
 (`path/to/dir1`). If i press `P` again, it will wrap around and go to the last
@@ -137,10 +132,6 @@ paths:
 
 profile: default
 interval: 30
-
-alignment: center
-stretch: fill
-opacity: 0.1
 ```
 
 The `--profile` and `--interval` flags will override the values in the config.
@@ -149,9 +140,9 @@ the `default` profile every 30 minutes, it will change the background image of
 the first profile under `list` field in `settings.json` every 5 minutes instead
 
 ---
-### Overriding default option fields
-This will delve on overriding default options fields on the config using
-flags. This will also override the per-path options.
+### Overriding default values
+This will delve on overriding default values on the config using flags. This
+will also override the per-path options.
 
 Let's use this config:
 ```yml
@@ -164,10 +155,6 @@ paths:
 
 profile: default
 interval: 30
-
-alignment: center
-stretch: fill
-opacity: 0.1
 ```
 Let's do:
 ```bash
@@ -175,9 +162,9 @@ tbg run --alignment right --opacity 0.35 --stretch none
 ```
 
 The `--alignment`, `--opacity`, and `--stretch` flags will override the values
-in `.tbg.yml`. This means instead of `path/to/dir`'s images being centered,
-filling entire screen at 10% opacity, the images will be on the right, with no
-upscaling/downscaling, at 35% opacity.
+in `.tbg.yml`. This means instead of `path/to/dir1`'s images being centered,
+filling entire screen while keeping aspect ratio at 100% opacity, the images
+will be on the right, with no scaling, at 35% opacity.
 
 Notice that `path/to/dir2` has options that should override the default options
 fields. However, since we specified `--alignment right --opacity 0.35 --stretch

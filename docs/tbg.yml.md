@@ -15,45 +15,34 @@ on initial execution. This is what it should look like:
 
 paths:
 - path: path/to/images/dir
-  # alignment: right # uncomment to override the alignment field for this specific image path
-  # stretch: fill    # override stretch
-  # opacity: 0.25    # override opacity
+  # alignment: right # override default alignment of center
+  # stretch: fill    # override default stretch of uniform
+  # opacity: 0.25    # override default opacity of 1.0
 
 profile: default
 interval: 30
-
-alignment: center
-stretch: uniform
-opacity: 0.1
 
 #------------------------------------------
 # Fields:
 #   paths: list of image collection paths
 #     - path: directory that contain images
-#       alignment: optional alignment value applied only to this path.
-#                  uses default alignment (see "alignment" field) if not specified
-#       stretch:   optional stretch value applied only to this path
-#                  uses default stretch (see "stretch" field) if not specified
-#       opacity:   poptional opacity value applied only to this path
-#                  uses default opacity (see "opacity" field) if not specified
+#       alignment: (optional) image alignment in Windows Terminal
+#                  valid values: topLeft, top, topRight, left, center, right, bottomLeft, bottom, bottomRight
+#                  https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment
+#
+#       opacity:   (optional) image opacity of background images in Windows Terminal
+#                  valid values: 0.0 - 1.0 (inclusive)
+#                  https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity
+#
+#       stretch:   (optional) image stretch in Windows Terminal
+#                  valid values: fill, none, uniform, uniformToFill
+#                  https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode 
 #
 #   profile: profile profile in Windows Terminal
 #      valid values: default, 0, 1, ..., n
 #      https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general
 #
 #   interval: time in minutes between each image change
-#
-#   alignment: image alignment in Windows Terminal
-#     valid values: topLeft, top, topRight, left, center, right, bottomLeft, bottom, bottomRight
-#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-alignment
-#
-#   opacity: image opacity of background images in Windows Terminal
-#     valid values: 0.0 - 1.0 (inclusive)
-#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-opacity
-#
-#   stretch: image stretch in Windows Terminal
-#     valid values: fill, none, uniform, uniformToFill
-#     https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode 
 #------------------------------------------
 ```
 ## Fields
@@ -75,26 +64,26 @@ Although you can edit the fields in the config directly, it is recommended to us
         - `- path: path/to/dir1` 
         - ```yaml
             - path: path/to/dir2
-              alignment: center      # optional
-              stretch: uniformToFill # optional
-              opacity: 1.0           # optional
+              alignment: center # optional
+              stretch: uniform  # optional
+              opacity: 1.0      # optional
     - paths containing images used in changing the background image of Windows Terminal
     - Each path can override the default fields below.
     - default values for per-path options if not specified are:
         - `alignment: center`
-        - `stretch: uniformToFill`
+        - `stretch: uniform`
         - `opacity: 1.0`
-4. **alignment**
-    - ( args ): `top`, `topLeft`, `topRight`, `left`, `center`, `right`, `bottom`, `bottomLeft`, `bottomRight` 
-    - image alignment in Windows Terminal.
-    - Can be overriden on a per-path basis
-5. `stretch` 
-    - *args*: `uniform`, `fill`, `uniformToFill`, `none` 
-    - image stretch in Windows Terminal. Can be overriden on a per-path basis |
-6. `opacity` 
-    - *args*: inclusive range between `0` and `1` 
-    - image opacity of background images in Windows Terminal.
-    - Can be overriden on a per-path basis
+    1. **alignment**
+        - *args*: `top`, `topLeft`, `topRight`, `left`, `center`, `right`, `bottom`, `bottomLeft`, `bottomRight` 
+        - image alignment in Windows Terminal.
+        - Can be overriden on a per-path basis
+    2. `stretch` 
+        - *args*: `uniform`, `fill`, `uniformToFill`, `none` 
+        - image stretch in Windows Terminal. Can be overriden on a per-path basis |
+    3. `opacity` 
+        - *args*: inclusive range between `0` and `1` 
+        - image opacity of background images in Windows Terminal.
+        - Can be overriden on a per-path basis
 
 For the default flag fields (`alignment`, `stretch`, and `opacity`), see
 [Mircrosoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-images-and-icons)

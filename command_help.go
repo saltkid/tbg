@@ -182,10 +182,6 @@ func RunHelp(verbose bool) {
       |                                |
       | profile: default               | profile: 2
       | interval: 30                   | interval: 5
-      |                                |
-      | alignment: right               | alignment: center
-      | stretch: fill                  | stretch: fill
-      | alignment: 0.1                 | alignment: 0.1
       --------------------------       --------------------------------
      This means that instead of editing the default profile, it will edit the
      2nd profile in Windows Terminal's list. The interval will be 5 minutes
@@ -256,10 +252,6 @@ func AddHelp(verbose bool) {
       |     stretch: uniform
       |   - path: /path/to/the-other/images/dir 
       |     alignment: top
-      |
-      | alignment: right
-      | stretch: fill
-      | alignment: 0.1
       |
       | other fields...
       ----------------------
@@ -332,10 +324,6 @@ func RemoveHelp(verbose bool) {
       |     alignment: center           |     stretch: fill
       |     stretch: fill               |     opacity: 0.1
       |     opacity: 0.1                |
-      |                                 | alignment: right
-      | alignment: right                | stretch: fill
-      | stretch: fill                   | alignment: 0.2
-      | alignment: 0.2                  | 
       |                                 | other fields...
       | other fields...                 -------------------------------
       -------------------------------   
@@ -356,16 +344,10 @@ func ConfigHelp(verbose bool) {
   `, Decorate("Args").Bold(), `: config takes no args
   `, Decorate("Subcommands").Bold(), `: config takes no sub-commands
   `, Decorate("Flags").Bold(), `:
-  1. -a, --alignment [arg]
-         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
-  2. -o, --opacity   [arg]
-         [any float between 0 and 1 (inclusive)]
-  3. -s, --stretch   [arg]
-         [fill, none, uniform, uniformToFill]
-  4. -p, --profile   [arg]
+  1. -p, --profile   [arg]
          [default, n]
          where n is the list index Windows Terminal uses to identify the profile (starting from 1)
-  5. -i, --interval  [arg]
+  2. -i, --interval  [arg]
          [any positive integer]
          note that this is in minutes.
 
@@ -379,18 +361,15 @@ func ConfigHelp(verbose bool) {
       | profile: default
       | interval: 30
       |
-      | alignment: right
-      | stretch: fill
-      | alignment: 0.1
       --------------------------
 
-  2. tbg config --alignment center
-      replaces the config's "alignment" field with the value "center"
+  2. tbg config --profile 1
+      replaces the config's "profile" field with the value "1"
       --------------------------       --------------------------------
       | paths:                         | paths:
       |   - path: /path/to/images/dir1 |   - path: /path/to/images/dir1
       |                                |
-      | alignment: right               | alignment: center
+      | profile: right                 | profile: 1
       |                                |
       | other fields...                | other fields...
       --------------------------       --------------------------------
@@ -482,9 +461,8 @@ func IntervalHelp(verbose bool) {
      whatever value the \"interval\" field in .tbg.yml will
      be ignored and tbg change images every 30 minutes instead.
 
-  2. tbg edit --interval 30 config /path/to/a/config.yaml
-     this will change the \"interval\" field on the config /path/to/a/config.yaml
-     to 30
+  2. tbg config --interval 10
+     this will change the "interval" field on the config to "10"
 `)
 	}
 }
@@ -506,9 +484,8 @@ func AlignmentHelp(verbose bool) {
      whatever value the "alignment" field in .tbg.yml will
      be ignored and tbg will center the image instead
 
-  2. tbg edit --alignment center config /path/to/a/config.yaml
-     this will change the "alignment" field on the config /path/to/a/config.yaml
-     to "center"
+  2. tbg config --alignment center
+     this will change the "alignment" field on the config to "center"
 `)
 	}
 }
@@ -528,9 +505,8 @@ func StretchHelp(verbose bool) {
      whatever value the \"stretch\" field in .tbg.yml will
      be ignored and tbg will upscale the image to exactly fill the screen instead
 
-  2. tbg edit --stretch fill config /path/to/a/config.yaml
-     this will change the "stretch" field on the config /path/to/a/config.yaml
-     to "fill"
+  2. tbg config --stretch fill
+     this will change the "stretch" field on the config to "fill"
 `)
 	}
 }
@@ -550,9 +526,8 @@ func OpacityHelp(verbose bool) {
      whatever value the "opacity" field in .tbg.yml will
      be ignored and tbg will set the image opacity to 0.5
 
-  2. tbg edit --opacity 0.5 config /path/to/a/config.yaml
-     this will change the "opacity" field on the config /path/to/a/config.yaml
-     to 0.5
+  2. tbg config --opacity 0.5
+     this will change the "opacity" field on the config to "0.5"
 `)
 	}
 }
@@ -568,13 +543,8 @@ func RandomHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --random
-     This will randomize the order of the image collections read
-     from .tbg.yml. It randomizes the order the
-     images in each collection.
-
-     When image collections are exhausted and tbg wraps around, the
-     order of the image collections will be randomized again. This
-     behavior applies to images too.
+     tbg will choose a random image from a random image collection dir every
+     time.
 `)
 	}
 }

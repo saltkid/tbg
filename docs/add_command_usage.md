@@ -30,11 +30,8 @@ Let's say this is `.tbg.yml`:
 ```yml
 paths: []
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
 If we run:
 ```bash
@@ -46,11 +43,8 @@ like this:
 paths:
 - path: path/to/images/dir1
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
 ### Adding a path with options
 Let's continue with our config and run this:
@@ -66,11 +60,8 @@ paths:
   stretch: fill
   opacity: 0.5
 
-alignment: center
-stretch: uniform
-opacity: 0.5
-
-other fields...
+interval: 30
+profile: default
 ```
 Let's add another one:
 ```bash
@@ -91,7 +82,7 @@ stretch: uniform
 opacity: 0.5
 ```
 Options that were not specified will inherit their respective default value
-(`stretch` and `opacity` in this example)
+(`stretch` and `opacity` will be `center` and `1.0` in this example)
 
 #### Adding an option to an existing path
 Let's continue with our config and run this:
@@ -107,9 +98,8 @@ paths:
   alignment: right
   stretch: fill # this path only had alignment in the example above
 
-alignment: center
-stretch: uniform
-opacity: 0.5
+interval: 30
+profile: default
 ```
 Let's fill assign the opacity too
 ```bash
@@ -123,9 +113,8 @@ paths:
   stretch: fill
   opacity: 0.25
 
-alignment: center
-stretch: uniform
-opacity: 0.5
+interval: 30
+profile: default
 ```
 #### Changing an option of an existing path
 Let's change the opacity and stretch:
@@ -142,9 +131,8 @@ paths:
   stretch: none # used to be fill
   opacity: 1    # used to be 0.25
 
-alignment: center
-stretch: uniform
-opacity: 0.5
+interval: 30
+profile: default
 ```
 Let's change the alignment too
 ```bash
@@ -158,7 +146,6 @@ paths:
   stretch: none 
   opacity: 1
 
-alignment: center
-stretch: uniform
-opacity: 0.5
+interval: 30
+profile: default
 ```
