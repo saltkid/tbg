@@ -38,7 +38,7 @@ opacity: 0.1
 #                  uses default opacity (see "opacity" field) if not specified
 #
 #   profile: profile profile in Windows Terminal
-#      valid values: default, list-0, list-1, ..., list-n
+#      valid values: default, 0, 1, ..., n
 #      https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general
 #
 #   interval: time in minutes between each image change
@@ -59,10 +59,10 @@ opacity: 0.1
 ## Fields
 Although you can edit the fields in the config directly, it is recommended to use the [`config` command](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) to edit them.
 1. **profile**
-    - *args*: `default`, `list-0`, `list-1`, ...
+    - *args*: `default`, `0`, `1`, ...
     - target profile in *Windows Terminal*.
     - To change background images in user created profiles, set `profile` to
-    `list-<n>` where n is the index used by *Windows Terminal* to identify the
+    `<n>` where n is the index used by *Windows Terminal* to identify the
     profile.
     - See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general)
     for more information

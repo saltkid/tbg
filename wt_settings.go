@@ -116,8 +116,7 @@ func writeToListProfile(
 	if err != nil {
 		return fmt.Errorf(`Failed to unmarshal field "list" from field "profiles" in settings.json: %s`, err)
 	}
-	_, num, _ := strings.Cut(profile, "-")
-	profileNum, _ := strconv.Atoi(num)
+	profileNum, _ := strconv.Atoi(profile)
 	profileList[profileNum-1]["backgroundImage"] = json.RawMessage([]byte(image))
 	profileList[profileNum-1]["backgroundImageAlignment"] = json.RawMessage([]byte(alignment))
 	profileList[profileNum-1]["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))

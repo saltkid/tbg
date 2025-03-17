@@ -151,8 +151,8 @@ func RunHelp(verbose bool) {
   3. -s, --stretch   [arg]
          [fill, none, uniform, uniformToFill]
   4. -p, --profile   [arg]
-         [default, list-n]
-         where n is the list index Windows Terminal uses to identify the profile
+         [default, n]
+         where n is the list index Windows Terminal uses to identify the profile (starting from 1)
   5. -i, --interval  [arg]
          [any positive integer]
          note that this is in minutes
@@ -173,14 +173,14 @@ func RunHelp(verbose bool) {
   1. tbg run
      This will use .tbg.yml's values to edit Windows Terminal's settings.json
 
-  2. tbg run --profile list-2 --interval 5 --alignment center
+  2. tbg run --profile 2 --interval 5 --alignment center
       used_config                      values used to edit settings.json
       --------------------------       --------------------------------
       | paths:                         | paths:
       |   - path: /path/to/images/dir1 |   - path: /path/to/images/dir1
       |   - path: /path/to/images/dir2 |   - path: /path/to/images/dir2
       |                                |
-      | profile: default               | profile: list-2
+      | profile: default               | profile: 2
       | interval: 30                   | interval: 5
       |                                |
       | alignment: right               | alignment: center
@@ -363,8 +363,8 @@ func ConfigHelp(verbose bool) {
   3. -s, --stretch   [arg]
          [fill, none, uniform, uniformToFill]
   4. -p, --profile   [arg]
-         [default, list-n]
-         where n is the list index Windows Terminal uses to identify the profile.
+         [default, n]
+         where n is the list index Windows Terminal uses to identify the profile (starting from 1)
   5. -i, --interval  [arg]
          [any positive integer]
          note that this is in minutes.
@@ -452,17 +452,17 @@ func ProfileHelp(verbose bool) {
   1. default
      Sets the default profile as the profile to be used
      by the parent command
-  2. list-n
-     where n is the list index Windows Terminal uses to identify the profile
+  2. n
+     where n is the list index Windows Terminal uses to identify the profile (starting from 1)
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run --profile default
      whatever value the "profile" field in .tbg.yml will
      be ignored and tbg will edit the default Windows Terminal profile instead
 
-  2. tbg edit --profile list-2 config /path/to/a/config.yaml
+  2. tbg edit --profile 2 config /path/to/a/config.yaml
      this will change the "profile" field on the config /path/to/a/config.yaml
-     to "list-2"
+     to 2
 `)
 	}
 }

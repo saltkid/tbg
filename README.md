@@ -72,7 +72,7 @@ Terminal* uses.
 Although you can edit the fields in the config directly, it is recommended to
 use the [`config`](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) command to edit them.
 1. **profile**
-    - *args*: `default`, `list-0`, `list-1`, ...
+    - *args*: `default`, `0`, `1`, ...
     - target profile in *Windows Terminal*.
 2. **interval**
     - *args*: any positive integer 

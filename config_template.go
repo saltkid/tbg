@@ -67,7 +67,7 @@ opacity: 1.0
 #                  uses default opacity (see "opacity" field) if not specified
 #
 #   profile: profile profile in Windows Terminal
-#      valid values: default, list-0, list-1, ..., list-n
+#      valid values: default, 0, 1, ..., n
 #      https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general
 #
 #   interval: time in minutes between each image change

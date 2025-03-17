@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"strings"
 )
 
 func ValidateProfile(val *string) (*string, error) {
@@ -13,16 +12,9 @@ func ValidateProfile(val *string) (*string, error) {
 	if *val == "default" {
 		return val, nil
 	}
-	list, num, isList := strings.Cut(*val, "-")
-	if list != "list" {
-		return nil, fmt.Errorf("invalid arg '%s' for --profile: must be 'list' followed by a dash then number", *val)
-	}
-	if !isList {
-		return nil, fmt.Errorf("invalid arg '%s' for --profile: list and number must be separated by '-'", *val)
-	}
-	_, err := strconv.Atoi(num)
+	_, err := strconv.Atoi(*val)
 	if err != nil {
-		return nil, fmt.Errorf("invalid arg '%s' for --profile: %s", *val, err.Error())
+		return nil, fmt.Errorf("invalid arg '%s' for --profile: must be a number. %s", *val, err.Error())
 	}
 	return val, nil
 }

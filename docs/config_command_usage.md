@@ -16,7 +16,7 @@ based on flags passed to it.
 
 # Valid Flags
 1. `--profile [arg]`
-    - args: `default`, `list-1`, `list-2`, ..., `list-<n>`
+    - args: `default`, `1`, `2`, ..., `<n>`
     - edits: `profile`
 2. `--interval [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
@@ -80,7 +80,7 @@ tbg config --alignment topRight
 ```
 You can do this with the other four fields as well
 ```bash
-tbg config --profile list-1 --interval 5 --stretch fill --opacity 0.35
+tbg config --profile 1 --interval 5 --stretch fill --opacity 0.35
 ```
 ```bash
 ------------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ tbg config --profile list-1 --interval 5 --stretch fill --opacity 0.35
 |   stretch: fill
 |   opacity: 0.250000
 |
-| profile:               list-1   # used to be default
+| profile:               1        # used to be default
 | interval:              5        # used to be 30
 | alignment:             topRight
 | stretch:               fill     # used to be uniform

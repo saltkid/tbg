@@ -129,7 +129,7 @@ Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
 Instead of `tbg run`, let's do:
 ```bash
-tbg run --profile list-1 --interval 5
+tbg run --profile 1 --interval 5
 ```
 ```yml
 paths:
