@@ -51,13 +51,6 @@ func ValidateProfile(val *string) (*string, error) {
 	if val == nil {
 		return nil, fmt.Errorf("--profile must have an argument. got none")
 	}
-	if *val == "default" {
-		return val, nil
-	}
-	_, err := strconv.Atoi(*val)
-	if err != nil {
-		return nil, fmt.Errorf("invalid arg '%s' for --profile: must be a number. %s", *val, err.Error())
-	}
 	return val, nil
 }
 
