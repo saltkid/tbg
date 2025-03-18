@@ -75,12 +75,15 @@ func (tbg *TbgState) Start() error {
 	if err != nil {
 		return err
 	}
-	tbg.Settings.Write(currentImage,
+	err = tbg.Settings.Write(currentImage,
 		tbg.Config.Profile,
 		tbg.CurrentPathAlignment,
 		tbg.CurrentPathStretch,
 		tbg.CurrentPathOpacity,
 	)
+	if err != nil {
+		return err
+	}
 	tbg.Config.Log(tbg.ConfigPath).RunSettings(
 		currentImage,
 		tbg.Config.Profile,
@@ -172,12 +175,15 @@ func (tbg *TbgState) Wait() error {
 			if err != nil {
 				return err
 			}
-			tbg.Settings.Write(currentImage,
+			err = tbg.Settings.Write(currentImage,
 				tbg.Config.Profile,
 				tbg.CurrentPathAlignment,
 				tbg.CurrentPathStretch,
 				tbg.CurrentPathOpacity,
 			)
+			if err != nil {
+				return err
+			}
 			tbg.Config.Log(tbg.ConfigPath).RunSettings(
 				currentImage,
 				tbg.Config.Profile,

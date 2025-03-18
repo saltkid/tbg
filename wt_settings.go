@@ -2,11 +2,14 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
+
+	lev "github.com/agnivade/levenshtein"
 )
 
 type WTSettings struct {
@@ -111,12 +114,86 @@ func writeToListProfile(
 	stretch string,
 	opacity float32,
 ) error {
+	profileNum, err := strconv.Atoi(profile)
+	if err != nil {
+		return writeToListProfileByName(profiles, profile, image, alignment, stretch, opacity)
+	} else {
+		return writeToListProfileByNumber(profiles, uint16(profileNum), image, alignment, stretch, opacity)
+	}
+}
+
+func writeToListProfileByName(
+	profiles map[string]json.RawMessage,
+	profileName string,
+	image string,
+	alignment string,
+	stretch string,
+	opacity float32,
+) error {
 	var profileList []map[string]json.RawMessage
 	err := json.Unmarshal(profiles["list"], &profileList)
 	if err != nil {
 		return fmt.Errorf(`Failed to unmarshal field "list" from field "profiles" in settings.json: %s`, err)
 	}
-	profileNum, _ := strconv.Atoi(profile)
+	// TODO: handle profiles with the same name; e.g. multiple "Arch"
+	closestNameIndices := make([]uint8, 0)
+	for i, profile := range profileList {
+		wtProfileName := strings.ToLower(string(profile["name"]))
+		// json strings are enclosed in `"` so I enclosed the user arg
+		distance := lev.ComputeDistance(fmt.Sprintf(`"%s"`, strings.ToLower(profileName)), wtProfileName)
+		if distance == 0 {
+			profileList[i]["backgroundImage"] = json.RawMessage([]byte(image))
+			profileList[i]["backgroundImageAlignment"] = json.RawMessage([]byte(alignment))
+			profileList[i]["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
+			profileList[i]["backgroundImageOpacity"] = json.RawMessage([]byte(strconv.FormatFloat(float64(opacity), 'f', -1, 32)))
+			profiles["list"], err = json.Marshal(profileList)
+			if err != nil {
+				return fmt.Errorf(`Failed to marshal field "list" to field "profiles" in settings.json: %s`, err)
+			}
+			return nil
+		} else if distance < 3 {
+			closestNameIndices = append(closestNameIndices, uint8(i))
+		}
+	}
+	switch len(closestNameIndices) {
+	case 0:
+		fmt.Printf("Failed to find profile with name equal or similar to \"%s\".\n", profileName)
+		fmt.Println("Here is the list of available WT profiles with their respective")
+		fmt.Println("profile number incase there are multiple with the same name:")
+		var ret strings.Builder
+		for i, profile := range profileList {
+			ret.WriteString(fmt.Sprintf("%d) %s\n", i+1, profile["name"]))
+		}
+		return errors.New(ret.String())
+	case 1:
+		similarNameIndex := closestNameIndices[0]
+		similarProfileName := string(profileList[similarNameIndex]["name"])
+		fmt.Printf("There is no profile \"%s\"\n", profileName)
+		return fmt.Errorf("Did you mean %s (profile #%d)?", similarProfileName, similarNameIndex)
+	default:
+		fmt.Printf("There is no profile \"%s\"\n", profileName)
+		fmt.Println("Did you mean any of the following?")
+		var ret strings.Builder
+		for _, index := range closestNameIndices {
+			ret.WriteString(fmt.Sprintf("%d) %s ", index+1, profileList[index]["name"]))
+		}
+		return errors.New(ret.String())
+	}
+}
+
+func writeToListProfileByNumber(
+	profiles map[string]json.RawMessage,
+	profileNum uint16,
+	image string,
+	alignment string,
+	stretch string,
+	opacity float32,
+) error {
+	var profileList []map[string]json.RawMessage
+	err := json.Unmarshal(profiles["list"], &profileList)
+	if err != nil {
+		return fmt.Errorf(`Failed to unmarshal field "list" from field "profiles" in settings.json: %s`, err)
+	}
 	profileList[profileNum-1]["backgroundImage"] = json.RawMessage([]byte(image))
 	profileList[profileNum-1]["backgroundImageAlignment"] = json.RawMessage([]byte(alignment))
 	profileList[profileNum-1]["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
