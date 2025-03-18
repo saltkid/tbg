@@ -51,6 +51,10 @@ func ValidateProfile(val *string) (*string, error) {
 	if val == nil {
 		return nil, fmt.Errorf("--profile must have an argument. got none")
 	}
+	valNum, err := strconv.Atoi(*val)
+	if err == nil && valNum < 1 {
+		return nil, fmt.Errorf("invalid arg '%d' for --profile: profile indices start at 1. %s", valNum, err.Error())
+	}
 	return val, nil
 }
 

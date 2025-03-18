@@ -194,6 +194,14 @@ func writeToListProfileByNumber(
 	if err != nil {
 		return fmt.Errorf(`Failed to unmarshal field "list" from field "profiles" in settings.json: %s`, err)
 	}
+	if int(profileNum) > len(profileList) {
+		fmt.Printf("Profile number \"%d\" does not exist. Only %d profiles exist:\n", profileNum, len(profileList))
+		var ret strings.Builder
+		for i, profile := range profileList {
+			ret.WriteString(fmt.Sprintf("%d) %s\n", i+1, profile["name"]))
+		}
+		return errors.New(ret.String())
+	}
 	profileList[profileNum-1]["backgroundImage"] = json.RawMessage([]byte(image))
 	profileList[profileNum-1]["backgroundImageAlignment"] = json.RawMessage([]byte(alignment))
 	profileList[profileNum-1]["backgroundImageStretchMode"] = json.RawMessage([]byte(stretch))
