@@ -93,7 +93,8 @@ For a more detailed explanation on each command, follow the command name links
 
 1. [run](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md) 
     - *args*: none 
-    - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`, `-r, --random`
+    - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`,
+    `-o, --opacity`, `-s, --stretch`, `-r, --random`
     - edit `settings.json` used by *Windows Terminal* using settings from
     `.tbg.yml`. If any of the flags are specified, it will use those values in
     editing `settings.json` instead of what's specified in the `.tbg.yml`

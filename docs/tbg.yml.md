@@ -38,8 +38,10 @@ interval: 30
 #                  valid values: fill, none, uniform, uniformToFill
 #                  https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode 
 #
-#   profile: profile profile in Windows Terminal
-#      valid values: default, 0, 1, ..., n
+#   profile: profile in Windows Terminal. can be "default" profile to select the
+#            defaults field in wt settings, numbers greater than 0 to select a
+#            specific profile by index, or can be any string to select a profile by name
+#      valid values: default, 1, 2, ..., n, any string
 #      https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general
 #
 #   interval: time in minutes between each image change
@@ -48,11 +50,13 @@ interval: 30
 ## Fields
 Although you can edit the fields in the config directly, it is recommended to use the [`config` command](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) to edit them.
 1. **profile**
-    - *args*: `default`, `0`, `1`, ...
+    - *args*: `default`, `1`, `2`, ..., `n`, any string
     - target profile in *Windows Terminal*.
     - To change background images in user created profiles, set `profile` to
-    `<n>` where n is the index used by *Windows Terminal* to identify the
-    profile.
+    the name of a profile
+    - Profiles can also be selected through profile number by setting `profile`
+    to `<n>` where n is the index used by *Windows Terminal* to identify the
+    profile. This is most useful when multiple profiles share the same name.
     - See [Microsoft's documentation](https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-general)
     for more information
 2. **interval**

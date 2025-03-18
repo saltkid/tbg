@@ -16,7 +16,7 @@ based on flags passed to it.
 
 # Valid Flags
 1. `--profile [arg]`
-    - args: `default`, `1`, `2`, ..., `<n>`
+    - args: `default`, `1`, `2`, ..., `<n>`, any string
     - edits: `profile`
 2. `--interval [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
@@ -47,7 +47,7 @@ Output on console should look something like this
 #### Editing fields of config
 To edit fields of config, specify any fields you want to edit with flags like this this:
 ```bash
-tbg config --profile 1
+tbg config --profile pwsh
 ```
 ```bash
 ------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ tbg config --profile 1
 |   stretch: fill
 |   opacity: 0.250000
 |
-| profile:               1 # used to be default
+| profile:               pwsh # used to be default
 | interval:              30
 ------------------------------------------------------------------------------------
 ```
