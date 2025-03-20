@@ -89,9 +89,9 @@ command to edit the file.
     Terminal
     - *args*:
         - `[]`
-        - `- path: //path/to/dir1` 
+        - `- path: /path/to/dir1` 
         - ```yaml
-            - path: //path/to/dir2
+            - path: /path/to/dir2
               alignment: center # optional
               stretch: uniform  # optional
               opacity: 1.0      # optional
