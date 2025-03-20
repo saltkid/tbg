@@ -16,7 +16,7 @@ based on flags passed to it.
 
 # Valid Flags
 1. `--profile [arg]`
-    - args: `default`, `1`, `2`, ..., `<n>`, any string
+    - args: `default`, `1`, `2`, ..., `<n>`, `"profile name"`
     - edits: `profile`
 2. `--interval [arg]`
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`

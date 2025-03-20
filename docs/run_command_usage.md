@@ -1,8 +1,6 @@
 # Table of Contents
 - [Overview](#tbg-run)
 - [Key events](#key-events)
-    - [Order Behavior](#ordering-behavior)
-    - [Order Behavior Using `--random` flag](#ordering-behavior-using-random-flag)
 - [Executing with flags](#executing-with-flags)
 - [Usage](#usage)
     - [Normal Execution, key events, and path specific options](#normal-execution)
@@ -14,8 +12,9 @@
 
 `run` command edits the `settings.json` used by *Windows Terminal* using
 settings from `.tbg.yml`. **tbg** will keep running, editing the
-`settings.json` of *Windows Terminal*, replacing the background image. You can
-quit by pressing `q` or `ctrl+c`
+`settings.json` of *Windows Terminal*, replacing the background image. The 
+background image is chosen randomly from the images under each path specified
+in `.tbg.yml`. Pressing `q` or `ctrl+c` will stop execution.
 
 On initial execution of **tbg**, it will create a `.tbg.yml` in the same
 directory as the **tbg** executable if it does not exist already. **There can
@@ -27,47 +26,13 @@ only be one `.tbg.yml`**. For more information, see documentation on
 - `q`: quits
 - `c`: shows the available commands
 - `n`: goes to next image
-- `p`: goes to previous image
-- `N`: goes to next images path
-- `P`: goes to previous images path
-- `r`: randomizes the images in the current images path starting from the
-current image
-    - this does not affect the order of the previous images so you can go to
-    the same previous image/s
-- `R`: randomizes the images in the current images path starting from the
-current collection
-    - this does not affect the order of the previous collections
-
-**tbg** will continue running until you press `q` or `ctrl+c`.
-This means even if all images are exhausted, **tbg** will wrap back around.
-For an example, see [usage with key events](#normal-execution)
-
-## Ordering Behavior
-The order of paths **and** the images in that path are randomized on
-initialize. However, you'd still have to consume all the images in a path
-before going to the next one. When you consumed all paths and wrap around to
-the first path again, the paths will be re-randomized. Even the images: from
-`path A`, when you go to next `path B`, then go to previous `path A`, the order
-of images in `path A` will be different from the first time you went to it,
-since images are also re-randomized every time you enter an images path.
-
-## Ordering Behavior using `--random` flag
-The `--random` flag will ensure that whenever you go to the next image, it
-always will pick a random images path, then a random image from there. This
-means going to the next image `[n]` is the only valid command by the user. You
-cannot go to the next path `[N]`, previous image `[p]`, previous path `[P]`,
-randomize images `[r]`, or randomize paths `[R]`. More info about flags in the
-next section
 
 # Executing with flags
-#### Valid Flags: `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch`, `--random`
+#### Valid Flags: `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch`
 
-`--`flags can be used to override these fields in the config:
-`profile`, `interval`, `alignment`, `stretch`, `opacity`.
-
-The flags that override default options fields will override the options set
-per path as well. So if there is a `path/to/dir | center fill 0.1`, **tbg**
-will use the flags instead of that or the default options fields.
+The flags specified will override any per path options specified. So if there is
+a `path/to/dir` with the alignment `center`, **tbg** will use whatever value
+the `--alignment` flags has instead of that
 
 The order of importance is:
 1. flags (`--alignment`, `--opacity`, `--stretch`)
@@ -87,8 +52,8 @@ tbg run
 Let's say that this is the config:
 ```yml
 paths:
-- path: path/to/dir1
-- path: path/to/dir2
+- path: /path/to/dir1
+- path: /path/to/dir2
   alignment: right
   stretch: fill
   opacity: 0.35
@@ -98,24 +63,7 @@ interval: 30
 ```
 This just means that when we do `tbg run`, we want to change the background
 image of the **default** *Windows Terminal* profile every **30 minutes**. The
-first few images will be from `path/to/dir1`. The image will be at the
-**center**, with the stretch **uniform** to fill the screen while keeping
-aspect ratio, with an opacity of **100%**. 
-
-When I press `n`, it goes to the next image without waiting for 30 minutes. I
-can go back by pressing `p`.
-
-When I press `N`, it goes to the next image collection dir. This means we are
-now in `path/to/dir2`. This path has flags specific to it so these values will
-be used instead of the defaults. This means instead of the image being at the
-**center**, it will be at the **right**. - Instead of having an opacity of
-**10%**, it the images will have **35%** opacity. The image will **fill** the
-screen, without regard for aspect ratio.
-
-When I press `P`, it goes back to the previous image collection dir
-(`path/to/dir1`). If i press `P` again, it will wrap around and go to the last
-image collection dir (`path/to/dir2`). This wrap around behavior also applies
-to `N`.
+image is chosen randomly from images under `/path/to/dir1` and `/path/to/dir2`.
 
 Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
@@ -162,10 +110,10 @@ tbg run --alignment right --opacity 0.35 --stretch none
 ```
 
 The `--alignment`, `--opacity`, and `--stretch` flags will override the values
-in `.tbg.yml`. This means instead of `path/to/dir1`'s images being centered,
-filling entire screen while keeping aspect ratio at 100% opacity, the images
-will be on the right, with no scaling, at 35% opacity.
+in `.tbg.yml`. This means instead of `path/to/dir1`'s images having the default
+alignment `center`, default stretch `uniform`, and default opacity `1.0`, the
+images instead use the values specified by the flags (`right`, `none`, `0.35`)
 
 Notice that `path/to/dir2` has options that should override the default options
 fields. However, since we specified `--alignment right --opacity 0.35 --stretch
-none`, tbg will use these value instead, like what we did with `path/to/dir1`.
+none`, tbg will use these value instead, just like with `path/to/dir1`.
