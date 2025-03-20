@@ -104,7 +104,7 @@ func (cmd *RunCommand) Execute() error {
 		return err
 	}
 	alignment, stretch, opacity := config.determineExecutionFlags(cmd)
-	backgroundState, err := NewBackgroundState(config, configPath, alignment, stretch, opacity)
+	backgroundState, err := NewTbgState(config, configPath, alignment, stretch, opacity)
 	if err != nil {
 		return err
 	}
