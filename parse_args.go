@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 type Token struct {
@@ -16,42 +17,50 @@ func TokenizeArgs(args []string) ([]Token, error) {
 	for i, arg := range args {
 		tokenIsEmpty := tmpTok.id == 0
 		if tokenIsEmpty {
-			if tmpCmd, err := ToCommand(arg); err == nil {
+			if strings.HasPrefix(arg, "-") {
+				if tmpFlag, err := ToFlag(arg); err != nil {
+					return nil, err
+				} else {
+					tmpTok = Token{
+						id:     uint8(tmpFlag.Type),
+						isFlag: true,
+					}
+				}
+			} else if tmpCmd, err := ToCommand(arg); err != nil {
+				// is neither
+				return nil, err
+			} else {
 				tmpTok = Token{
 					id:     uint8(tmpCmd.Type()),
 					isFlag: false,
 				}
-			} else if tmpFlag, err := ToFlag(arg); err == nil {
-				tmpTok = Token{
-					id:     uint8(tmpFlag.Type),
-					isFlag: true,
-				}
-			} else {
-				// is neither
-				return nil, fmt.Errorf("'%s' is not a valid command or flag", arg)
 			}
 		} else {
 			// there already is a command/flag
 			// find a value for it
-			if tmpCmd, err := ToCommand(arg); err == nil {
+			if strings.HasPrefix(arg, "-") {
+				if tmpFlag, err := ToFlag(arg); err != nil {
+					return nil, err
+				} else {
+					// encountered flag instead of value
+					tokens = append(tokens, tmpTok)
+					tmpTok = Token{
+						id:     uint8(tmpFlag.Type),
+						isFlag: true,
+					}
+				}
+			} else if tmpCmd, err := ToCommand(arg); err != nil {
+				// is value
+				tmpTok.value = &arg
+				tokens = append(tokens, tmpTok)
+				tmpTok = Token{}
+			} else {
 				// encountered command instead of value
 				tokens = append(tokens, tmpTok)
 				tmpTok = Token{
 					id:     uint8(tmpCmd.Type()),
 					isFlag: false,
 				}
-			} else if tmpFlag, err := ToFlag(arg); err == nil {
-				// encountered flag instead of value
-				tokens = append(tokens, tmpTok)
-				tmpTok = Token{
-					id:     uint8(tmpFlag.Type),
-					isFlag: true,
-				}
-			} else {
-				// is value
-				tmpTok.value = &arg
-				tokens = append(tokens, tmpTok)
-				tmpTok = Token{}
 			}
 		}
 		lastItem := i == len(args)-1
@@ -74,7 +83,7 @@ func ParseArgs(tokens []Token) (Command, error) {
 			if tok.isFlag {
 				return nil, fmt.Errorf("Must start with a valid command. got flag: '%s'", FlagType(tok.id))
 			} else {
-				mainCommand, _ = CommandType(tok.id).ToCommand()
+				mainCommand = CommandType(tok.id).ToCommand()
 				if err := mainCommand.ValidateValue(tok.value); err != nil {
 					return nil, err
 				}
@@ -89,7 +98,7 @@ func ParseArgs(tokens []Token) (Command, error) {
 					return nil, err
 				}
 			} else {
-				subCmd, _ := CommandType(tok.id).ToCommand()
+				subCmd := CommandType(tok.id).ToCommand()
 				if err := mainCommand.ValidateSubCommand(subCmd); err != nil {
 					return nil, err
 				}

@@ -70,21 +70,24 @@ func (c CommandType) String() string {
 }
 
 // converts a command type to a command struct
-func (c CommandType) ToCommand() (Command, error) {
+//
+// This is guaranteed to not return nil if the token's CommandType come from
+// TokenizeArgs
+func (c CommandType) ToCommand() Command {
 	switch c {
 	case RunCommandType:
-		return new(RunCommand), nil
+		return new(RunCommand)
 	case ConfigCommandType:
-		return new(ConfigCommand), nil
+		return new(ConfigCommand)
 	case AddCommandType:
-		return new(AddCommand), nil
+		return new(AddCommand)
 	case RemoveCommandType:
-		return new(RemoveCommand), nil
+		return new(RemoveCommand)
 	case HelpCommandType:
-		return new(HelpCommand), nil
+		return new(HelpCommand)
 	case VersionCommandType:
-		return new(VersionCommand), nil
+		return new(VersionCommand)
 	default: // case: NoCommandType
-		return nil, fmt.Errorf("Cannot convert CommandType NoCommandType to a Command!")
+		return nil
 	}
 }
