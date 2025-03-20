@@ -12,7 +12,6 @@ const (
 	IntervalFlag
 	OpacityFlag
 	ProfileFlag
-	RandomFlag
 	StretchFlag
 )
 
@@ -28,8 +27,6 @@ func (f FlagType) String() string {
 		return "--opacity"
 	case ProfileFlag:
 		return "--profile"
-	case RandomFlag:
-		return "--random"
 	case StretchFlag:
 		return "--stretch"
 	default:
@@ -52,8 +49,6 @@ func ToFlag(s string) (*Flag, error) {
 		return &Flag{Type: OpacityFlag}, nil
 	case "--profile", "-p":
 		return &Flag{Type: ProfileFlag}, nil
-	case "--random", "-r":
-		return &Flag{Type: RandomFlag}, nil
 	case "--stretch", "-s":
 		return &Flag{Type: StretchFlag}, nil
 	default:

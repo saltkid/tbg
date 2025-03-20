@@ -17,7 +17,6 @@ type TbgState struct {
 	CurrentPathAlignment string
 	CurrentPathStretch   string
 	CurrentPathOpacity   float32
-	Random               bool
 	Events               *TbgEvents
 	Settings             *WTSettings
 }
@@ -41,7 +40,7 @@ type TbgEvents struct {
 	Error        chan error
 }
 
-func NewBackgroundState(config *Config, configPath string, alignment string, stretch string, opacity float32, randomFlag bool) (*TbgState, error) {
+func NewBackgroundState(config *Config, configPath string, alignment string, stretch string, opacity float32) (*TbgState, error) {
 	wtSettings, err := NewWTSettings()
 	if err != nil {
 		return nil, err
@@ -56,7 +55,6 @@ func NewBackgroundState(config *Config, configPath string, alignment string, str
 		CurrentPathAlignment: alignment,
 		CurrentPathStretch:   stretch,
 		CurrentPathOpacity:   opacity,
-		Random:               randomFlag,
 		Events: &TbgEvents{
 			Done:         make(chan struct{}),
 			ImageChanged: make(chan struct{}),
@@ -130,23 +128,13 @@ func (tbg *TbgState) readUserInput() {
 		}
 		switch keyboard.Key(event.Rune) {
 		case keyboard.Key('c'):
-			commandList(tbg.Random)
+			commandList()
 		case keyboard.Key('n'):
 			tbg.NextImage()
-		case keyboard.Key('N'):
-			invalidKeyForRandom(tbg.NextPath, event.Rune, tbg.Random)
-		case keyboard.Key('p'):
-			invalidKeyForRandom(tbg.PreviousImage, event.Rune, tbg.Random)
-		case keyboard.Key('P'):
-			invalidKeyForRandom(tbg.PreviousPath, event.Rune, tbg.Random)
 		case keyboard.Key('q'):
 			fmt.Println("Exiting...")
 			close(tbg.Events.Done)
 			return
-		case keyboard.Key('r'):
-			invalidKeyForRandom(tbg.RandomizeImages, event.Rune, tbg.Random)
-		case keyboard.Key('R'):
-			invalidKeyForRandom(tbg.RandomizePaths, event.Rune, tbg.Random)
 		case keyboard.Key('d'):
 			fmt.Println(tbg)
 		default:
@@ -197,14 +185,12 @@ func (tbg *TbgState) Wait() error {
 }
 
 func (tbg *TbgState) CurrentImage() (string, error) {
-	if tbg.Random {
-		tbg.PathIndex = uint16(rand.IntN(len(tbg.Config.Paths)))
-		err := tbg.UpdateCurrentPathState()
-		if err != nil {
-			return "", err
-		}
-		tbg.ImageIndex = uint16(rand.IntN(len(tbg.Images)))
+	tbg.PathIndex = uint16(rand.IntN(len(tbg.Config.Paths)))
+	err := tbg.UpdateCurrentPathState()
+	if err != nil {
+		return "", err
 	}
+	tbg.ImageIndex = uint16(rand.IntN(len(tbg.Images)))
 	return tbg.Images[tbg.ImageIndex], nil
 }
 
@@ -236,14 +222,6 @@ func (tbg *TbgState) PreviousImage() {
 		tbg.ImageIndex--
 		tbg.Events.ImageChanged <- struct{}{}
 	}
-}
-
-// emits TbgState.Events.ImageChanged
-func (tbg *TbgState) RandomizeImages() {
-	fmt.Println("randomizing from current image up to last image...")
-	fmt.Println("(previous images will not be randomized so you can go back)")
-	ShuffleFrom(int(tbg.ImageIndex), tbg.Images)
-	tbg.Events.ImageChanged <- struct{}{}
 }
 
 // emits TbgState.Events.ImageChanged
@@ -286,57 +264,10 @@ func (tbg *TbgState) PreviousPath() {
 	tbg.Events.ImageChanged <- struct{}{}
 }
 
-// emits TbgState.Events.ImageChanged
-//
-// may emit TbgState.Events.Error
-func (tbg *TbgState) RandomizePaths() {
-	fmt.Println("randomizing from current path up to last path...")
-	fmt.Println("(previous paths will not be randomized so you can go back)")
-	ShuffleFrom(int(tbg.PathIndex), tbg.Config.Paths)
-	err := tbg.UpdateCurrentPathState()
-	if err != nil {
-		tbg.Events.Error <- err
-	}
-	tbg.Events.ImageChanged <- struct{}{}
-}
-
-func commandList(isRandom bool) {
+func commandList() {
 	fmt.Print(`
 q: [q]uit
 n: [n]ext image
-`, invalidCommandForRandom("p: [p]revious image", isRandom), `
-`, invalidCommandForRandom("N: [N]ext dir", isRandom), `
-`, invalidCommandForRandom("P: [P]revious dir", isRandom), `
-`, invalidCommandForRandom("r: [r]andomize images (current to last; previous unaffected)", isRandom), `
-`, invalidCommandForRandom("R: [R]andomize dirs (current to last; previous unaffected)", isRandom), `
 c: [c]ommand list
 `)
-}
-
-//// TBG HELPER FUNCTIONS
-
-// Helper function that calls the passed in function if isRandom is false.
-// Otherwise prints out an invalid key error message
-//
-// use this to assert that a keypress is invalid for tbg in a random state
-func invalidKeyForRandom(fn func(), r rune, isRandom bool) {
-	if isRandom {
-		fmt.Printf("invalid key '%c' ('c' for list of [c]ommand)\n", r)
-	} else {
-		fn()
-	}
-}
-
-// Helper function that returns the passed in string if isRandom is false.
-// Otherwise moves the cursor back up
-//
-// use this to assert that a help message is invalid for tbg in a random state
-func invalidCommandForRandom(msg string, isRandom bool) string {
-	cursorUp := "\033[F"
-	if isRandom {
-		return cursorUp
-	} else {
-		return msg
-	}
-
 }

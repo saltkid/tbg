@@ -85,7 +85,6 @@ func (cmd *HelpCommand) Execute() error {
 		AlignmentHelp(false)
 		StretchHelp(false)
 		OpacityHelp(false)
-		RandomHelp(false)
 		fmt.Printf("\n%s\n",
 			Decorate("Not all flags are applicable to all commands. See help <command> for more info").Italic(),
 		)
@@ -121,8 +120,6 @@ func (cmd *HelpCommand) Execute() error {
 			OpacityHelp(true)
 		case ProfileFlag:
 			ProfileHelp(true)
-		case RandomFlag:
-			RandomHelp(true)
 		case StretchFlag:
 			StretchHelp(true)
 		}
@@ -156,8 +153,6 @@ func RunHelp(verbose bool) {
   5. -i, --interval  [arg]
          [any positive integer]
          note that this is in minutes
-  6. -r, --random
-         randomize shown image paths and images
 
   `, Decorate("Key Events").Bold(), `:
   while tbg is running, it accepts optional key events.
@@ -528,23 +523,6 @@ func OpacityHelp(verbose bool) {
 
   2. tbg config --opacity 0.5
      this will change the "opacity" field on the config to "0.5"
-`)
-	}
-}
-
-func RandomHelp(verbose bool) {
-	fmt.Printf("%-33s%s",
-		Decorate("  -r, --random").Bold(),
-		"Randomize image collections and images. Specific to `run` command\n",
-	)
-	if verbose {
-		fmt.Print(`
-  `, Decorate("Args").Bold(), `: --random does not take args
-
-  `, Decorate("Examples").Bold(), `:
-  1. tbg run --random
-     tbg will choose a random image from a random image collection dir every
-     time.
 `)
 	}
 }

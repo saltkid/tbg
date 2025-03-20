@@ -53,22 +53,9 @@ func ValidateProfile(val *string) (*string, error) {
 	}
 	valNum, err := strconv.Atoi(*val)
 	if err == nil && valNum < 1 {
-		return nil, fmt.Errorf("invalid arg '%d' for --profile: profile indices start at 1. %s", valNum, err.Error())
+		return nil, fmt.Errorf("invalid arg '%d' for --profile: profile indices start at 1.", valNum)
 	}
 	return val, nil
-}
-
-func ValidateRandom(val *string) (*bool, error) {
-	ret := true
-	if val == nil {
-		return &ret, nil
-	}
-	switch *val {
-	case "":
-		return &ret, nil
-	default:
-		return nil, fmt.Errorf("'--random' flag does not take any arguments. got '%s'", *val)
-	}
 }
 
 func ValidateStretch(val *string) (*string, error) {

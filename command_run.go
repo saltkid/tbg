@@ -11,7 +11,6 @@ type RunCommand struct {
 	Alignment *string
 	Stretch   *string
 	Opacity   *float32
-	Random    *bool
 }
 
 func (cmd *RunCommand) Type() CommandType { return RunCommandType }
@@ -30,9 +29,6 @@ func (cmd *RunCommand) Debug() {
 	}
 	if cmd.Profile != nil {
 		fmt.Println(" ", ProfileFlag, *cmd.Profile)
-	}
-	if cmd.Random != nil {
-		fmt.Println(" ", RandomFlag, *cmd.Random)
 	}
 	if cmd.Stretch != nil {
 		fmt.Println(" ", StretchFlag, *cmd.Stretch)
@@ -72,12 +68,6 @@ func (cmd *RunCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Profile = val
-	case RandomFlag:
-		val, err := ValidateRandom(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Random = val
 	case StretchFlag:
 		val, err := ValidateStretch(f.Value)
 		if err != nil {
@@ -113,19 +103,18 @@ func (cmd *RunCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	alignment, stretch, opacity, randomFlag := config.determineExecutionFlags(cmd)
-	backgroundState, err := NewBackgroundState(config, configPath, alignment, stretch, opacity, randomFlag)
+	alignment, stretch, opacity := config.determineExecutionFlags(cmd)
+	backgroundState, err := NewBackgroundState(config, configPath, alignment, stretch, opacity)
 	if err != nil {
 		return err
 	}
 	return backgroundState.Start()
 }
 
-func (config *Config) determineExecutionFlags(cmd *RunCommand) (string, string, float32, bool) {
+func (config *Config) determineExecutionFlags(cmd *RunCommand) (string, string, float32) {
 	config.Profile = Option(cmd.Profile).UnwrapOr(config.Profile)
 	config.Interval = Option(cmd.Interval).UnwrapOr(config.Interval)
 	return Option(cmd.Alignment).UnwrapOr(DefaultAlignment),
 		Option(cmd.Stretch).UnwrapOr(DefaultStretch),
-		Option(cmd.Opacity).UnwrapOr(DefaultOpacity),
-		Option(cmd.Random).UnwrapOr(false)
+		Option(cmd.Opacity).UnwrapOr(DefaultOpacity)
 }
