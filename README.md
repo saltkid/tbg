@@ -55,7 +55,7 @@ image every 30 minutes, choosing an random image from the specified `paths` in
 `.tbg.yml`. The default image properties are:
 1. alignment: `center`
 2. opacity: `1.0`
-3. stretch: `uniform`
+3. stretch: `uniformToFill`
 
 On initial execution of **tbg**, it will create a [default config](#config)
 (`.tbg.yml`) in the same directory as the executable. You can edit this
@@ -92,9 +92,9 @@ command to edit the file.
         - `- path: /path/to/dir1` 
         - ```yaml
             - path: /path/to/dir2
-              alignment: center # optional
-              stretch: uniform  # optional
-              opacity: 1.0      # optional
+              alignment: center      # optional
+              stretch: uniformToFill # optional
+              opacity: 1.0           # optional
 
 # Commands
 For a more detailed explanation on each command, follow the command name links

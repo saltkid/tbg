@@ -86,16 +86,20 @@ func (cfg *Config) AddPath(
 			if finalAlign == nil && finalOpacity == nil && finalStretch == nil {
 				break
 			}
-			editedPath := ImagesPath{
-				Path:      pathToAdd,
-				Alignment: finalAlign,
-				Opacity:   finalOpacity,
-				Stretch:   finalStretch,
-			}
-			cfg.Paths[i] = editedPath
 			edited = &pathEditForLogs{
 				old: path,
-				new: editedPath,
+				new: ImagesPath{
+					Path:      pathToAdd,
+					Alignment: finalAlign,
+					Opacity:   finalOpacity,
+					Stretch:   finalStretch,
+				},
+			}
+			cfg.Paths[i] = ImagesPath{
+				Path:      pathToAdd,
+				Alignment: Option(align).Or(path.Alignment).val,
+				Opacity:   Option(opacity).Or(path.Opacity).val,
+				Stretch:   Option(stretch).Or(path.Stretch).val,
 			}
 			break
 		}

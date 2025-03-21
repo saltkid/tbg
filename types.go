@@ -20,11 +20,6 @@ func Option[T any](val *T) Optional[T] {
 	}
 }
 
-// returns the underlying pointer
-func (o Optional[T]) Pointer() *T {
-	return o.val
-}
-
 // returns the value of the option (pointer) if it is not a nil pointer
 //
 // otherwise just returns the given value

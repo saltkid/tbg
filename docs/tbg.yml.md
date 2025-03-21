@@ -16,7 +16,7 @@ on initial execution. This is what it should look like:
 paths:
 - path: path/to/images/dir
   # alignment: right # override default alignment of center
-  # stretch: fill    # override default stretch of uniform
+  # stretch: fill    # override default stretch of uniformToFill
   # opacity: 0.25    # override default opacity of 1.0
 
 profile: default
@@ -68,14 +68,14 @@ Although you can edit the fields in the config directly, it is recommended to us
         - `- path: path/to/dir1` 
         - ```yaml
             - path: path/to/dir2
-              alignment: center # optional
-              stretch: uniform  # optional
-              opacity: 1.0      # optional
+              alignment: center      # optional
+              stretch: uniformToFill # optional
+              opacity: 1.0           # optional
     - paths containing images used in changing the background image of Windows Terminal
     - Each path can override the default fields below.
     - default values for per-path options if not specified are:
         - `alignment: center`
-        - `stretch: uniform`
+        - `stretch: uniformToFill`
         - `opacity: 1.0`
     1. **alignment**
         - *args*: `top`, `topLeft`, `topRight`, `left`, `center`, `right`, `bottom`, `bottomLeft`, `bottomRight` 

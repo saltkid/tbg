@@ -111,7 +111,7 @@ tbg run --alignment right --opacity 0.35 --stretch none
 
 The `--alignment`, `--opacity`, and `--stretch` flags will override the values
 in `.tbg.yml`. This means instead of `path/to/dir1`'s images having the default
-alignment `center`, default stretch `uniform`, and default opacity `1.0`, the
+alignment `center`, default stretch `uniformToFill`, and default opacity `1.0`, the
 images instead use the values specified by the flags (`right`, `none`, `0.35`)
 
 Notice that `path/to/dir2` has options that should override the default options

@@ -83,7 +83,7 @@ paths:
 interval: 30
 profile: default
 ```
-The path will now inherit the default `stretch` value (`uniform`).
+The path will now inherit the default `stretch` value (`uniformToFill`).
 
 Now let's see if we remove opacity:
 ```bash
@@ -97,4 +97,4 @@ interval: 30
 profile: default
 ```
 Now all the path will inehrit the default alignment (`center`), stretch
-(`uniform`), and opacity (`1.0`).
+(`uniformToFill`), and opacity (`1.0`).

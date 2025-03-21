@@ -32,7 +32,7 @@ func NewConfigTemplate(path string) *ConfigTemplate {
 paths:
 - path: %s
   # alignment: right # optional (default: center)
-  # stretch: fill    # optional (default: uniform)
+  # stretch: fill    # optional (default: uniformToFill)
   # opacity: 0.25    # optional (default: 1.0)
 `,
 			picturesDir)
