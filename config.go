@@ -12,7 +12,7 @@ import (
 const (
 	DefaultAlignment string  = "center"
 	DefaultOpacity   float32 = 1.0
-	DefaultStretch   string  = "uniform"
+	DefaultStretch   string  = "uniformToFill"
 )
 
 type Config struct {
@@ -68,41 +68,47 @@ func (cfg *Config) AddPath(
 	opacity *float32,
 ) error {
 	isEditingOptions := align != nil || stretch != nil || opacity != nil
+	pathExists := false
 	var added *ImagesPath
-	// where key == old, val == new
-	// didn't use make so i can check against nil
-	var edited map[ImagesPath]ImagesPath
+	var edited *pathEditForLogs
 	errors := make([]string, 1)
 	for i, path := range cfg.Paths {
 		cleanPath := filepath.ToSlash(path.Path)
 		if strings.EqualFold(pathToAdd, cleanPath) {
+			pathExists = true
 			if !isEditingOptions {
 				errors = append(errors, fmt.Sprintf("'%s' already exists in config as '%s'", pathToAdd, path.Path))
 				break
 			}
-			dirToAdd := ImagesPath{
-				Path:      pathToAdd,
-				Alignment: Option(align).Or(path.Alignment).Pointer(),
-				Stretch:   Option(stretch).Or(path.Stretch).Pointer(),
-				Opacity:   Option(opacity).Or(path.Opacity).Pointer(),
+			finalAlign := getEditedIfChanged(path.Alignment, align)
+			finalOpacity := getEditedIfChanged(path.Opacity, opacity)
+			finalStretch := getEditedIfChanged(path.Stretch, stretch)
+			if finalAlign == nil && finalOpacity == nil && finalStretch == nil {
+				break
 			}
-			cfg.Paths[i] = dirToAdd
-			edited = map[ImagesPath]ImagesPath{
-				path: dirToAdd,
+			editedPath := ImagesPath{
+				Path:      pathToAdd,
+				Alignment: finalAlign,
+				Opacity:   finalOpacity,
+				Stretch:   finalStretch,
+			}
+			cfg.Paths[i] = editedPath
+			edited = &pathEditForLogs{
+				old: path,
+				new: editedPath,
 			}
 			break
 		}
 	}
-	noChangesMade := len(edited) == 0
-	if noChangesMade {
-		dirToAdd := ImagesPath{
+	if edited == nil && !pathExists {
+		addedPath := ImagesPath{
 			Path:      pathToAdd,
 			Alignment: align,
 			Stretch:   stretch,
 			Opacity:   opacity,
 		}
-		cfg.Paths = append(cfg.Paths, dirToAdd)
-		added = &dirToAdd
+		cfg.Paths = append(cfg.Paths, addedPath)
+		added = &addedPath
 	}
 	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(cfg)
@@ -110,6 +116,27 @@ func (cfg *Config) AddPath(
 		return err
 	}
 	cfg.Log(configPath).Added(added, edited)
+	return nil
+}
+
+// helper struct for easier logging changes to a path in the config
+type pathEditForLogs struct {
+	old ImagesPath
+	new ImagesPath
+}
+
+// helper function to return the edited value if and only if it is not equal to
+// the old value
+func getEditedIfChanged[T comparable](old, edited *T) *T {
+	if edited != nil {
+		if old != nil {
+			if *edited != *old {
+				return edited
+			}
+		} else {
+			return edited
+		}
+	}
 	return nil
 }
 
@@ -252,9 +279,8 @@ func (cfg *Config) Log(configPath string) ConfigLogger {
 	return ConfigLogger{}
 }
 
-func (log ConfigLogger) Added(added *ImagesPath, edited map[ImagesPath]ImagesPath) ConfigLogger {
-	noChangesMade := len(edited) == 0
-	if noChangesMade {
+func (log ConfigLogger) Added(added *ImagesPath, edited *pathEditForLogs) ConfigLogger {
+	if edited == nil {
 		fmt.Println("| no changes made")
 	} else {
 		if added != nil {
@@ -270,27 +296,25 @@ func (log ConfigLogger) Added(added *ImagesPath, edited map[ImagesPath]ImagesPat
 				fmt.Printf("%-25s- opacity: %f\n", "|", *added.Opacity)
 			}
 		}
-		for old, new := range edited {
-			fmt.Println("| edited: ")
-			fmt.Printf("%-25sedited path: %s\n", "|", added.Path)
-			if new.Alignment != nil {
-				if old.Alignment != nil {
-					fmt.Printf("%-25s- old alignment: %s\n", "|", *old.Alignment)
-				}
-				fmt.Printf("%-25s- new alignment: %s\n", "|", *new.Alignment)
+		fmt.Println("| edited: ")
+		fmt.Printf("%-25sedited path: %s\n", "|", edited.old.Path)
+		if edited.new.Alignment != nil {
+			if edited.old.Alignment != nil {
+				fmt.Printf("%-25s- old alignment: %s\n", "|", *edited.old.Alignment)
 			}
-			if new.Stretch != nil {
-				if old.Stretch != nil {
-					fmt.Printf("%-25s- old stretch: %s\n", "|", *old.Stretch)
-				}
-				fmt.Printf("%-25s- new stretch: %s\n", "|", *new.Stretch)
+			fmt.Printf("%-25s- new alignment: %s\n", "|", *edited.new.Alignment)
+		}
+		if edited.new.Opacity != nil {
+			if edited.old.Opacity != nil {
+				fmt.Printf("%-25s- old alignment: %f\n", "|", *edited.old.Opacity)
 			}
-			if new.Opacity != nil {
-				if old.Opacity != nil {
-					fmt.Printf("%-25s- old opacity: %f\n", "|", *old.Opacity)
-				}
-				fmt.Printf("%-25s- new opacity: %f\n", "|", *new.Opacity)
+			fmt.Printf("%-25s- new alignment: %f\n", "|", *edited.new.Opacity)
+		}
+		if edited.new.Stretch != nil {
+			if edited.old.Stretch != nil {
+				fmt.Printf("%-25s- old alignment: %s\n", "|", *edited.old.Stretch)
 			}
+			fmt.Printf("%-25s- new alignment: %s\n", "|", *edited.new.Stretch)
 		}
 	}
 	fmt.Println("------------------------------------------------------------------------------------")
