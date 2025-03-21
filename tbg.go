@@ -4,7 +4,12 @@ import (
 	"fmt"
 	"github.com/eiannone/keyboard"
 	"math/rand/v2"
+	"net/http"
 	"time"
+)
+
+const (
+	TbgPort = ":9545"
 )
 
 type TbgState struct {
@@ -46,7 +51,10 @@ func (tbg *TbgState) String() string {
 type TbgEvents struct {
 	Done      chan struct{}
 	NextImage chan struct{}
-	Error     chan error
+	// all TbgState errors must be routed here. The only method that's allowed
+	// to return an error is TbgState.eventHandler() which handles the errors
+	// as well
+	Error chan error
 }
 
 func NewTbgState(config *Config, configPath string, alignment string, stretch string, opacity float32) (*TbgState, error) {
@@ -83,6 +91,7 @@ func (tbg *TbgState) Start() error {
 	}
 	go tbg.readUserInput()
 	go tbg.imageUpdateTicker()
+	go tbg.startServer()
 	return tbg.eventHandler()
 }
 
@@ -175,6 +184,20 @@ func (tbg *TbgState) imageUpdateTicker() {
 		case <-ticker:
 			tbg.Events.NextImage <- struct{}{}
 		}
+	}
+}
+
+// may emit TbgState.Events.Error (e.g. port is taken)
+func (tbg *TbgState) startServer() {
+	http.HandleFunc("POST /next-image", func(_ http.ResponseWriter, _ *http.Request) {
+		tbg.Events.NextImage <- struct{}{}
+	})
+	http.HandleFunc("POST /quit", func(w http.ResponseWriter, _ *http.Request) {
+		close(tbg.Events.Done)
+	})
+	err := http.ListenAndServe(TbgPort, nil)
+	if err != nil {
+		tbg.Events.Error <- err
 	}
 }
 
