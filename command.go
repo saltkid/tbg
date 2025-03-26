@@ -31,6 +31,10 @@ func ToCommand(s string) (Command, error) {
 		return new(HelpCommand), nil
 	case "version":
 		return new(VersionCommand), nil
+	case "next-image":
+		return new(NextImageCommand), nil
+	case "quit":
+		return new(QuitCommand), nil
 	default:
 		return nil, fmt.Errorf("unknown command: %s", s)
 	}
@@ -46,6 +50,8 @@ const (
 	RemoveCommandType
 	HelpCommandType
 	VersionCommandType
+	NextImageCommandType
+	QuitCommandType
 )
 
 func (c CommandType) String() string {
@@ -64,6 +70,10 @@ func (c CommandType) String() string {
 		return "help"
 	case VersionCommandType:
 		return "version"
+	case NextImageCommandType:
+		return "next-image"
+	case QuitCommandType:
+		return "quit"
 	default:
 		return fmt.Sprintf("UNKNOWN COMMAND '%d'", c)
 	}
@@ -87,6 +97,10 @@ func (c CommandType) ToCommand() Command {
 		return new(HelpCommand)
 	case VersionCommandType:
 		return new(VersionCommand)
+	case NextImageCommandType:
+		return new(NextImageCommand)
+	case QuitCommandType:
+		return new(QuitCommand)
 	default: // case: NoCommandType
 		return nil
 	}

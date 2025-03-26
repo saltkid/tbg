@@ -16,7 +16,7 @@ type AddCommand struct {
 func (cmd *AddCommand) Type() CommandType { return AddCommandType }
 
 func (r *AddCommand) Debug() {
-	fmt.Println("Config Command:", r.Type())
+	fmt.Println("Add Command:", r.Type())
 	fmt.Println("Path:", r.Path)
 	fmt.Println("Flags:")
 	if r.Alignment != nil {

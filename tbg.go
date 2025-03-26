@@ -186,10 +186,12 @@ func (tbg *TbgState) imageUpdateTicker() {
 
 // may emit TbgState.Events.Error (e.g. port is taken)
 func (tbg *TbgState) startServer() {
-	http.HandleFunc("POST /next-image", func(_ http.ResponseWriter, _ *http.Request) {
+	http.HandleFunc("POST /next-image", func(w http.ResponseWriter, _ *http.Request) {
 		tbg.Events.NextImage <- struct{}{}
+		fmt.Fprint(w, "next-image: changed image successfully")
 	})
 	http.HandleFunc("POST /quit", func(w http.ResponseWriter, _ *http.Request) {
+		fmt.Fprint(w, "quit: stopped server successfully. Goodbye!")
 		close(tbg.Events.Done)
 	})
 	err := http.ListenAndServe(TbgPort, nil)
