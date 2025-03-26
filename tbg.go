@@ -86,9 +86,6 @@ func (tbg *TbgState) Start() error {
 	if err := tbg.updateCurrentPathState(); err != nil {
 		return fmt.Errorf("Failed to initialize tbg: %s", err.Error())
 	}
-	if err := tbg.changeImage(); err != nil {
-		return err
-	}
 	go tbg.readUserInput()
 	go tbg.imageUpdateTicker()
 	go tbg.startServer()
