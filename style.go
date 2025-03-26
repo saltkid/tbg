@@ -54,10 +54,6 @@ func (s *Styled) Italic() *Styled {
 	return s.Format(Italic)
 }
 
-func ClearScreen() {
-	fmt.Println("\033[H\033[2J")
-}
-
 func IsImageFile(f string) bool {
 	f = strings.ToLower(filepath.Ext(f))
 	return f == ".png" ||

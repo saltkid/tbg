@@ -141,7 +141,7 @@ For a more detailed explanation on each command, follow the command name links
     - Prints the help message/s of command/s and/or flag/s if specified
     - *args*: no arg, or any command or any flag (can be multiple)
 
-## Server Commands
+## [Server Commands](https://github.com/saltkid/tbg/blob/main/docs/server_commands_usage.md)
 These commands only work when there's a **tbg** server active. Usage is the
 same as other commands.
 1. next-image

@@ -11,14 +11,11 @@ func main() {
 		fmt.Println(err)
 		return
 	}
-	// LogTokens(tokens)
 	command, err := ParseArgs(tokens)
 	if err != nil {
 		fmt.Println(err)
 		return
 	}
-	// command.Debug()
-	ClearScreen()
 	err = command.Execute()
 	if err != nil {
 		fmt.Println(err)
