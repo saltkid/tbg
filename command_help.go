@@ -52,13 +52,13 @@ func (cmd *HelpCommand) Execute() error {
 			Decorate("Terminal Background Gallery").Italic(),
 		)
 		fmt.Printf("%-30s%s\n", "",
-			fmt.Sprintf("%s (%s) allows the user to have and manage multiple background",
+			fmt.Sprintf("%s (%s) allows the user to cycle through multiple background",
 				Decorate("tbg").Bold(),
 				Decorate("teabag").Italic(),
 			),
 		)
 		fmt.Printf("%-30s%s\n", "",
-			"images, that rotate at a set amount of time, for Windows Terminal.",
+			"images at a set interval for Windows Terminal.",
 		)
 		fmt.Printf("%-37s%s\n",
 			Decorate("Version").Bold().Underline(),
@@ -66,12 +66,14 @@ func (cmd *HelpCommand) Execute() error {
 		)
 		fmt.Printf("\n%-37s%s\n",
 			Decorate("Usage").Bold().Underline(),
-			Decorate("tbg run").Italic(),
+			Decorate("tbg [command] <flags>").Italic(),
 		)
 		fmt.Printf("\n%s:\n",
 			Decorate("Commands").Bold().Underline(),
 		)
 		RunHelp(false)
+		NextImageHelp(false)
+		QuitHelp(false)
 		AddHelp(false)
 		RemoveHelp(false)
 		ConfigHelp(false)
@@ -107,6 +109,10 @@ func (cmd *HelpCommand) Execute() error {
 			RunHelp(true)
 		case VersionCommandType:
 			VersionHelp(true)
+		case NextImageCommandType:
+			NextImageHelp(true)
+		case QuitCommandType:
+			QuitHelp(true)
 		}
 		fmt.Println("------------------------------------------------------------------------------------")
 	}
@@ -131,7 +137,7 @@ func (cmd *HelpCommand) Execute() error {
 func RunHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  run").Bold(),
-		"reads the used config and edits Windows Terminal's settings.json to change background images\n",
+		"Starts the tbg server that changes the background image at an interval\n",
 	)
 	if verbose {
 		fmt.Print(`
@@ -401,16 +407,45 @@ func HelpHelp(verbose bool) {
 
 func VersionHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
-		Decorate("  -v, --version").Bold(),
+		Decorate("  version").Bold(),
 		"Prints the version of tbg\n",
 	)
 	if verbose {
 		fmt.Print(`
-  `, Decorate("Args").Bold(), `: --version does not take args
+  `, Decorate("Args").Bold(), `: version does not take args
 
   `, Decorate("Examples").Bold(), `:
   1. tbg version
-     Prints the version of tbg
+`)
+	}
+}
+
+func NextImageHelp(verbose bool) {
+	fmt.Printf("%-33s%s",
+		Decorate("  next-image").Bold(),
+		"Triggers an image change on the currently running tbg server\n",
+	)
+	if verbose {
+		fmt.Print(`
+  `, Decorate("Args").Bold(), `: next-image does not take args
+
+  `, Decorate("Examples").Bold(), `:
+  1. tbg next-image
+`)
+	}
+}
+
+func QuitHelp(verbose bool) {
+	fmt.Printf("%-33s%s",
+		Decorate("  quit").Bold(),
+		"Stops the currently running tbg server\n",
+	)
+	if verbose {
+		fmt.Print(`
+  `, Decorate("Args").Bold(), `: quit does not take args
+
+  `, Decorate("Examples").Bold(), `:
+  1. tbg quit
 `)
 	}
 }

@@ -7,6 +7,7 @@
 - [Config](#config)
     - [Fields](#fields)
 - [Commands](#commands)
+    - [Server Commands](#server-commands)
     - [Flags](#flags)
 - [Credits](#credits)
 
@@ -47,20 +48,30 @@ git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go buil
 ```
 
 # [Usage](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md)
+## Automatically change background image at a set interval
 ```
 tbg run
 ```
-This will target Windows Terminal's default profile, changing the background
-image every 30 minutes, choosing an random image from the specified `paths` in
-`.tbg.yml`. The default image properties are:
-1. alignment: `center`
-2. opacity: `1.0`
-3. stretch: `uniformToFill`
+This will start the **tbg** server. This will target Windows Terminal's default
+profile, changing the background image every 30 minutes, choosing an random
+image from the specified `paths` in `.tbg.yml`. See [fields](#fields) for more
+information about images paths. The default image properties are:
 
-On initial execution of **tbg**, it will create a [default config](#config)
+| image property | default value  |
+|----------------|----------------|
+| alignment      | `center`       |
+| opacity        | `1.0`          |
+| stretch        | `uniformToFill`|
+
+On initial execution of `tbg run`, it will create a [default config](#config)
 (`.tbg.yml`) in the same directory as the executable. You can edit this
 manually **or** use [tbg commands](#commands) to edit these with input
 validation
+
+### tbg server
+`tbg run` starts the **tbg** http server where POST requests can be made to
+trigger certain actions. These post requests can be made through [tbg server
+commands](#server-commands) for convenience
 
 ## Interactive Commands
 While **tbg** is running, it takes in optional user input through key presses.
@@ -68,7 +79,6 @@ While **tbg** is running, it takes in optional user input through key presses.
 - `c`: shows the available commands
 - `n`: goes to the next image (randomly chosen)
 
-See [fields](#fields) for more information about images paths.
 
 # Config
 **tbg** uses `.tbg.yml` to edit the `settings.json` *Windows Terminal* uses.
@@ -97,6 +107,9 @@ command to edit the file.
               opacity: 1.0           # optional
 
 # Commands
+```zsh
+tbg <command-name>
+```
 For a more detailed explanation on each command, follow the command name links
 
 1. [run](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md) 
@@ -127,6 +140,19 @@ For a more detailed explanation on each command, follow the command name links
     - Prints the general help message when no arg is given
     - Prints the help message/s of command/s and/or flag/s if specified
     - *args*: no arg, or any command or any flag (can be multiple)
+
+## Server Commands
+These commands only work when there's a **tbg** server active. Usage is the
+same as other commands.
+1. next-image
+    - triggers an image change
+    - curl equivalent: `curl -X POST localhost:9545/next-image`
+2. quit
+    - stops the server
+    - curl equivalent: `curl -X POST localhost:9545/quit`
+
+*Tip: you can assign these commands to keybinds in Windows Terminal Settings*
+
 ## Flags
 Flags behave differently based on the command so for more detailed explanation,
 go to the documentation of the command instead.
