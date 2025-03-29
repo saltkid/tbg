@@ -13,7 +13,7 @@ type ConfigCommand struct {
 
 func (cmd *ConfigCommand) Type() CommandType { return ConfigCommandType }
 
-func (cmd *ConfigCommand) Debug() {
+func (cmd *ConfigCommand) String() {
 	fmt.Println("Config Command:", cmd.Type())
 	fmt.Println("Flags:")
 	if cmd.Profile != nil {

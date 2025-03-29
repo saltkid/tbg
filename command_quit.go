@@ -10,7 +10,7 @@ type QuitCommand struct{}
 
 func (cmd *QuitCommand) Type() CommandType { return QuitCommandType }
 
-func (r *QuitCommand) Debug() {
+func (r *QuitCommand) String() {
 	fmt.Println("Quit Command Command:", r.Type())
 }
 

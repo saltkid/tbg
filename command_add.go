@@ -15,7 +15,7 @@ type AddCommand struct {
 
 func (cmd *AddCommand) Type() CommandType { return AddCommandType }
 
-func (r *AddCommand) Debug() {
+func (r *AddCommand) String() {
 	fmt.Println("Add Command:", r.Type())
 	fmt.Println("Path:", r.Path)
 	fmt.Println("Flags:")

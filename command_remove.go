@@ -15,7 +15,7 @@ type RemoveCommand struct {
 
 func (cmd *RemoveCommand) Type() CommandType { return RemoveCommandType }
 
-func (cmd *RemoveCommand) Debug() {
+func (cmd *RemoveCommand) String() {
 	fmt.Println("Remove Command")
 	fmt.Println("Flags:")
 	if cmd.Alignment {

@@ -15,7 +15,7 @@ type RunCommand struct {
 
 func (cmd *RunCommand) Type() CommandType { return RunCommandType }
 
-func (cmd *RunCommand) Debug() {
+func (cmd *RunCommand) String() {
 	fmt.Println("Run Command")
 	fmt.Println("Flags:")
 	if cmd.Alignment != nil {

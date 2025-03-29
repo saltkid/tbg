@@ -5,25 +5,18 @@ import (
 )
 
 type HelpCommand struct {
-	Flags    []Flag
 	Commands []Command
 }
 
 func (cmd *HelpCommand) Type() CommandType { return HelpCommandType }
 
-func (cmd *HelpCommand) Debug() {
+func (cmd *HelpCommand) String() {
 	fmt.Println("Help Command")
 	if len(cmd.Commands) > 0 {
 		fmt.Println("Commands:")
 	}
 	for _, c := range cmd.Commands {
 		fmt.Println(" ", c.Type())
-	}
-	if len(cmd.Flags) > 0 {
-		fmt.Println("Flags:")
-	}
-	for _, f := range cmd.Flags {
-		fmt.Println(" ", f.Type)
 	}
 }
 
@@ -35,8 +28,7 @@ func (cmd *HelpCommand) ValidateValue(val *string) error {
 }
 
 func (cmd *HelpCommand) ValidateFlag(f Flag) error {
-	cmd.Flags = append(cmd.Flags, f)
-	return nil
+	return fmt.Errorf("'help' takes no flags. got: '%s'", f.Type)
 }
 
 func (cmd *HelpCommand) ValidateSubCommand(sc Command) error {
@@ -45,8 +37,7 @@ func (cmd *HelpCommand) ValidateSubCommand(sc Command) error {
 }
 
 func (cmd *HelpCommand) Execute() error {
-	notVerbose := len(cmd.Commands) == 0 && len(cmd.Flags) == 0
-	if notVerbose {
+	if len(cmd.Commands) == 0 {
 		fmt.Printf("%-37s%s\n",
 			Decorate("tbg").Bold().Underline(),
 			Decorate("Terminal Background Gallery").Italic(),
@@ -80,17 +71,6 @@ func (cmd *HelpCommand) Execute() error {
 		ConfigHelp(false)
 		HelpHelp(false)
 		VersionHelp(false)
-		fmt.Printf("\n%s:\n",
-			Decorate("Flags").Bold().Underline(),
-		)
-		ProfileHelp(false)
-		IntervalHelp(false)
-		AlignmentHelp(false)
-		StretchHelp(false)
-		OpacityHelp(false)
-		fmt.Printf("\n%s\n",
-			Decorate("Not all flags are applicable to all commands. See help <command> for more info").Italic(),
-		)
 		return nil
 	}
 
@@ -119,21 +99,6 @@ func (cmd *HelpCommand) Execute() error {
 		}
 		fmt.Println("------------------------------------------------------------------------------------")
 	}
-	for _, f := range cmd.Flags {
-		switch f.Type {
-		case AlignmentFlag:
-			AlignmentHelp(true)
-		case IntervalFlag:
-			IntervalHelp(true)
-		case OpacityFlag:
-			OpacityHelp(true)
-		case ProfileFlag:
-			ProfileHelp(true)
-		case StretchFlag:
-			StretchHelp(true)
-		}
-		fmt.Println("------------------------------------------------------------------------------------")
-	}
 	return nil
 }
 
@@ -147,7 +112,8 @@ func RunHelp(verbose bool) {
   `, Decorate("Args").Bold(), `: run takes no args
 
   `, Decorate("Subcommands").Bold(), `: run takes no sub-commands
-  `, Decorate("Flags").Bold(), `:,
+  `, Decorate("Flags").Bold(), `:
+
   You can specify alignment, stretch, and opacity using flags.
   These will override the values in the used config (not edit)
   1. -a, --alignment [arg]
@@ -157,8 +123,9 @@ func RunHelp(verbose bool) {
   3. -s, --stretch   [arg]
          [fill, none, uniform, uniformToFill]
   4. -p, --profile   [arg]
-         [default, n]
-         where n is the list index Windows Terminal uses to identify the profile (starting from 1)
+         [default, n, profile name]
+         Where n is the list index Windows Terminal uses to identify the profile (starting from 1).
+         Can specify profile name as well: e.g. "pwsh" (case insensitive)
   5. -P, --port   [arg]
          [any positive integer]
          port to be used by tbg server to listen to POST requests
@@ -350,8 +317,9 @@ func ConfigHelp(verbose bool) {
   `, Decorate("Subcommands").Bold(), `: config takes no sub-commands
   `, Decorate("Flags").Bold(), `:
   1. -p, --profile   [arg]
-         [default, n]
-         where n is the list index Windows Terminal uses to identify the profile (starting from 1)
+         [default, n, profile name]
+         Where n is the list index Windows Terminal uses to identify the profile (starting from 1).
+         Can specify profile name as well: e.g. "pwsh" (case insensitive)
   2. -P, --port   [arg]
          [any positive integer]
          port to be used by tbg server to listen to POST requests
@@ -398,17 +366,16 @@ func HelpHelp(verbose bool) {
 	if verbose {
 		fmt.Print(`
   `, Decorate("Args").Bold(), `:
-  1. command names or flag names
-     allows multiple commands or flags to be specified
+  1. command names
+     allows multiple commands to be specified
 
   `, Decorate("Examples").Bold(), `:
   1. tbg help
      Prints this help message
   2. tbg help run
      Prints verbose help for the 'run' command
-  3. tbg help --alignment add --profile run
-     Prints verbose help for the '--alingment' flag,
-     'add' command, '--profile' flag and the 'run' command
+  3. tbg help set-image next-image
+     Prints verbose help for the 'set-image' and 'next-image' command
 `)
 	}
 }
@@ -437,6 +404,15 @@ func NextImageHelp(verbose bool) {
 		fmt.Print(`
   `, Decorate("Args").Bold(), `: next-image does not take args
 
+  `, Decorate("Flags").Bold(), `:
+  You can specify alignment, stretch, and opacity using flags. See example 2 and 3
+  1. -a, --alignment [arg]
+         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
+  2. -o, --opacity   [arg]
+         [any float between 0 and 1 (inclusive)]
+  3. -s, --stretch   [arg]
+         [fill, none, uniform, uniformToFill]
+
   `, Decorate("Examples").Bold(), `:
   1. tbg next-image
 `)
@@ -446,13 +422,22 @@ func NextImageHelp(verbose bool) {
 func SetImageHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  set-image").Bold(),
-		"sets the specified image as the background image\n",
+		"Sets the specified image as the background image\n",
 	)
 	if verbose {
 		fmt.Print(`
   `, Decorate("Args").Bold(), `:
   1. path/to/image/file
      Path to the image file you want to set as the background image
+
+  `, Decorate("Flags").Bold(), `:
+  You can specify alignment, stretch, and opacity using flags. See example 2 and 3
+  1. -a, --alignment [arg]
+         [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
+  2. -o, --opacity   [arg]
+         [any float between 0 and 1 (inclusive)]
+  3. -s, --stretch   [arg]
+         [fill, none, uniform, uniformToFill]
 
   `, Decorate("Examples").Bold(), `:
   1. tbg next-image
@@ -471,118 +456,6 @@ func QuitHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg quit
-`)
-	}
-}
-
-func ProfileHelp(verbose bool) {
-	fmt.Printf("%-33s%s",
-		Decorate("  -p, --profile").Bold(),
-		"Specifies which Windows Terminal profile to use in a command.\n",
-	)
-	if verbose {
-		fmt.Print(`
-  `, Decorate("Args").Bold(), `:
-  1. default
-     Sets the default profile as the profile to be used
-     by the parent command
-  2. n
-     where n is the list index Windows Terminal uses to identify the profile (starting from 1)
-
-  `, Decorate("Examples").Bold(), `:
-  1. tbg run --profile default
-     whatever value the "profile" field in .tbg.yml will
-     be ignored and tbg will edit the default Windows Terminal profile instead
-
-  2. tbg edit --profile 2 config /path/to/a/config.yaml
-     this will change the "profile" field on the config /path/to/a/config.yaml
-     to 2
-`)
-	}
-}
-
-func IntervalHelp(verbose bool) {
-	fmt.Printf("%-33s%s",
-		Decorate("  -i, --interval").Bold(),
-		"The interval of image change in minutes to use in a command.\n",
-	)
-	if verbose {
-		fmt.Print(`
-  `, Decorate("Args").Bold(), `:
-  1. any positive integer
-
-  `, Decorate("Examples").Bold(), `:
-  1. tbg run --interval 30
-     whatever value the \"interval\" field in .tbg.yml will
-     be ignored and tbg change images every 30 minutes instead.
-
-  2. tbg config --interval 10
-     this will change the "interval" field on the config to "10"
-`)
-	}
-}
-
-func AlignmentHelp(verbose bool) {
-	fmt.Printf("%-33s%s",
-		Decorate("  -a, --alignment").Bold(),
-		"The alignment of the image to use in a command.\n",
-	)
-	if verbose {
-		fmt.Print(`
-  `, Decorate("Args").Bold(), `:
-  1. topLeft,    top,    topRight
-  2. left,       center, right
-  3. bottomLeft, bottom, bottomRight
-
-  `, Decorate("Examples").Bold(), `:
-  1. tbg run --alignment center
-     whatever value the "alignment" field in .tbg.yml will
-     be ignored and tbg will center the image instead
-
-  2. tbg config --alignment center
-     this will change the "alignment" field on the config to "center"
-`)
-	}
-}
-
-func StretchHelp(verbose bool) {
-	fmt.Printf("%-33s%s",
-		Decorate("  -s, --stretch").Bold(),
-		"The stretch of the image to use in a command.\n",
-	)
-	if verbose {
-		fmt.Print(`
-  `, Decorate("Args").Bold(), `:
-  1. fill, none, uniform, uniformToFill
-
-  `, Decorate("Examples").Bold(), `:
-  1. tbg run --stretch fill
-     whatever value the \"stretch\" field in .tbg.yml will
-     be ignored and tbg will upscale the image to exactly fill the screen instead
-
-  2. tbg config --stretch fill
-     this will change the "stretch" field on the config to "fill"
-`)
-	}
-}
-
-func OpacityHelp(verbose bool) {
-	fmt.Printf("%-33s%s",
-		Decorate("  -o, --opacity").Bold(),
-		"The opacity of the image to use in a command.\n",
-	)
-	if verbose {
-		fmt.Print(`
-  `, Decorate("Args").Bold(), `:
-  1. any float between 0 and 1 (inclusive)
-
-  `, Decorate("Examples").Bold(), `:
-  1. tbg run --opacity 0.5
-     whatever value the "opacity" field in .tbg.yml will
-     be ignored and tbg will set the image opacity to 0.5
-
-  2. tbg config --opacity 0.5
-     this will change the "opacity" field on the config to "0.5"
 `)
 	}
 }

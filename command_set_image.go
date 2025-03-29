@@ -18,7 +18,7 @@ type SetImageCommand struct {
 
 func (cmd *SetImageCommand) Type() CommandType { return SetImageCommandType }
 
-func (r *SetImageCommand) Debug() {
+func (r *SetImageCommand) String() {
 	fmt.Println("Set Image Command:", r.Type())
 }
 

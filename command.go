@@ -7,9 +7,6 @@ import (
 type Command interface {
 	// returns the command type of the command struct
 	Type() CommandType
-	// prints out debug information
-	Debug()
-	//
 	ValidateValue(val *string) error
 	ValidateFlag(f Flag) error
 	ValidateSubCommand(cmd Command) error

@@ -16,7 +16,7 @@ type NextImageCommand struct {
 
 func (cmd *NextImageCommand) Type() CommandType { return NextImageCommandType }
 
-func (r *NextImageCommand) Debug() {
+func (r *NextImageCommand) String() {
 	fmt.Println("Next Image Command:", r.Type())
 }
 

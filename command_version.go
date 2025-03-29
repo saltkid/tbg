@@ -9,7 +9,7 @@ var TbgVersion = "dev"
 type VersionCommand struct{}
 
 func (cmd *VersionCommand) Type() CommandType { return VersionCommandType }
-func (cmd *VersionCommand) Debug() {
+func (cmd *VersionCommand) String() {
 	fmt.Println("Version Command")
 	fmt.Println("version:", TbgVersion)
 }
