@@ -73,6 +73,7 @@ func (cmd *HelpCommand) Execute() error {
 		)
 		RunHelp(false)
 		NextImageHelp(false)
+		SetImageHelp(false)
 		QuitHelp(false)
 		AddHelp(false)
 		RemoveHelp(false)
@@ -111,6 +112,8 @@ func (cmd *HelpCommand) Execute() error {
 			VersionHelp(true)
 		case NextImageCommandType:
 			NextImageHelp(true)
+		case SetImageCommandType:
+			SetImageHelp(true)
 		case QuitCommandType:
 			QuitHelp(true)
 		}
@@ -433,6 +436,23 @@ func NextImageHelp(verbose bool) {
 	if verbose {
 		fmt.Print(`
   `, Decorate("Args").Bold(), `: next-image does not take args
+
+  `, Decorate("Examples").Bold(), `:
+  1. tbg next-image
+`)
+	}
+}
+
+func SetImageHelp(verbose bool) {
+	fmt.Printf("%-33s%s",
+		Decorate("  set-image").Bold(),
+		"sets the specified image as the background image\n",
+	)
+	if verbose {
+		fmt.Print(`
+  `, Decorate("Args").Bold(), `:
+  1. path/to/image/file
+     Path to the image file you want to set as the background image
 
   `, Decorate("Examples").Bold(), `:
   1. tbg next-image

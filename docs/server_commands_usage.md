@@ -17,10 +17,18 @@ All available APIs have an associated command. If there is no command for an
 action, there is no API for it.
 1. next-image
     - valid flags: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
-      - these will override the image properties of the next randomly chosen image
+      - these will override the image properties of the next randomly chosen
+      image
     - triggers an image change in the currently running **tbg** server
     - if no server is found, this will fail
-2. quit
+2. set-image
+    - arg: `/path/to/image/file`
+    - valid flags: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
+      - the default values for each will be used if not specified
+    - sets the specified image as the background image through an image change
+    in the currently runing **tbg** server
+    - if no server is found, this will fail
+3. quit
     - valid flags: none
     - stops the currently running **tbg** server
     - if no server is found, this will fail

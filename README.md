@@ -146,12 +146,12 @@ These commands only work when there's a **tbg** server active. Usage is the
 same as other commands.
 1. next-image
     - triggers an image change
-    - curl equivalent: `curl -X POST localhost:9545/next-image`
-2. quit
+2. set-image
+    - sets a specified image as the background image
+3. quit
     - stops the server
-    - curl equivalent: `curl -X POST localhost:9545/quit`
 
-*Tip: you can assign these commands to keybinds in Windows Terminal Settings*
+*Tip: you can assign these commands to keybinds*
 
 ## Flags
 Flags behave differently based on the command so for more detailed explanation,
