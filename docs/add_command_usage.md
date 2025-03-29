@@ -32,6 +32,7 @@ paths: []
 
 interval: 30
 profile: default
+port: 9545
 ```
 If we run:
 ```bash
@@ -45,6 +46,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 ### Adding a path with options
 Let's continue with our config and run this:
@@ -62,6 +64,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 Let's add another one:
 ```bash
@@ -76,10 +79,6 @@ paths:
   opacity: 0.5
 - path: path/to/images/dir3
   alignment: right
-
-alignment: center
-stretch: uniform
-opacity: 0.5
 ```
 Options that were not specified will inherit their respective default value
 (`stretch` and `opacity` will be `center` and `1.0` in this example)
@@ -100,6 +99,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 Let's fill assign the opacity too
 ```bash
@@ -115,6 +115,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 #### Changing an option of an existing path
 Let's change the opacity and stretch:
@@ -133,6 +134,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 Let's change the alignment too
 ```bash
@@ -148,4 +150,5 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```

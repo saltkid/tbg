@@ -20,6 +20,7 @@ paths:
   # opacity: 0.25    # override default opacity of 1.0
 
 profile: default
+port: 9545
 interval: 30
 
 #------------------------------------------
@@ -62,7 +63,10 @@ Although you can edit the fields in the config directly, it is recommended to us
 2. **interval**
     - *args*: any positive integer 
     - time in minutes between each image change.
-3. **paths** 
+3. **port**
+    - *args*: any positive integer
+    - port that the tbg server uses to listen to POST requests
+4. **paths** 
     - *args*:
         - `[]`
         - `- path: path/to/dir1` 

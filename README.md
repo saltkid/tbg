@@ -159,11 +159,13 @@ go to the documentation of the command instead.
 1. `-a, --alignment`
 2. `-i, --interval`
 3. `-o, --opacity`
-4. `-p, --profile`
-5. `-s, --stretch`
+4. `-P, --port`
+5. `-p, --profile`
+6. `-s, --stretch`
 
 ---
 # Credits
 - [Windows Terminal](https://github.com/microsoft/terminal)
 - [keyboard](https://github.com/eiannone/keyboard) for handling key events
+- [levenshtein](github.com/agnivade/levenshtein) for suggesting similar profile names
 - [saltkid](https://github.com/saltkid)

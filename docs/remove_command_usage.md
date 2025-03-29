@@ -31,6 +31,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 If we run:
 ```bash
@@ -43,6 +44,7 @@ paths: []
 
 interval: 30
 profile: default
+port: 9545
 ```
 ### Removing options from a path
 Let's use this config
@@ -55,6 +57,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 Let's "remove" the alignment flag of `path/to/images/dir1`:
 ```bash
@@ -68,6 +71,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 The path will now inherit the default `alignment` value (`center`).
 Let's remove stretch next.
@@ -82,6 +86,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 The path will now inherit the default `stretch` value (`uniformToFill`).
 
@@ -95,6 +100,7 @@ paths:
 
 interval: 30
 profile: default
+port: 9545
 ```
 Now all the path will inehrit the default alignment (`center`), stretch
 (`uniformToFill`), and opacity (`1.0`).

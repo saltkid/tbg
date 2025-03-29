@@ -40,6 +40,7 @@ Output on console should look something like this
 |   opacity: 0.250000
 |
 | profile:               default
+| port:                  9545
 | interval:              30
 ------------------------------------------------------------------------------------
 ```
@@ -60,6 +61,7 @@ tbg config --profile pwsh
 |   opacity: 0.250000
 |
 | profile:               pwsh # used to be default
+| port:                  9545
 | interval:              30
 ------------------------------------------------------------------------------------
 ```
@@ -78,6 +80,7 @@ tbg config --interval 5
 |   opacity: 0.250000
 |
 | profile:               1        
+| port:                  9545
 | interval:              5 # used to be 30
 ------------------------------------------------------------------------------------
 ```

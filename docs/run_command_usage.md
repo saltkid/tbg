@@ -4,7 +4,7 @@
 - [Executing with flags](#executing-with-flags)
 - [Usage](#usage)
     - [Normal Execution, key events, and path specific options](#normal-execution)
-    - [Overriding `profile` and `interval` fields](#overriding-profile-and-interval-fields)
+    - [Overriding `profile`, `port`, and `interval` fields](#overriding-profile-port-and-interval-fields)
     - [Overriding default values](#overriding-default-values)
 ---
 
@@ -28,7 +28,7 @@ only be one `.tbg.yml`**. For more information, see documentation on
 - `n`: goes to next image
 
 # Executing with flags
-#### Valid Flags: `--profile`, `--interval`, `--alignment`, `--opacity`, `--stretch`
+#### Valid Flags: `--profile`, `--interval`, `--port`, `--alignment`, `--opacity`, `--stretch`
 
 The flags specified will override any per path options specified. So if there is
 a `path/to/dir` with the alignment `center`, **tbg** will use whatever value
@@ -59,6 +59,7 @@ paths:
   opacity: 0.35
 
 profile: default
+port: 9545
 interval: 30
 ```
 This just means that when we do `tbg run`, we want to change the background
@@ -68,24 +69,27 @@ image is chosen randomly from images under `/path/to/dir1` and `/path/to/dir2`.
 Now let's quit **tbg** by pressing `q` or `ctrl+c`.
 
 ---
-### Overriding `profile` and `interval` fields
+### Overriding `profile`, `port`, and `interval` fields
 
 Instead of `tbg run`, let's do:
 ```bash
-tbg run --profile 1 --interval 5
+tbg run --profile 1 --interval 5 --port 8000
 ```
 ```yml
 paths:
 - path: path/to/dir1
 
 profile: default
+port: 9545
 interval: 30
 ```
 
-The `--profile` and `--interval` flags will override the values in the config.
-Again, not edit them. This means instead of changing the background image of
-the `default` profile every 30 minutes, it will change the background image of
-the first profile under `list` field in `settings.json` every 5 minutes instead
+The `--profile`, `--port`, and `--interval` flags will override the values in
+the config. Again, not edit them. This means instead of changing the background
+image of the `default` profile every 30 minutes, it will change the background
+image of the first profile under `list` field in `settings.json` every 5
+minutes instead. The server will run in port 8000 instead of what is defined
+in the config (9545)
 
 ---
 ### Overriding default values
@@ -102,6 +106,7 @@ paths:
   opacity: 0.25
 
 profile: default
+port: 9545
 interval: 30
 ```
 Let's do:

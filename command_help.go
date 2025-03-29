@@ -156,7 +156,10 @@ func RunHelp(verbose bool) {
   4. -p, --profile   [arg]
          [default, n]
          where n is the list index Windows Terminal uses to identify the profile (starting from 1)
-  5. -i, --interval  [arg]
+  5. -P, --port   [arg]
+         [any positive integer]
+         port to be used by tbg server to listen to POST requests
+  6. -i, --interval  [arg]
          [any positive integer]
          note that this is in minutes
 
@@ -165,10 +168,7 @@ func RunHelp(verbose bool) {
   Press a key to execute the command
   1. q: [q]uit tbg
   2. n: goes to [n]ext image
-  3. p: goes to [p]revious image
-  4. f: goes [f]orward to next image collection dir
-  5. b: goes [b]ack to previous image collection dir
-  6. c: list all [c]ommands
+  3. c: list all [c]ommands
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run
@@ -182,6 +182,7 @@ func RunHelp(verbose bool) {
       |   - path: /path/to/images/dir2 |   - path: /path/to/images/dir2
       |                                |
       | profile: default               | profile: 2
+      | port: 9545                     | port: 9545
       | interval: 30                   | interval: 5
       --------------------------       --------------------------------
      This means that instead of editing the default profile, it will edit the
@@ -348,7 +349,10 @@ func ConfigHelp(verbose bool) {
   1. -p, --profile   [arg]
          [default, n]
          where n is the list index Windows Terminal uses to identify the profile (starting from 1)
-  2. -i, --interval  [arg]
+  2. -P, --port   [arg]
+         [any positive integer]
+         port to be used by tbg server to listen to POST requests
+  3. -i, --interval  [arg]
          [any positive integer]
          note that this is in minutes.
 
@@ -360,6 +364,7 @@ func ConfigHelp(verbose bool) {
       |   - path: /path/to/images/dir
       |
       | profile: default
+      | port: 9545
       | interval: 30
       |
       --------------------------
@@ -370,7 +375,7 @@ func ConfigHelp(verbose bool) {
       | paths:                         | paths:
       |   - path: /path/to/images/dir1 |   - path: /path/to/images/dir1
       |                                |
-      | profile: right                 | profile: 1
+      | profile: default               | profile: 1
       |                                |
       | other fields...                | other fields...
       --------------------------       --------------------------------

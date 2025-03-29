@@ -31,20 +31,18 @@ These are useful when integrating it with the shell through keybinds.
 In your `$PROFILE`, do:
 ```powershell
 # Auto start tbg server at every new pwsh instance.
-# Since tbg uses one port, starting another server through `tbg run`
-# will fail quietly in the background.
+# Since tbg uses the one port defined in the config, starting another server
+# through `tbg run` will fail quietly in the background.
 Start-Job -Name tbg-server -ScriptBlock { tbg.exe run -p pwsh } | Out-Null
 
 # change image through ctrl+i
 Set-PSReadLineKeyHandler -Key "Ctrl+i" -ScriptBlock {
   tbg.exe next-image &
-  # or the curl equivalent: curl -X POST localhost:9545/next-image &
 }
 
 # quit server through Ctrl+Alt+i
 Set-PSReadLineKeyHandler -Key "Ctrl+Alt+i" -ScriptBlock {
   tbg.exe quit &
-  # or the curl equivalent: curl -X POST localhost:9545/quit &
 }
 ```
 2. zsh (in wsl)
@@ -59,11 +57,9 @@ tbg.exe run -p Debian &>/dev/null &!
 # register functions as zle widget
 function __tbg_next_image() {
   tbg.exe next-image &>/dev/null &!
-  # or the curl equivalent: curl -X POST localhost:9545/next-image &>/dev/null &!
 }
 function __tbg_quit() {
   tbg.exe quit &>/dev/null &!
-  # or the curl equivalent: curl -X POST localhost:9545/quit &>/dev/null &!
 }
 zle -N __tbg_next_image
 zle -N __tbg_quit
