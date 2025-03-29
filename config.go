@@ -2,11 +2,13 @@ package main
 
 import (
 	"fmt"
-	"gopkg.in/yaml.v3"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
+
+	"gopkg.in/yaml.v3"
 )
 
 const (
@@ -163,7 +165,7 @@ func (cfg *Config) RemovePath(
 			removePath := !align && !stretch && !opacity
 			if removePath {
 				removed = &pathToRemove
-				cfg.Paths = append(cfg.Paths[:i], cfg.Paths[i+1:]...)
+				cfg.Paths = slices.Delete(cfg.Paths, i, i+1)
 			} else {
 				removedFlags := ""
 				if align {
