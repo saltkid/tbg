@@ -1,12 +1,18 @@
 package main
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 )
 
-type NextImageCommand struct{}
+type NextImageCommand struct {
+	Alignment *string
+	Opacity   *float32
+	Stretch   *string
+}
 
 func (cmd *NextImageCommand) Type() CommandType { return NextImageCommandType }
 
@@ -22,7 +28,29 @@ func (cmd *NextImageCommand) ValidateValue(val *string) error {
 }
 
 func (cmd *NextImageCommand) ValidateFlag(f Flag) error {
-	return fmt.Errorf("'next-image' takes no flags. got: '%s'", f.Type)
+	switch f.Type {
+	case AlignmentFlag:
+		val, err := ValidateAlignment(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Alignment = val
+	case OpacityFlag:
+		val, err := ValidateOpacity(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Opacity = val
+	case StretchFlag:
+		val, err := ValidateStretch(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Stretch = val
+	default:
+		return fmt.Errorf("invalid flag for 'next-image': '%s'", f.Type)
+	}
+	return nil
 }
 
 func (cmd *NextImageCommand) ValidateSubCommand(sc Command) error {
@@ -32,6 +60,12 @@ func (cmd *NextImageCommand) ValidateSubCommand(sc Command) error {
 	default:
 		return fmt.Errorf("'next-image' takes no sub commands. got: '%s'", sc.Type())
 	}
+}
+
+type NextImageRequestBody struct {
+	Alignment *string  `json:"alignment,omitempty"`
+	Opacity   *float32 `json:"opacity,omitempty"`
+	Stretch   *string  `json:"stretch,omitempty"`
 }
 
 func (cmd *NextImageCommand) Execute() error {
@@ -48,8 +82,17 @@ func (cmd *NextImageCommand) Execute() error {
 	if err != nil {
 		return err
 	}
+	nextImageArgs := NextImageRequestBody{
+		Alignment: cmd.Alignment,
+		Stretch:   cmd.Stretch,
+		Opacity:   cmd.Opacity,
+	}
+	reqBody, err := json.Marshal(nextImageArgs)
+	if err != nil {
+		return fmt.Errorf("failed to marshal request body: %s", err)
+	}
 	url := fmt.Sprintf("http://127.0.0.1:%d/next-image", config.Port)
-	resp, err := http.Post(url, "application/json", nil)
+	resp, err := http.Post(url, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return err
 	}

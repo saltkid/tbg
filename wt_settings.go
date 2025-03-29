@@ -34,8 +34,8 @@ func (wt *WTSettings) Write(
 	image string,
 	profile string,
 	alignment string,
-	stretch string,
 	opacity float32,
+	stretch string,
 ) error {
 	if err := wt.readSettings(); err != nil {
 		return err

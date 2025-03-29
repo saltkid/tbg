@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"math/rand/v2"
 	"net/http"
@@ -21,12 +22,6 @@ type TbgState struct {
 	Config *Config
 	// Used for logging the config with the current execution state
 	ConfigPath string
-	// Alignment of the current path chosen in TbgState.updateCurrentPathState()
-	CurrentAlignment string
-	// Opacity of the current path chosen in TbgState.updateCurrentPathState()
-	CurrentOpacity float32
-	// Stretch of the current path chosen in TbgState.updateCurrentPathState()
-	CurrentStretch string
 	// Events for TbgState goroutines to communicate with each other
 	Events *TbgEvents
 	// Used to call the WTSettings.Write() method to update WT's settings.json
@@ -38,9 +33,6 @@ func (tbg *TbgState) String() string {
 	return fmt.Sprint(`TbgState
   ConfigPath: `, tbg.ConfigPath, `
   Config: `, tbg.Config, `
-  CurrentPathAlignment: `, tbg.CurrentAlignment, `
-  CurrentPathStretch: `, tbg.CurrentStretch, `
-  CurrentPathOpacity: `, tbg.CurrentOpacity, `
   Images: `, tbg.Images[0], `...`, tbg.Images[len(tbg.Images)-1],
 	)
 }
@@ -48,11 +40,17 @@ func (tbg *TbgState) String() string {
 // Events for TbgState goroutines to communicate with each other
 type TbgEvents struct {
 	Done      chan struct{}
-	NextImage chan struct{}
+	NextImage chan NextImageEvent
 	// all TbgState errors must be routed here. The only method that's allowed
 	// to return an error is TbgState.eventHandler() which handles the errors
 	// as well
 	Error chan error
+}
+
+type NextImageEvent struct {
+	Alignment *string
+	Opacity   *float32
+	Stretch   *string
 }
 
 func NewTbgState(config *Config, configPath string, alignment string, stretch string, opacity float32) (*TbgState, error) {
@@ -61,16 +59,13 @@ func NewTbgState(config *Config, configPath string, alignment string, stretch st
 		return nil, err
 	}
 	return &TbgState{
-		Images:           make([]string, 2),
-		Paths:            config.Paths,
-		Config:           config,
-		ConfigPath:       configPath,
-		CurrentAlignment: alignment,
-		CurrentStretch:   stretch,
-		CurrentOpacity:   opacity,
+		Images:     make([]string, 2),
+		Paths:      config.Paths,
+		Config:     config,
+		ConfigPath: configPath,
 		Events: &TbgEvents{
 			Done:      make(chan struct{}),
-			NextImage: make(chan struct{}),
+			NextImage: make(chan NextImageEvent),
 			Error:     make(chan error),
 		},
 		Settings: wtSettings,
@@ -81,39 +76,31 @@ func (tbg *TbgState) Start() error {
 	if len(tbg.Config.Paths) == 0 {
 		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
 	}
-	if err := tbg.updateCurrentPathState(); err != nil {
-		return fmt.Errorf("Failed to initialize tbg: %s", err.Error())
-	}
 	go tbg.readUserInput()
 	go tbg.imageUpdateTicker()
 	go tbg.startServer()
 	return tbg.eventHandler()
 }
 
-// Based on the current path index, update the expected alignment, opacity,
-// and stretch of the image
-func (tbg *TbgState) updateCurrentPathState() error {
-	randomPath := tbg.Config.Paths[uint16(rand.IntN(len(tbg.Config.Paths)))]
-	tbg.CurrentAlignment = Option(randomPath.Alignment).UnwrapOr(DefaultAlignment)
-	tbg.CurrentStretch = Option(randomPath.Stretch).UnwrapOr(DefaultStretch)
-	tbg.CurrentOpacity = Option(randomPath.Opacity).UnwrapOr(DefaultOpacity)
-	var err error
-	tbg.Images, err = randomPath.Images()
-	return err
-}
-
 // Changes the background image. The image is randomly chosen from images in
 // dirs under "paths" in the tbg config file (.tbg.yml)
-func (tbg *TbgState) changeImage() error {
-	currentImage, err := tbg.nextImage()
+func (tbg *TbgState) changeImage(
+	alignment *string,
+	opacity *float32,
+	stretch *string,
+) error {
+	currentImage, currentAlignment, currentOpacity, currentStretch, err := tbg.nextImage()
 	if err != nil {
 		return err
 	}
+	currentAlignment = Option(alignment).UnwrapOr(currentAlignment)
+	currentStretch = Option(stretch).UnwrapOr(currentStretch)
+	currentOpacity = Option(opacity).UnwrapOr(currentOpacity)
 	err = tbg.Settings.Write(currentImage,
 		tbg.Config.Profile,
-		tbg.CurrentAlignment,
-		tbg.CurrentStretch,
-		tbg.CurrentOpacity,
+		currentAlignment,
+		currentOpacity,
+		currentStretch,
 	)
 	if err != nil {
 		return err
@@ -122,21 +109,23 @@ func (tbg *TbgState) changeImage() error {
 		currentImage,
 		tbg.Config.Profile,
 		tbg.Config.Interval,
-		tbg.CurrentAlignment,
-		tbg.CurrentStretch,
-		tbg.CurrentOpacity,
+		currentAlignment,
+		currentStretch,
+		currentOpacity,
 	)
 	return nil
 }
 
 // Selects a random image from dirs in "paths" field set in tbg config
 // (.tbg.yml)
-func (tbg *TbgState) nextImage() (string, error) {
-	err := tbg.updateCurrentPathState()
+func (tbg *TbgState) nextImage() (string, string, float32, string, error) {
+	randomPath := tbg.Config.Paths[uint16(rand.IntN(len(tbg.Config.Paths)))]
+	var err error
+	tbg.Images, err = randomPath.Images()
 	if err != nil {
-		return "", err
+		return "", "", 0.0, "", err
 	}
-	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))], nil
+	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))], Option(randomPath.Alignment).UnwrapOr(DefaultAlignment), Option(randomPath.Opacity).UnwrapOr(DefaultOpacity), Option(randomPath.Stretch).UnwrapOr(DefaultStretch), nil
 }
 
 // Listens to user keyboard input and emits TbgState events based on that.
@@ -157,7 +146,11 @@ func (tbg *TbgState) readUserInput() {
 		case keyboard.Key('c'):
 			commandList()
 		case keyboard.Key('n'):
-			tbg.Events.NextImage <- struct{}{}
+			tbg.Events.NextImage <- NextImageEvent{
+				Alignment: nil,
+				Opacity:   nil,
+				Stretch:   nil,
+			}
 		case keyboard.Key('q'):
 			fmt.Println("Exiting...")
 			close(tbg.Events.Done)
@@ -177,15 +170,28 @@ func (tbg *TbgState) imageUpdateTicker() {
 	for {
 		select {
 		case <-ticker:
-			tbg.Events.NextImage <- struct{}{}
+			tbg.Events.NextImage <- NextImageEvent{
+				Alignment: nil,
+				Opacity:   nil,
+				Stretch:   nil,
+			}
 		}
 	}
 }
 
 // may emit TbgState.Events.Error (e.g. port is taken)
 func (tbg *TbgState) startServer() {
-	http.HandleFunc("POST /next-image", func(w http.ResponseWriter, _ *http.Request) {
-		tbg.Events.NextImage <- struct{}{}
+	http.HandleFunc("POST /next-image", func(w http.ResponseWriter, r *http.Request) {
+		var reqBody NextImageRequestBody
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			tbg.Events.Error <- fmt.Errorf("Failed to decode request body: %s", err)
+			return
+		}
+		tbg.Events.NextImage <- NextImageEvent{
+			Alignment: reqBody.Alignment,
+			Opacity:   reqBody.Opacity,
+			Stretch:   reqBody.Stretch,
+		}
 		fmt.Fprint(w, "next-image: changed image successfully")
 	})
 	http.HandleFunc("POST /quit", func(w http.ResponseWriter, _ *http.Request) {
@@ -208,8 +214,8 @@ func (tbg *TbgState) eventHandler() error {
 			return nil
 		case err := <-tbg.Events.Error:
 			return err
-		case <-tbg.Events.NextImage:
-			if err := tbg.changeImage(); err != nil {
+		case evt := <-tbg.Events.NextImage:
+			if err := tbg.changeImage(evt.Alignment, evt.Opacity, evt.Stretch); err != nil {
 				return err
 			}
 		}
