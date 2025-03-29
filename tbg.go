@@ -41,6 +41,7 @@ func (tbg *TbgState) String() string {
 type TbgEvents struct {
 	Done      chan struct{}
 	NextImage chan NextImageEvent
+	SetImage  chan SetImageEvent
 	// all TbgState errors must be routed here. The only method that's allowed
 	// to return an error is TbgState.eventHandler() which handles the errors
 	// as well
@@ -48,6 +49,13 @@ type TbgEvents struct {
 }
 
 type NextImageEvent struct {
+	Alignment *string
+	Opacity   *float32
+	Stretch   *string
+}
+
+type SetImageEvent struct {
+	Path      string
 	Alignment *string
 	Opacity   *float32
 	Stretch   *string
@@ -66,6 +74,7 @@ func NewTbgState(config *Config, configPath string, alignment string, stretch st
 		Events: &TbgEvents{
 			Done:      make(chan struct{}),
 			NextImage: make(chan NextImageEvent),
+			SetImage:  make(chan SetImageEvent),
 			Error:     make(chan error),
 		},
 		Settings: wtSettings,
@@ -82,50 +91,66 @@ func (tbg *TbgState) Start() error {
 	return tbg.eventHandler()
 }
 
-// Changes the background image. The image is randomly chosen from images in
-// dirs under "paths" in the tbg config file (.tbg.yml)
-func (tbg *TbgState) changeImage(
+// Changes the background image to a randomly chosen image from images in dirs
+// under "paths" in the tbg config file (.tbg.yml)
+func (tbg *TbgState) changeToRandomImage(
 	alignment *string,
 	opacity *float32,
 	stretch *string,
 ) error {
-	currentImage, currentAlignment, currentOpacity, currentStretch, err := tbg.nextImage()
+	currentImage, currentAlignment, currentOpacity, currentStretch, err := tbg.randomImage()
 	if err != nil {
 		return err
 	}
 	currentAlignment = Option(alignment).UnwrapOr(currentAlignment)
-	currentStretch = Option(stretch).UnwrapOr(currentStretch)
 	currentOpacity = Option(opacity).UnwrapOr(currentOpacity)
-	err = tbg.Settings.Write(currentImage,
+	currentStretch = Option(stretch).UnwrapOr(currentStretch)
+	return tbg.setImage(currentImage, currentAlignment, currentOpacity, currentStretch)
+}
+
+// Sets the passed in image path with its properties as the current background
+// image
+func (tbg *TbgState) setImage(
+	imagePath string,
+	alignment string,
+	opacity float32,
+	stretch string,
+) error {
+	err := tbg.Settings.Write(
+		imagePath,
 		tbg.Config.Profile,
-		currentAlignment,
-		currentOpacity,
-		currentStretch,
+		alignment,
+		opacity,
+		stretch,
 	)
 	if err != nil {
 		return err
 	}
 	tbg.Config.Log(tbg.ConfigPath).RunSettings(
-		currentImage,
+		imagePath,
 		tbg.Config.Profile,
 		tbg.Config.Interval,
-		currentAlignment,
-		currentStretch,
-		currentOpacity,
+		alignment,
+		opacity,
+		stretch,
 	)
 	return nil
 }
 
 // Selects a random image from dirs in "paths" field set in tbg config
 // (.tbg.yml)
-func (tbg *TbgState) nextImage() (string, string, float32, string, error) {
+func (tbg *TbgState) randomImage() (string, string, float32, string, error) {
 	randomPath := tbg.Config.Paths[uint16(rand.IntN(len(tbg.Config.Paths)))]
 	var err error
 	tbg.Images, err = randomPath.Images()
 	if err != nil {
 		return "", "", 0.0, "", err
 	}
-	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))], Option(randomPath.Alignment).UnwrapOr(DefaultAlignment), Option(randomPath.Opacity).UnwrapOr(DefaultOpacity), Option(randomPath.Stretch).UnwrapOr(DefaultStretch), nil
+	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))],
+		Option(randomPath.Alignment).UnwrapOr(DefaultAlignment),
+		Option(randomPath.Opacity).UnwrapOr(DefaultOpacity),
+		Option(randomPath.Stretch).UnwrapOr(DefaultStretch),
+		nil
 }
 
 // Listens to user keyboard input and emits TbgState events based on that.
@@ -194,6 +219,20 @@ func (tbg *TbgState) startServer() {
 		}
 		fmt.Fprint(w, "next-image: changed image successfully")
 	})
+	http.HandleFunc("POST /set-image", func(w http.ResponseWriter, r *http.Request) {
+		var reqBody SetImageRequestBody
+		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
+			tbg.Events.Error <- fmt.Errorf("Failed to decode request body: %s", err)
+			return
+		}
+		tbg.Events.SetImage <- SetImageEvent{
+			Path:      reqBody.Path,
+			Alignment: reqBody.Alignment,
+			Opacity:   reqBody.Opacity,
+			Stretch:   reqBody.Stretch,
+		}
+		fmt.Fprint(w, "set-image: changed image successfully")
+	})
 	http.HandleFunc("POST /quit", func(w http.ResponseWriter, _ *http.Request) {
 		fmt.Fprint(w, "quit: stopped server successfully. Goodbye!")
 		close(tbg.Events.Done)
@@ -215,7 +254,17 @@ func (tbg *TbgState) eventHandler() error {
 		case err := <-tbg.Events.Error:
 			return err
 		case evt := <-tbg.Events.NextImage:
-			if err := tbg.changeImage(evt.Alignment, evt.Opacity, evt.Stretch); err != nil {
+			if err := tbg.changeToRandomImage(evt.Alignment, evt.Opacity, evt.Stretch); err != nil {
+				return err
+			}
+		case evt := <-tbg.Events.SetImage:
+			err := tbg.setImage(
+				evt.Path,
+				Option(evt.Alignment).UnwrapOr(DefaultAlignment),
+				Option(evt.Opacity).UnwrapOr(DefaultOpacity),
+				Option(evt.Stretch).UnwrapOr(DefaultStretch),
+			)
+			if err != nil {
 				return err
 			}
 		}

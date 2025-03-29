@@ -374,8 +374,8 @@ func (log ConfigLogger) RunSettings(
 	profile string,
 	interval uint16,
 	alignment string,
-	stretch string,
 	opacity float32,
+	stretch string,
 ) ConfigLogger {
 	fmt.Println("| editing", profile, "profile")
 	fmt.Println("| image collection:", filepath.Dir(imagePath))

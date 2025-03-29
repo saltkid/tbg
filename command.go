@@ -33,6 +33,8 @@ func ToCommand(s string) (Command, error) {
 		return new(VersionCommand), nil
 	case "next-image":
 		return new(NextImageCommand), nil
+	case "set-image":
+		return new(SetImageCommand), nil
 	case "quit":
 		return new(QuitCommand), nil
 	default:
@@ -51,6 +53,7 @@ const (
 	HelpCommandType
 	VersionCommandType
 	NextImageCommandType
+	SetImageCommandType
 	QuitCommandType
 )
 
@@ -72,6 +75,8 @@ func (c CommandType) String() string {
 		return "version"
 	case NextImageCommandType:
 		return "next-image"
+	case SetImageCommandType:
+		return "set-image"
 	case QuitCommandType:
 		return "quit"
 	default:
@@ -99,6 +104,8 @@ func (c CommandType) ToCommand() Command {
 		return new(VersionCommand)
 	case NextImageCommandType:
 		return new(NextImageCommand)
+	case SetImageCommandType:
+		return new(SetImageCommand)
 	case QuitCommandType:
 		return new(QuitCommand)
 	default: // case: NoCommandType
