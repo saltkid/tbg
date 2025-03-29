@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"os"
 )
 
 type QuitCommand struct{}
@@ -34,7 +35,20 @@ func (cmd *QuitCommand) ValidateSubCommand(sc Command) error {
 }
 
 func (cmd *QuitCommand) Execute() error {
-	url := fmt.Sprintf("http://127.0.0.1%s/quit", TbgPort)
+	configPath, err := ConfigPath()
+	if err != nil {
+		return err
+	}
+	yamlFile, err := os.ReadFile(configPath)
+	if err != nil {
+		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
+	}
+	config := new(Config)
+	err = config.Unmarshal(yamlFile)
+	if err != nil {
+		return err
+	}
+	url := fmt.Sprintf("http://127.0.0.1:%d/quit", config.Port)
 	resp, err := http.Post(url, "application/json", nil)
 	if err != nil {
 		return err

@@ -2,14 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/eiannone/keyboard"
 	"math/rand/v2"
 	"net/http"
+	"strconv"
 	"time"
-)
 
-const (
-	TbgPort = ":9545"
+	"github.com/eiannone/keyboard"
 )
 
 type TbgState struct {
@@ -194,7 +192,8 @@ func (tbg *TbgState) startServer() {
 		fmt.Fprint(w, "quit: stopped server successfully. Goodbye!")
 		close(tbg.Events.Done)
 	})
-	err := http.ListenAndServe(TbgPort, nil)
+	tbgPort := ":" + strconv.FormatUint(uint64(tbg.Config.Port), 10)
+	err := http.ListenAndServe(tbgPort, nil)
 	if err != nil {
 		tbg.Events.Error <- err
 	}
