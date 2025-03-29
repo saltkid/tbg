@@ -16,13 +16,14 @@ commands.
 All available APIs have an associated command. If there is no command for an
 action, there is no API for it.
 1. next-image
+    - valid flags: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
+      - these will override the image properties of the next randomly chosen image
     - triggers an image change in the currently running **tbg** server
     - if no server is found, this will fail
-    - curl equivalent: `curl -X POST localhost:9545/next-image`
 2. quit
+    - valid flags: none
     - stops the currently running **tbg** server
     - if no server is found, this will fail
-    - curl equivalent: `curl -X POST localhost:9545/quit`
 
 These are useful when integrating it with the shell through keybinds.
 # Keybind Examples
