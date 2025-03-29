@@ -80,7 +80,7 @@ func (cmd *ConfigCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	isEditingConfig := cmd.Profile != nil || cmd.Interval != nil
+	isEditingConfig := cmd.Profile != nil || cmd.Interval != nil || cmd.Port != nil
 	if isEditingConfig {
 		config.EditConfig(configPath, cmd.Interval, cmd.Port, cmd.Profile)
 	} else {

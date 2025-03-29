@@ -52,7 +52,10 @@ func ValidatePort(val *string) (*uint16, error) {
 		return nil, fmt.Errorf("--port must have an argument. got none")
 	}
 	valNum, err := strconv.Atoi(*val)
-	if err == nil && valNum < 1 {
+	if err != nil {
+		return nil, fmt.Errorf("invalid arg '%s' for --port: %s", *val, err)
+	}
+	if valNum < 1 {
 		return nil, fmt.Errorf("invalid arg '%d' for --port: must be positive.", valNum)
 	}
 	ret := uint16(valNum)
