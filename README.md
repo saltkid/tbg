@@ -94,7 +94,10 @@ command to edit the file.
 2. **interval**
     - time in minutes between each image change.
     - *args*: any positive integer 
-3. **paths** 
+3. **port**
+    - port that the tbg server uses
+    - *args*: any positive integer
+4. **paths** 
     - paths containing images used in changing the background image of Windows
     Terminal
     - *args*:
