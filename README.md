@@ -8,7 +8,6 @@
     - [Fields](#fields)
 - [Commands](#commands)
     - [Server Commands](#server-commands)
-    - [Flags](#flags)
 - [Credits](#credits)
 
 ---
@@ -119,52 +118,48 @@ For a more detailed explanation on each command, follow the command name links
     - edit `settings.json` used by *Windows Terminal* using settings from
     `.tbg.yml`. If any of the flags are specified, it will use those values in
     editing `settings.json` instead of what's specified in the `.tbg.yml`
-    - *args*: none 
+    - *arg*: none 
     - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`,
     `-o, --opacity`, `-s, --stretch`
 2. [config](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) 
     - If no flags are present, it will print out `.tbg.yml` to console. If any
     of the flags are present, it will edit the fields of the config based on
     the flags and values passed
-    - *args*: none 
-    - *flags*: `-p, --profile`, `-i, --interval`
+    - *arg*: none 
+    - *flags*: `-p, --profile`, `-P, --port`, `-i, --interval`
 3. [add](https://github.com/saltkid/tbg/blob/main/docs/add_command_usage.md) 
     - Add a path containing images to `.tbg.yml`.
     - If any flags are present, this will add those options to that path,
     regardless of whether the path exists or not
-    - *args*: `/path/to/dir` 
+    - *arg*: `/path/to/dir` 
     - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
 4. [remove](https://github.com/saltkid/tbg/blob/main/docs/remove_command_usage.md) 
     - Remove a path from `.tbg.yml`.
     - If any flags are present, it will remove only those options of that path
-    - *args*: `/path/to/dir` 
+    - *arg*: `/path/to/dir` 
     - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
 5. help
     - Prints the general help message when no arg is given
     - Prints the help message/s of command/s and/or flag/s if specified
-    - *args*: no arg, or any command or any flag (can be multiple)
+    - *arg*: no arg, or any command (can be multiple)
 
 ## [Server Commands](https://github.com/saltkid/tbg/blob/main/docs/server_commands_usage.md)
 These commands only work when there's a **tbg** server active. Usage is the
 same as other commands.
 1. next-image
     - triggers an image change
+    - *arg*: `/path/to/dir` 
+    - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
 2. set-image
     - sets a specified image as the background image
+    - *arg*: `/path/to/image/file` 
+    - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
 3. quit
     - stops the server
+    - *arg*: none
+    - *flags*: none
 
 *Tip: you can assign these commands to keybinds*
-
-## Flags
-Flags behave differently based on the command so for more detailed explanation,
-go to the documentation of the command instead.
-1. `-a, --alignment`
-2. `-i, --interval`
-3. `-o, --opacity`
-4. `-P, --port`
-5. `-p, --profile`
-6. `-s, --stretch`
 
 ---
 # Credits
