@@ -11,6 +11,7 @@ const (
 	AlignmentFlag
 	IntervalFlag
 	OpacityFlag
+	PortFlag
 	ProfileFlag
 	StretchFlag
 )
@@ -25,6 +26,8 @@ func (f FlagType) String() string {
 		return "none"
 	case OpacityFlag:
 		return "--opacity"
+	case PortFlag:
+		return "--port"
 	case ProfileFlag:
 		return "--profile"
 	case StretchFlag:
@@ -47,6 +50,8 @@ func ToFlag(s string) (*Flag, error) {
 		return &Flag{Type: IntervalFlag}, nil
 	case "--opacity", "-o":
 		return &Flag{Type: OpacityFlag}, nil
+	case "--port", "-P":
+		return &Flag{Type: PortFlag}, nil
 	case "--profile", "-p":
 		return &Flag{Type: ProfileFlag}, nil
 	case "--stretch", "-s":

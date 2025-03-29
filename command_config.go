@@ -6,8 +6,9 @@ import (
 )
 
 type ConfigCommand struct {
-	Profile  *string
 	Interval *uint16
+	Port     *uint16
+	Profile  *string
 }
 
 func (cmd *ConfigCommand) Type() CommandType { return ConfigCommandType }
@@ -38,6 +39,12 @@ func (cmd *ConfigCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Interval = val
+	case PortFlag:
+		val, err := ValidatePort(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Port = val
 	case ProfileFlag:
 		val, err := ValidateProfile(f.Value)
 		if err != nil {
@@ -75,7 +82,7 @@ func (cmd *ConfigCommand) Execute() error {
 	}
 	isEditingConfig := cmd.Profile != nil || cmd.Interval != nil
 	if isEditingConfig {
-		config.EditConfig(configPath, cmd.Profile, cmd.Interval)
+		config.EditConfig(configPath, cmd.Interval, cmd.Port, cmd.Profile)
 	} else {
 		config.Log(configPath)
 	}

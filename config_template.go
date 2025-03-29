@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 )
 
 type ConfigTemplate struct {
@@ -47,12 +48,13 @@ paths:
 #------------------------------------------
 `),
 		YamlContents: []byte(paths + `
-profile: default
-interval: 30
+port:` + strconv.FormatUint(uint64(DefaultPort), 10) + `
+profile:` + DefaultProfile + `
+interval:` + strconv.FormatUint(uint64(DefaultInterval), 10) + `
 
-alignment: center
-stretch: uniformToFill
-opacity: 1.0
+alignment: ` + DefaultAlignment + `
+stretch: ` + DefaultStretch + `
+opacity: ` + strconv.FormatFloat(float64(DefaultOpacity), 'f', -1, 32) + `
 `),
 		EndDesc: []byte(`
 #------------------------------------------
@@ -70,6 +72,8 @@ opacity: 1.0
 #       stretch:   (optional) image stretch in Windows Terminal
 #                  valid values: fill, none, uniform, uniformToFill
 #                  https://learn.microsoft.com/en-us/windows/terminal/customize-settings/profile-appearance#background-image-stretch-mode 
+#
+#   port: port used by tbg server to send POST requests to, to trigger tbg actions such as change image and quit server
 #
 #   profile: profile profile in Windows Terminal
 #      valid values: default, 0, 1, ..., n

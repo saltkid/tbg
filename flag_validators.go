@@ -47,6 +47,18 @@ func ValidateOpacity(val *string) (*float32, error) {
 	return &ret, nil
 }
 
+func ValidatePort(val *string) (*uint16, error) {
+	if val == nil {
+		return nil, fmt.Errorf("--port must have an argument. got none")
+	}
+	valNum, err := strconv.Atoi(*val)
+	if err == nil && valNum < 1 {
+		return nil, fmt.Errorf("invalid arg '%d' for --port: must be positive.", valNum)
+	}
+	ret := uint16(valNum)
+	return &ret, nil
+}
+
 func ValidateProfile(val *string) (*string, error) {
 	if val == nil {
 		return nil, fmt.Errorf("--profile must have an argument. got none")

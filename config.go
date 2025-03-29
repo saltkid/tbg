@@ -11,14 +11,18 @@ import (
 
 const (
 	DefaultAlignment string  = "center"
+	DefaultInterval  uint16  = 30
 	DefaultOpacity   float32 = 1.0
+	DefaultPort      uint16  = 9545
+	DefaultProfile   string  = "default"
 	DefaultStretch   string  = "uniformToFill"
 )
 
 type Config struct {
-	Paths    []ImagesPath `yaml:"paths"`
 	Interval uint16       `yaml:"interval"`
+	Port     uint16       `yaml:"port"`
 	Profile  string       `yaml:"profile"`
+	Paths    []ImagesPath `yaml:"paths"`
 }
 
 func (cfg *Config) String() string {
@@ -31,6 +35,7 @@ func (cfg *Config) String() string {
 		return ret
 	}(), `
     Interval: `, cfg.Interval, `
+    Port: `, cfg.Port, `
     Profile: `, cfg.Profile,
 	)
 }
@@ -195,18 +200,23 @@ func (cfg *Config) RemovePath(
 
 func (cfg *Config) EditConfig(
 	configPath string,
-	profile *string,
 	interval *uint16,
+	port *uint16,
+	profile *string,
 ) error {
 	// key:val = old:new
 	edited := make(map[string]string, 0)
-	if profile != nil {
-		edited[cfg.Profile] = *profile
-		cfg.Profile = *profile
-	}
 	if interval != nil {
 		edited[strconv.Itoa(int(cfg.Interval))] = strconv.Itoa(int(*interval))
 		cfg.Interval = *interval
+	}
+	if port != nil {
+		edited[strconv.Itoa(int(cfg.Port))] = strconv.Itoa(int(*port))
+		cfg.Port = *port
+	}
+	if profile != nil {
+		edited[cfg.Profile] = *profile
+		cfg.Profile = *profile
 	}
 	template := NewConfigTemplate(configPath)
 	template.YamlContents, _ = yaml.Marshal(cfg)
@@ -278,6 +288,7 @@ func (cfg *Config) Log(configPath string) ConfigLogger {
 		}
 	}
 	fmt.Printf("|\n%-25s%s\n", "| profile:", cfg.Profile)
+	fmt.Printf("|\n%-25s%d\n", "| port:", cfg.Port)
 	fmt.Printf("%-25s%d\n", "| interval:", cfg.Interval)
 	fmt.Println("------------------------------------------------------------------------------------")
 	return ConfigLogger{}
