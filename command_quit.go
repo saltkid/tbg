@@ -6,7 +6,9 @@ import (
 	"os"
 )
 
-type QuitCommand struct{}
+type QuitCommand struct {
+	Port *uint16
+}
 
 func (cmd *QuitCommand) Type() CommandType { return QuitCommandType }
 
@@ -22,7 +24,17 @@ func (cmd *QuitCommand) ValidateValue(val *string) error {
 }
 
 func (cmd *QuitCommand) ValidateFlag(f Flag) error {
-	return fmt.Errorf("'quit' takes no flags. got: '%s'", f.Type)
+	switch f.Type {
+	case PortFlag:
+		val, err := ValidatePort(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Port = val
+	default:
+		return fmt.Errorf("invalid flag for 'quit': '%s'", f.Type)
+	}
+	return nil
 }
 
 func (cmd *QuitCommand) ValidateSubCommand(sc Command) error {
@@ -48,7 +60,7 @@ func (cmd *QuitCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("http://127.0.0.1:%d/quit", config.Port)
+	url := fmt.Sprintf("http://127.0.0.1:%d/quit", Option(cmd.Port).UnwrapOr(config.Port))
 	resp, err := http.Post(url, "application/json", nil)
 	if err != nil {
 		return err

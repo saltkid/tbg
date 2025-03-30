@@ -12,6 +12,7 @@ type NextImageCommand struct {
 	Alignment *string
 	Opacity   *float32
 	Stretch   *string
+	Port      *uint16
 }
 
 func (cmd *NextImageCommand) Type() CommandType { return NextImageCommandType }
@@ -41,6 +42,12 @@ func (cmd *NextImageCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Opacity = val
+	case PortFlag:
+		val, err := ValidatePort(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Port = val
 	case StretchFlag:
 		val, err := ValidateStretch(f.Value)
 		if err != nil {
@@ -91,7 +98,7 @@ func (cmd *NextImageCommand) Execute() error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %s", err)
 	}
-	url := fmt.Sprintf("http://127.0.0.1:%d/next-image", config.Port)
+	url := fmt.Sprintf("http://127.0.0.1:%d/next-image", Option(cmd.Port).UnwrapOr(config.Port))
 	resp, err := http.Post(url, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return err

@@ -14,6 +14,7 @@ type SetImageCommand struct {
 	Alignment *string
 	Opacity   *float32
 	Stretch   *string
+	Port      *uint16
 }
 
 func (cmd *SetImageCommand) Type() CommandType { return SetImageCommandType }
@@ -54,6 +55,12 @@ func (cmd *SetImageCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Opacity = val
+	case PortFlag:
+		val, err := ValidatePort(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Port = val
 	case StretchFlag:
 		val, err := ValidateStretch(f.Value)
 		if err != nil {
@@ -106,7 +113,7 @@ func (cmd *SetImageCommand) Execute() error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %s", err)
 	}
-	url := fmt.Sprintf("http://127.0.0.1:%d/set-image", config.Port)
+	url := fmt.Sprintf("http://127.0.0.1:%d/set-image", Option(cmd.Port).UnwrapOr(config.Port))
 	resp, err := http.Post(url, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return err

@@ -58,6 +58,9 @@ func ValidatePort(val *string) (*uint16, error) {
 	if valNum < 1 {
 		return nil, fmt.Errorf("invalid arg '%d' for --port: must be positive.", valNum)
 	}
+	if valNum > 65535 {
+		return nil, fmt.Errorf("invalid arg '%d' for --port: ports can only be up to 65535.", valNum)
+	}
 	ret := uint16(valNum)
 	return &ret, nil
 }
