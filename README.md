@@ -9,10 +9,10 @@
     - [Fields](#fields)
 - [Commands](#commands)
     - [Server Commands](#server-commands)
+- [Example Setup](#example-setup)
 - [Credits](#credits)
 
 ---
-
 # tbg (Terminal BackGround)
 
 **tbg** (*pronounced /ˈtiːbæɡ/*) is a tool for Windows Terminal that allows you
@@ -24,6 +24,7 @@ This edits the `settings.json` used by *Windows Terminal*; specifically, the
 `backgroundImage` on the default profile by default but user can specify which
 profile to target. 
 
+---
 # Installation
 Download the latest release of [tbg](https://github.com/saltkid/tbg/releases)
 
@@ -47,7 +48,7 @@ go build -ldflags '-s'
 git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go build -ldflags '-s'
 ```
 
-# [Usage](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md)
+---
 ## Automatically change background image at a set interval
 ```
 tbg run
@@ -73,6 +74,7 @@ validation
 trigger certain actions. These post requests can be made through [tbg server
 commands](#server-commands) for convenience
 
+---
 # Config
 **tbg** uses `.tbg.yml` to edit the `settings.json` *Windows Terminal* uses.
 
@@ -102,8 +104,9 @@ command to edit the file.
               stretch: uniformToFill # optional
               opacity: 1.0           # optional
 
+---
 # Commands
-```zsh
+```bash
 tbg <command-name>
 ```
 For a more detailed explanation on each command, follow the command name links
@@ -154,6 +157,81 @@ same as other commands.
     - *flags*: none
 
 *Tip: you can assign these commands to keybinds*
+
+---
+# Example Setup
+I recommend to start a tbg server on a specific port for each shell instance
+of the same type. For example, all `pwsh` shells start a server on port `9545`.
+Since there can only be one server on port `9545`, servers spawned from other
+`pwsh` instances will fail and will not overlap with the first one that spawed.
+This means that as long as one `pwsh` instance exists, a **tbg** server for the
+`pwsh` profile to change background images will exist. Keybinds will continue
+to work as well.
+
+In the following section, I'll give examples on how to:
+1. start tbg server in the background on each shell instance
+2. map `ctrl+i` to change image (`tbg next-image`)
+3. map `ctrl+alt+i` to stop the server (`tbg quit`)
+
+for both pwsh and wsl. This way, two **tbg** servers can run simultaneously
+without conflict.
+
+## pwsh
+For example, in your `$env:PROFILE`, do:
+```powershell
+# Set a port for all your pwsh instances
+$TBG_PORT=9545
+
+# Auto start tbg server at every new pwsh instance.
+# Since tbg uses the one port defined in the config, starting another server
+# through the below command will fail quietly in the background.
+Start-Job -Name tbg-server -ArgumentList $TBG_PORT -ScriptBlock {
+    param($port)
+    tbg.exe run --profile pwsh --port $port
+} | Out-Null
+
+# change image through ctrl+i
+Set-PSReadLineKeyHandler -Key "Ctrl+i" -ScriptBlock {
+    tbg.exe next-image --port $TBG_PORT &
+}
+
+# quit server through Ctrl+Alt+i
+Set-PSReadLineKeyHandler -Key "Ctrl+Alt+i" -ScriptBlock {
+    tbg.exe quit --port $TBG_PORT &
+}
+```
+
+## zsh (on wsl)
+For example, in your `~/.zshrc`, do:
+```bash
+# Set a port for all your wsl Debian instances
+TBG_PORT=9000
+
+# Auto start tbg server at every new wsl Debian instance.
+# Reference the exe built for windows since windows have the proper environment
+# variables needed to edit wt's settings.json
+tbg.exe run --profile Debian --port $TBG_PORT &>/dev/null &!
+
+# register functions as zle widget
+function __tbg_next_image() {
+  tbg.exe next-image --port $TBG_PORT &>/dev/null &!
+}
+function __tbg_quit() {
+  tbg.exe quit --port $TBG_PORT &>/dev/null &!
+}
+zle -N __tbg_next_image
+zle -N __tbg_quit
+
+# change image through ctrl+i
+bindkey '^I' __tbg_next_image
+
+# quit server through Ctrl+Alt+i
+bindkey '^[^I' __tbg_quit
+```
+---
+You can have a separate server for wsl and pwsh this way, not conflicting with
+each other since they use different ports. Keybinds target the correct **tbg**
+server instance too by specifing the same port used in starting it.
 
 ---
 # Credits
