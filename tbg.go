@@ -79,12 +79,12 @@ func NewTbgState(config *Config, configPath string, alignment string, stretch st
 	}, nil
 }
 
-func (tbg *TbgState) Start() error {
+func (tbg *TbgState) Start(port *uint16) error {
 	if len(tbg.Config.Paths) == 0 {
 		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
 	}
 	go tbg.imageUpdateTicker()
-	go tbg.startServer()
+	go tbg.startServer(port)
 	return tbg.eventHandler()
 }
 
@@ -105,7 +105,7 @@ func (tbg *TbgState) imageUpdateTicker() {
 }
 
 // may emit TbgState.Events.Error (e.g. port is taken)
-func (tbg *TbgState) startServer() {
+func (tbg *TbgState) startServer(port *uint16) {
 	http.HandleFunc("POST /next-image", func(w http.ResponseWriter, r *http.Request) {
 		var reqBody NextImageRequestBody
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
@@ -137,7 +137,7 @@ func (tbg *TbgState) startServer() {
 		fmt.Fprint(w, "quit: stopped server successfully. Goodbye!")
 		close(tbg.Events.Done)
 	})
-	tbgPort := ":" + strconv.FormatUint(uint64(tbg.Config.Port), 10)
+	tbgPort := ":" + strconv.FormatUint(uint64(Option(port).UnwrapOr(tbg.Config.Port)), 10)
 	err := http.ListenAndServe(tbgPort, nil)
 	if err != nil {
 		tbg.Events.Error <- err

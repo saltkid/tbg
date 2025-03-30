@@ -11,6 +11,7 @@ type RunCommand struct {
 	Alignment *string
 	Stretch   *string
 	Opacity   *float32
+	Port      *uint16
 }
 
 func (cmd *RunCommand) Type() CommandType { return RunCommandType }
@@ -26,6 +27,9 @@ func (cmd *RunCommand) String() {
 	}
 	if cmd.Opacity != nil {
 		fmt.Println(" ", OpacityFlag, *cmd.Opacity)
+	}
+	if cmd.Port != nil {
+		fmt.Println(" ", ProfileFlag, *cmd.Profile)
 	}
 	if cmd.Profile != nil {
 		fmt.Println(" ", ProfileFlag, *cmd.Profile)
@@ -62,6 +66,12 @@ func (cmd *RunCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Opacity = val
+	case PortFlag:
+		val, err := ValidatePort(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Port = val
 	case ProfileFlag:
 		val, err := ValidateProfile(f.Value)
 		if err != nil {
@@ -108,7 +118,7 @@ func (cmd *RunCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	return backgroundState.Start()
+	return backgroundState.Start(cmd.Port)
 }
 
 func (config *Config) determineExecutionFlags(cmd *RunCommand) (string, string, float32) {
