@@ -3,7 +3,8 @@
 - [Installation](#installation)
     - [Building from source](#building-from-source)
 - [Usage](#usage)
-    - [Interactive Commands](#interactive-commands)
+    - [Automatically change background image at a set interval](#automatically-change-background-image-at-a-set-interval)
+    - [tbg server](#tbg-server)
 - [Config](#config)
     - [Fields](#fields)
 - [Commands](#commands)
@@ -67,17 +68,10 @@ On initial execution of `tbg run`, it will create a [default config](#config)
 manually **or** use [tbg commands](#commands) to edit these with input
 validation
 
-### tbg server
+## tbg server
 `tbg run` starts the **tbg** http server where POST requests can be made to
 trigger certain actions. These post requests can be made through [tbg server
 commands](#server-commands) for convenience
-
-## Interactive Commands
-While **tbg** is running, it takes in optional user input through key presses.
-- `q`: quit
-- `c`: shows the available commands
-- `n`: goes to the next image (randomly chosen)
-
 
 # Config
 **tbg** uses `.tbg.yml` to edit the `settings.json` *Windows Terminal* uses.
@@ -164,6 +158,5 @@ same as other commands.
 ---
 # Credits
 - [Windows Terminal](https://github.com/microsoft/terminal)
-- [keyboard](https://github.com/eiannone/keyboard) for handling key events
 - [levenshtein](github.com/agnivade/levenshtein) for suggesting similar profile names
 - [saltkid](https://github.com/saltkid)

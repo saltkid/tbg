@@ -1,6 +1,5 @@
 # Table of Contents
 - [Overview](#tbg-run)
-- [Key events](#key-events)
 - [Executing with flags](#executing-with-flags)
 - [Usage](#usage)
     - [Normal Execution, key events, and path specific options](#normal-execution)
@@ -14,18 +13,12 @@
 settings from `.tbg.yml`. **tbg** will keep running, editing the
 `settings.json` of *Windows Terminal*, replacing the background image. The 
 background image is chosen randomly from the images under each path specified
-in `.tbg.yml`. Pressing `q` or `ctrl+c` will stop execution.
+in `.tbg.yml`.
 
 On initial execution of **tbg**, it will create a `.tbg.yml` in the same
 directory as the **tbg** executable if it does not exist already. **There can
 only be one `.tbg.yml`**. For more information, see documentation on
 [tbg.yml](https://github.com/saltkid/tbg/blob/main/docs/tbg.yml.md).
-
-# Key events
-**tbg** takes optional commands during execution:
-- `q`: quits
-- `c`: shows the available commands
-- `n`: goes to next image
 
 # Executing with flags
 #### Valid Flags: `--profile`, `--interval`, `--port`, `--alignment`, `--opacity`, `--stretch`
@@ -66,7 +59,10 @@ This just means that when we do `tbg run`, we want to change the background
 image of the **default** *Windows Terminal* profile every **30 minutes**. The
 image is chosen randomly from images under `/path/to/dir1` and `/path/to/dir2`.
 
-Now let's quit **tbg** by pressing `q` or `ctrl+c`.
+You can quit **tbg** by running:
+```bash
+tbg quit
+```
 
 ---
 ### Overriding `profile`, `port`, and `interval` fields
@@ -90,6 +86,11 @@ image of the `default` profile every 30 minutes, it will change the background
 image of the first profile under `list` field in `settings.json` every 5
 minutes instead. The server will run in port 8000 instead of what is defined
 in the config (9545)
+
+To quit, make sure to put the same port specified in `tbg run`:
+```bash
+tbg quit --port 8000
+```
 
 ---
 ### Overriding default values
