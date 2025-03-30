@@ -7,8 +7,6 @@ import (
 	"net/http"
 	"strconv"
 	"time"
-
-	"github.com/eiannone/keyboard"
 )
 
 type TbgState struct {
@@ -85,107 +83,9 @@ func (tbg *TbgState) Start() error {
 	if len(tbg.Config.Paths) == 0 {
 		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
 	}
-	go tbg.readUserInput()
 	go tbg.imageUpdateTicker()
 	go tbg.startServer()
 	return tbg.eventHandler()
-}
-
-// Changes the background image to a randomly chosen image from images in dirs
-// under "paths" in the tbg config file (.tbg.yml)
-func (tbg *TbgState) changeToRandomImage(
-	alignment *string,
-	opacity *float32,
-	stretch *string,
-) error {
-	currentImage, currentAlignment, currentOpacity, currentStretch, err := tbg.randomImage()
-	if err != nil {
-		return err
-	}
-	currentAlignment = Option(alignment).UnwrapOr(currentAlignment)
-	currentOpacity = Option(opacity).UnwrapOr(currentOpacity)
-	currentStretch = Option(stretch).UnwrapOr(currentStretch)
-	return tbg.setImage(currentImage, currentAlignment, currentOpacity, currentStretch)
-}
-
-// Sets the passed in image path with its properties as the current background
-// image
-func (tbg *TbgState) setImage(
-	imagePath string,
-	alignment string,
-	opacity float32,
-	stretch string,
-) error {
-	err := tbg.Settings.Write(
-		imagePath,
-		tbg.Config.Profile,
-		alignment,
-		opacity,
-		stretch,
-	)
-	if err != nil {
-		return err
-	}
-	tbg.Config.Log(tbg.ConfigPath).RunSettings(
-		imagePath,
-		tbg.Config.Profile,
-		tbg.Config.Interval,
-		alignment,
-		opacity,
-		stretch,
-	)
-	return nil
-}
-
-// Selects a random image from dirs in "paths" field set in tbg config
-// (.tbg.yml)
-func (tbg *TbgState) randomImage() (string, string, float32, string, error) {
-	randomPath := tbg.Config.Paths[uint16(rand.IntN(len(tbg.Config.Paths)))]
-	var err error
-	tbg.Images, err = randomPath.Images()
-	if err != nil {
-		return "", "", 0.0, "", err
-	}
-	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))],
-		Option(randomPath.Alignment).UnwrapOr(DefaultAlignment),
-		Option(randomPath.Opacity).UnwrapOr(DefaultOpacity),
-		Option(randomPath.Stretch).UnwrapOr(DefaultStretch),
-		nil
-}
-
-// Listens to user keyboard input and emits TbgState events based on that.
-func (tbg *TbgState) readUserInput() {
-	keysEvents, err := keyboard.GetKeys(10)
-	if err != nil {
-		tbg.Events.Error <- err
-	}
-	defer func() {
-		_ = keyboard.Close()
-	}()
-	for {
-		event := <-keysEvents
-		if event.Err != nil {
-			tbg.Events.Error <- event.Err
-		}
-		switch keyboard.Key(event.Rune) {
-		case keyboard.Key('c'):
-			commandList()
-		case keyboard.Key('n'):
-			tbg.Events.NextImage <- NextImageEvent{
-				Alignment: nil,
-				Opacity:   nil,
-				Stretch:   nil,
-			}
-		case keyboard.Key('q'):
-			fmt.Println("Exiting...")
-			close(tbg.Events.Done)
-			return
-		case keyboard.Key('d'): // debug
-			fmt.Println(tbg)
-		default:
-			fmt.Printf("invalid key '%c' ('c' for list of [c]ommand)\n", event.Rune)
-		}
-	}
 }
 
 // Creates a ticker that emits a NextImage Event every *interval* minutes where
@@ -271,10 +171,64 @@ func (tbg *TbgState) eventHandler() error {
 	}
 }
 
-func commandList() {
-	fmt.Print(`
-q: [q]uit
-n: [n]ext image
-c: [c]ommand list
-`)
+// Changes the background image to a randomly chosen image from images in dirs
+// under "paths" in the tbg config file (.tbg.yml)
+func (tbg *TbgState) changeToRandomImage(
+	alignment *string,
+	opacity *float32,
+	stretch *string,
+) error {
+	currentImage, currentAlignment, currentOpacity, currentStretch, err := tbg.randomImage()
+	if err != nil {
+		return err
+	}
+	currentAlignment = Option(alignment).UnwrapOr(currentAlignment)
+	currentOpacity = Option(opacity).UnwrapOr(currentOpacity)
+	currentStretch = Option(stretch).UnwrapOr(currentStretch)
+	return tbg.setImage(currentImage, currentAlignment, currentOpacity, currentStretch)
+}
+
+// Sets the passed in image path with its properties as the current background
+// image
+func (tbg *TbgState) setImage(
+	imagePath string,
+	alignment string,
+	opacity float32,
+	stretch string,
+) error {
+	err := tbg.Settings.Write(
+		imagePath,
+		tbg.Config.Profile,
+		alignment,
+		opacity,
+		stretch,
+	)
+	if err != nil {
+		return err
+	}
+	tbg.Config.Log(tbg.ConfigPath).RunSettings(
+		imagePath,
+		tbg.Config.Profile,
+		tbg.Config.Interval,
+		alignment,
+		opacity,
+		stretch,
+	)
+	return nil
+}
+
+// Selects a random image from dirs in "paths" field set in tbg config
+// (.tbg.yml)
+func (tbg *TbgState) randomImage() (string, string, float32, string, error) {
+	randomPath := tbg.Config.Paths[uint16(rand.IntN(len(tbg.Config.Paths)))]
+	var err error
+	tbg.Images, err = randomPath.Images()
+	if err != nil {
+		return "", "", 0.0, "", err
+	}
+	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))],
+		Option(randomPath.Alignment).UnwrapOr(DefaultAlignment),
+		Option(randomPath.Opacity).UnwrapOr(DefaultOpacity),
+		Option(randomPath.Stretch).UnwrapOr(DefaultStretch),
+		nil
 }
