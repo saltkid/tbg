@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
 )
 
 type RunCommand struct {
@@ -113,18 +114,28 @@ func (cmd *RunCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	alignment, stretch, opacity := config.determineExecutionFlags(cmd)
-	backgroundState, err := NewTbgState(config, configPath, alignment, stretch, opacity)
+
+	errs := config.Validate()
+	if len(errs) != 0 {
+		var errMsg strings.Builder
+		fmt.Fprintln(&errMsg, "CONFIG ERRORS")
+		for _, err := range errs {
+			fmt.Fprintln(&errMsg, " ", err)
+		}
+		return fmt.Errorf(errMsg.String())
+	}
+
+	config.Profile = Option(cmd.Profile).Or(config.Profile).val
+	config.Interval = Option(cmd.Interval).Or(config.Interval).val
+	tbgState, err := NewTbgState(
+		config,
+		configPath,
+		Option(cmd.Alignment).UnwrapOr(DefaultAlignment),
+		Option(cmd.Stretch).UnwrapOr(DefaultStretch),
+		Option(cmd.Opacity).UnwrapOr(DefaultOpacity),
+	)
 	if err != nil {
 		return err
 	}
-	return backgroundState.Start(cmd.Port)
-}
-
-func (config *Config) determineExecutionFlags(cmd *RunCommand) (string, string, float32) {
-	config.Profile = Option(cmd.Profile).Or(config.Profile).val
-	config.Interval = Option(cmd.Interval).Or(config.Interval).val
-	return Option(cmd.Alignment).UnwrapOr(DefaultAlignment),
-		Option(cmd.Stretch).UnwrapOr(DefaultStretch),
-		Option(cmd.Opacity).UnwrapOr(DefaultOpacity)
+	return tbgState.Start(cmd.Port)
 }

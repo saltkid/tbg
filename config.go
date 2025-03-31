@@ -253,10 +253,92 @@ func (cfg *Config) EditConfig(
 	template.Content, _ = yaml.Marshal(cfg)
 	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to config at %s: %s", shrinkHome(configPath), err.Error())
+		return fmt.Errorf(
+			"error writing to config at %s: %s",
+			shrinkHome(configPath),
+			err.Error(),
+		)
 	}
 	cfg.Log(configPath).Edited(edited)
 	return nil
+}
+
+// always initializes the returned error messages so no need to check against
+// nil
+func (cfg *Config) Validate() []string {
+	errs := make([]string, 0)
+	if len(cfg.Paths) == 0 {
+		errs = append(errs, fmt.Sprint("paths: must have at least one path entry"))
+	}
+	leftPad := "\n           "
+	for i, path := range cfg.Paths {
+		var errStr strings.Builder
+		absPath, err := NormalizePath(path.Path)
+		if err != nil {
+			fmt.Fprint(&errStr,
+				"path ", i+1,
+				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
+				leftPad, err,
+			)
+			errs = append(errs, errStr.String())
+			errStr.Reset()
+		} else if _, err = os.Stat(absPath); os.IsNotExist(err) {
+			fmt.Fprint(&errStr,
+				"path ", i+1,
+				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
+				leftPad, path.Path, "does not exist",
+			)
+			errs = append(errs, errStr.String())
+			errStr.Reset()
+		}
+		alignment := path.AlignmentOrDefault()
+		if _, err = ValidateAlignment(&alignment); err != nil {
+			fmt.Fprint(&errStr,
+				"path ", i+1, " alignment",
+				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
+				leftPad, strings.ReplaceAll(err.Error(), "\n", leftPad),
+				"\n",
+			)
+			errs = append(errs, errStr.String())
+			errStr.Reset()
+		}
+		opacity := strconv.FormatFloat(float64(path.OpacityOrDefault()), 'f', -1, 32)
+		if _, err = ValidateOpacity(&opacity); err != nil {
+			fmt.Fprint(&errStr,
+				"path ", i+1, " opacity",
+				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
+				leftPad, strings.ReplaceAll(err.Error(), "\n", leftPad),
+				"\n",
+			)
+			errs = append(errs, errStr.String())
+			errStr.Reset()
+		}
+		stretch := path.StretchOrDefault()
+		if _, err = ValidateStretch(&stretch); err != nil {
+			fmt.Fprint(&errStr,
+				"path ", i+1, " stretch",
+				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
+				leftPad, strings.ReplaceAll(err.Error(), "\n", leftPad),
+				"\n",
+			)
+			errs = append(errs, errStr.String())
+			errStr.Reset()
+		}
+	}
+
+	interval := strconv.FormatUint(uint64(cfg.IntervalOrDefault()), 10)
+	if _, err := ValidateInterval(&interval); err != nil {
+		errs = append(errs, fmt.Sprintf("interval: %s", err))
+	}
+	port := strconv.FormatUint(uint64(cfg.PortOrDefault()), 10)
+	if _, err := ValidatePort(&port); err != nil {
+		errs = append(errs, fmt.Sprintf("port: %s", err))
+	}
+	profile := cfg.ProfileOrDefault()
+	if _, err := ValidateProfile(&profile); err != nil {
+		errs = append(errs, fmt.Sprintf("profile: %s", err))
+	}
+	return errs
 }
 
 type ImagesPath struct {
@@ -280,18 +362,22 @@ func (path *ImagesPath) String() string {
 	)
 }
 
+// get alignment if set, otherwise the default value
 func (path *ImagesPath) AlignmentOrDefault() string {
 	return Option(path.Alignment).UnwrapOr(DefaultAlignment)
 }
 
+// get opacity if set, otherwise the default value
 func (path *ImagesPath) OpacityOrDefault() float32 {
 	return Option(path.Opacity).UnwrapOr(DefaultOpacity)
 }
 
+// get stretch if set, otherwise the default value
 func (path *ImagesPath) StretchOrDefault() string {
 	return Option(path.Stretch).UnwrapOr(DefaultStretch)
 }
 
+// get all images under the directory
 func (path *ImagesPath) Images() ([]string, error) {
 	dir, err := NormalizePath(path.Path)
 	if err != nil {
@@ -319,44 +405,55 @@ func (path *ImagesPath) Images() ([]string, error) {
 type ConfigLogger struct{}
 
 func (cfg *Config) Log(configPath string) ConfigLogger {
-	fmt.Println(`
-------------------------------------------------------------------------------------
-| ` + shrinkHome(configPath) + `
-------------------------------------------------------------------------------------
-| paths:` + func() string {
+	shrunkConfigPath := shrinkHome(configPath)
+	border := strings.Repeat("-", len(shrunkConfigPath)+2)
+	fmt.Print(border, `
+| `, shrinkHome(configPath), `
+`, border, `
+| paths:    `, func() string {
+		if len(cfg.Paths) == 0 {
+			return "[]"
+		}
 		var ret strings.Builder
 		for _, dir := range cfg.Paths {
 			ret.WriteString(`
-|              path: ` + dir.Path +
-				func() string {
-					if dir.Alignment != nil {
-						return `
-|              - alignment: ` + dir.AlignmentOrDefault()
-					}
-					return ""
-				}() +
-				func() string {
-					if dir.Opacity != nil {
-						return `
-|              - opacity: ` + strconv.FormatFloat(float64(dir.OpacityOrDefault()), 'f', -1, 32)
-					}
-					return ""
-				}() +
-				func() string {
-					if dir.Stretch != nil {
-						return `
-|              - stretch: ` + dir.StretchOrDefault()
-					}
-					return ""
-				}() + `
-|`)
+|           path: ` + dir.Path)
+			if dir.Alignment != nil {
+				ret.WriteString(`
+|           - alignment: `)
+				ret.WriteString(dir.AlignmentOrDefault())
+			}
+			if dir.Opacity != nil {
+				ret.WriteString(`
+|           - opacity: `)
+				ret.WriteString(strconv.FormatFloat(float64(dir.OpacityOrDefault()), 'f', -1, 32))
+			}
+			if dir.Stretch != nil {
+				ret.WriteString(`
+|           - stretch: `)
+				ret.WriteString(dir.StretchOrDefault())
+			}
+			ret.WriteString("\n|")
 		}
 		return ret.String()
-	}() + `
-| profile:     ` + cfg.ProfileOrDefault() + `
-| port:        ` + strconv.FormatUint(uint64(cfg.PortOrDefault()), 10) + `
-| interval:    ` + strconv.FormatUint(uint64(cfg.IntervalOrDefault()), 10) + `
-------------------------------------------------------------------------------------`)
+	}(), `
+| profile:  `, cfg.ProfileOrDefault(), `
+| port:     `, cfg.PortOrDefault(), `
+| interval: `, cfg.IntervalOrDefault(), `
+`, border, `
+`, func() string {
+		var ret strings.Builder
+		if errs := cfg.Validate(); len(errs) > 0 {
+			fmt.Fprintln(&ret, Decorate("| ERRORS:").Bold())
+			for _, err := range errs {
+				fmt.Fprintln(&ret, "|", strings.ReplaceAll(err, "\n", "\n|"))
+			}
+			fmt.Fprintln(&ret, border)
+			return ret.String()
+		}
+		return ""
+	}(),
+	)
 	return ConfigLogger{}
 }
 
