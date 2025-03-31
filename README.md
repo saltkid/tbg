@@ -5,11 +5,14 @@
 - [Usage](#usage)
     - [Automatically change background image at a set interval](#automatically-change-background-image-at-a-set-interval)
     - [tbg server](#tbg-server)
+        - [Logging](#logging)
 - [Config](#config)
     - [Fields](#fields)
 - [Commands](#commands)
     - [Server Commands](#server-commands)
 - [Example Setup](#example-setup)
+    - [pwsh](#pwsh)
+    - [zsh (on wsl)](#zsh-on-wsl)
 - [Credits](#credits)
 
 ---
@@ -68,14 +71,22 @@ properties are:
 | opacity        | `1.0`          |
 | stretch        | `uniformToFill`|
 
-On initial execution of `tbg run`, it will create a [default `config.yml`](#config)
-in `$env:LOCALAPPDATA/tbg/config.yml`. You can edit this manually **or** use
-[tbg commands](#commands) to edit the fields with input validation.
+On initial execution of `tbg run`, it will create a [default
+`config.yml`](#config) in `$env:LOCALAPPDATA/tbg/config.yml`. You can edit this
+manually **or** use [tbg commands](#commands) to edit the fields with input
+validation.
 
 ## tbg server
 `tbg run` starts the **tbg** http server where POST requests can be made to
 trigger certain actions. These post requests can be made through [tbg server
-commands](#server-commands) for convenience
+commands](#server-commands) for convenience.
+
+### Logging
+A log file is in the same directory as the config file:
+`$env:LOCALAPPDATA/tbg/tbg.log`. It's in json so I recommend using
+[`jq`](https://jqlang.org/) to parse and get useful information out of it.
+
+See [logs](/docs/logs.md) for all log types and their structure.
 
 ---
 # Config
@@ -83,7 +94,8 @@ commands](#server-commands) for convenience
 the `settings.json` *Windows Terminal* uses. On initial execution of `tbg
 config`, a default config is created at that path. See example config at
 [samples](./samples/config.yml). A `schema.json` is also given for some basic
-autocomplete with [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)
+autocomplete with
+[yaml-language-server](https://github.com/redhat-developer/yaml-language-server)
 
 ## Fields
 Although you can edit the fields in the config directly, it is recommended to
@@ -245,4 +257,5 @@ server instance too by specifing the same port used in starting it.
 # Credits
 - [Windows Terminal](https://github.com/microsoft/terminal)
 - [levenshtein](github.com/agnivade/levenshtein) for suggesting similar profile names
+- [lumberjack](https://github.com/natefinch/lumberjack) for easy rotating logs
 - [saltkid](https://github.com/saltkid)
