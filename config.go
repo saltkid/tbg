@@ -99,7 +99,7 @@ func (cfg *Config) AddPath(
 	isEditingOptions := align != nil || stretch != nil || opacity != nil
 	pathExists := false
 	var added *ImagesPath
-	var edited *pathEditForLogs
+	var edited *pathEdit
 	errors := make([]string, 1)
 	for i, path := range cfg.Paths {
 		cleanPath, err := NormalizePath(path.Path)
@@ -118,7 +118,7 @@ func (cfg *Config) AddPath(
 			if finalAlign == nil && finalOpacity == nil && finalStretch == nil {
 				break
 			}
-			edited = &pathEditForLogs{
+			edited = &pathEdit{
 				old: path,
 				new: ImagesPath{
 					Path:      pathToAdd,
@@ -156,7 +156,7 @@ func (cfg *Config) AddPath(
 }
 
 // helper struct for easier logging changes to a path in the config
-type pathEditForLogs struct {
+type pathEdit struct {
 	old ImagesPath
 	new ImagesPath
 }
@@ -196,20 +196,22 @@ func (cfg *Config) RemovePath(
 				removed = &pathToRemove
 				cfg.Paths = slices.Delete(cfg.Paths, i, i+1)
 			} else {
-				removedFlags := ""
-				if align {
-					removedFlags += AlignmentFlag.String() + ", "
+				var removedFlags strings.Builder
+				if align && path.Alignment != nil {
+					fmt.Fprint(&removedFlags, AlignmentFlag.String(), ", ")
+					cfg.Paths[i].Alignment = nil
 				}
-				if stretch {
-					removedFlags += StretchFlag.String() + ", "
+				if opacity && path.Opacity != nil {
+					fmt.Fprint(&removedFlags, OpacityFlag.String(), ", ")
+					cfg.Paths[i].Opacity = nil
 				}
-				if opacity {
-					removedFlags += OpacityFlag.String() + ", "
+				if stretch && path.Stretch != nil {
+					fmt.Fprint(&removedFlags, StretchFlag.String(), ", ")
+					cfg.Paths[i].Stretch = nil
 				}
-				tmp := fmt.Sprintf("'%s' from '%s'", strings.TrimSuffix(removedFlags, ", "), path.Path)
-				removed = &tmp
-				cfg.Paths[i] = ImagesPath{
-					Path: path.Path,
+				if removedFlags.Len() != 0 {
+					tmp := fmt.Sprintf("'%s' from '%s'", strings.TrimSuffix(removedFlags.String(), ", "), path.Path)
+					removed = &tmp
 				}
 			}
 			break
@@ -229,25 +231,55 @@ func (cfg *Config) RemovePath(
 	return nil
 }
 
+// contains edits info when changing config through the `config` command
+type configEdits struct {
+	title string
+	old   string
+	new   string
+}
+
 func (cfg *Config) EditConfig(
 	configPath string,
 	interval *uint16,
 	port *uint16,
 	profile *string,
 ) error {
-	// key:val = old:new
-	edited := make(map[string]string, 0)
+	edits := make([]configEdits, 0)
 	if interval != nil {
-		edited[strconv.Itoa(int(cfg.IntervalOrDefault()))] = strconv.Itoa(int(*interval))
-		cfg.Interval = interval
+		if cfg.IntervalOrDefault() != *interval {
+			edits = append(edits,
+				configEdits{
+					title: "interval",
+					old:   strconv.FormatUint(uint64(cfg.IntervalOrDefault()), 10),
+					new:   strconv.FormatUint(uint64(*interval), 10),
+				},
+			)
+			cfg.Interval = interval
+		}
 	}
 	if port != nil {
-		edited[strconv.Itoa(int(cfg.PortOrDefault()))] = strconv.Itoa(int(*port))
-		cfg.Port = port
+		if cfg.PortOrDefault() != *port {
+			edits = append(edits,
+				configEdits{
+					title: "port",
+					old:   strconv.FormatUint(uint64(cfg.PortOrDefault()), 10),
+					new:   strconv.FormatUint(uint64(*port), 10),
+				},
+			)
+			cfg.Port = port
+		}
 	}
 	if profile != nil {
-		edited[cfg.ProfileOrDefault()] = *profile
-		cfg.Profile = profile
+		if cfg.ProfileOrDefault() != *profile {
+			edits = append(edits,
+				configEdits{
+					title: "profile",
+					old:   cfg.ProfileOrDefault(),
+					new:   *profile,
+				},
+			)
+			cfg.Profile = profile
+		}
 	}
 	template := NewConfigTemplate(configPath)
 	template.Content, _ = yaml.Marshal(cfg)
@@ -259,7 +291,7 @@ func (cfg *Config) EditConfig(
 			err.Error(),
 		)
 	}
-	cfg.Log(configPath).Edited(edited)
+	cfg.Log(configPath).Edited(edits)
 	return nil
 }
 
@@ -406,49 +438,40 @@ type ConfigLogger struct{}
 
 func (cfg *Config) Log(configPath string) ConfigLogger {
 	shrunkConfigPath := shrinkHome(configPath)
-	border := strings.Repeat("-", len(shrunkConfigPath)+2)
-	fmt.Print(border, `
-| `, shrinkHome(configPath), `
-`, border, `
-| paths:    `, func() string {
+	fmt.Print("## ", shrunkConfigPath, `
+paths:    `, func() string {
 		if len(cfg.Paths) == 0 {
 			return "[]"
 		}
 		var ret strings.Builder
 		for _, dir := range cfg.Paths {
-			ret.WriteString(`
-|           path: ` + dir.Path)
+			fmt.Fprint(&ret, `
+    - path: `, dir.Path)
 			if dir.Alignment != nil {
-				ret.WriteString(`
-|           - alignment: `)
-				ret.WriteString(dir.AlignmentOrDefault())
+				fmt.Fprint(&ret, `
+      alignment: `, dir.AlignmentOrDefault())
 			}
 			if dir.Opacity != nil {
-				ret.WriteString(`
-|           - opacity: `)
-				ret.WriteString(strconv.FormatFloat(float64(dir.OpacityOrDefault()), 'f', -1, 32))
+				fmt.Fprint(&ret, `
+      opacity: `, dir.OpacityOrDefault())
 			}
 			if dir.Stretch != nil {
-				ret.WriteString(`
-|           - stretch: `)
-				ret.WriteString(dir.StretchOrDefault())
+				fmt.Fprint(&ret, `
+      stretch:`, dir.StretchOrDefault())
 			}
-			ret.WriteString("\n|")
 		}
 		return ret.String()
 	}(), `
-| profile:  `, cfg.ProfileOrDefault(), `
-| port:     `, cfg.PortOrDefault(), `
-| interval: `, cfg.IntervalOrDefault(), `
-`, border, `
+profile:  `, cfg.ProfileOrDefault(), `
+port:     `, cfg.PortOrDefault(), `
+interval: `, cfg.IntervalOrDefault(), `
 `, func() string {
 		var ret strings.Builder
 		if errs := cfg.Validate(); len(errs) > 0 {
-			fmt.Fprintln(&ret, Decorate("| ERRORS:").Bold())
+			fmt.Fprintln(&ret, "## ERRORS:")
 			for _, err := range errs {
-				fmt.Fprintln(&ret, "|", strings.ReplaceAll(err, "\n", "\n|"))
+				fmt.Fprintln(&ret, "#", strings.ReplaceAll(err, "\n", "\n#"))
 			}
-			fmt.Fprintln(&ret, border)
 			return ret.String()
 		}
 		return ""
@@ -457,78 +480,68 @@ func (cfg *Config) Log(configPath string) ConfigLogger {
 	return ConfigLogger{}
 }
 
-func (log ConfigLogger) Added(added *ImagesPath, edited *pathEditForLogs) ConfigLogger {
+func (log ConfigLogger) Added(added *ImagesPath, edited *pathEdit) ConfigLogger {
 	if edited == nil && added == nil {
-		fmt.Println("| no changes made")
+		fmt.Println("# no changes made")
 	} else {
 		if added != nil {
-			fmt.Println("| added: ")
-			fmt.Printf("%-25sadded path: %s\n", "|", added.Path)
+			fmt.Println("## ADDED: ")
+			fmt.Printf("%-5sadded path: %s\n", "#", added.Path)
 			if added.Alignment != nil {
-				fmt.Printf("%-25s- alignment: %s\n", "|", *added.Alignment)
+				fmt.Printf("%-5s- alignment: %s\n", "#", *added.Alignment)
 			}
 			if added.Opacity != nil {
-				fmt.Printf("%-25s- opacity: %f\n", "|", *added.Opacity)
+				fmt.Printf("%-5s- opacity: %f\n", "#", *added.Opacity)
 			}
 			if added.Stretch != nil {
-				fmt.Printf("%-25s- stretch: %s\n", "|", *added.Stretch)
+				fmt.Printf("%-5s- stretch: %s\n", "#", *added.Stretch)
 			}
 		}
 		if edited != nil {
-			fmt.Println("| edited: ")
-			fmt.Printf("%-25sedited path: %s\n", "|", edited.old.Path)
+			fmt.Println("## EDITED: ")
+			fmt.Printf("%-5sedited path: %s\n", "#", edited.old.Path)
 			if edited.new.Alignment != nil {
 				if edited.old.Alignment != nil {
-					fmt.Printf("%-25s- old alignment: %s\n", "|", *edited.old.Alignment)
+					fmt.Printf("%-5s- old alignment: %s\n", "#", *edited.old.Alignment)
 				}
-				fmt.Printf("%-25s- new alignment: %s\n", "|", *edited.new.Alignment)
+				fmt.Printf("%-5s- new alignment: %s\n", "#", *edited.new.Alignment)
 			}
 			if edited.new.Opacity != nil {
 				if edited.old.Opacity != nil {
-					fmt.Printf("%-25s- old opacity: %f\n", "|", *edited.old.Opacity)
+					fmt.Printf("%-5s- old opacity: %f\n", "#", *edited.old.Opacity)
 				}
-				fmt.Printf("%-25s- new opacity: %f\n", "|", *edited.new.Opacity)
+				fmt.Printf("%-5s- new opacity: %f\n", "#", *edited.new.Opacity)
 			}
 			if edited.new.Stretch != nil {
 				if edited.old.Stretch != nil {
-					fmt.Printf("%-25s- old stretch: %s\n", "|", *edited.old.Stretch)
+					fmt.Printf("%-5s- old stretch: %s\n", "#", *edited.old.Stretch)
 				}
-				fmt.Printf("%-25s- new stretch: %s\n", "|", *edited.new.Stretch)
+				fmt.Printf("%-5s- new stretch: %s\n", "#", *edited.new.Stretch)
 			}
 		}
 	}
-	fmt.Println("------------------------------------------------------------------------------------")
 	return log
 }
 
 func (log ConfigLogger) Removed(removed *string) ConfigLogger {
-	noChangesMade := removed == nil
-	if noChangesMade {
-		fmt.Println("| no changes made")
+	fmt.Println("## REMOVED: ")
+	if removed == nil {
+		fmt.Println("# no changes made")
 	} else {
-		fmt.Println("| removed: ")
-		fmt.Println("|", *removed)
+		fmt.Println("#", *removed)
 	}
-	fmt.Println("------------------------------------------------------------------------------------")
 	return log
 }
 
-func (log ConfigLogger) Edited(edited map[string]string) ConfigLogger {
-	fmt.Println("| edited: ")
-	fmt.Println("------------------------------------------------------------------------------------")
-	noChangesMade := len(edited) == 0
-	if noChangesMade {
-		fmt.Println("| no changes made")
+func (log ConfigLogger) Edited(edited []configEdits) ConfigLogger {
+	fmt.Println("## EDITED")
+	if len(edited) == 0 {
+		fmt.Println("# no changes made")
 	} else {
-		for old, edited := range edited {
-			if old != edited {
-				fmt.Printf("%-25s%s\n", "| old:", old)
-				fmt.Printf("%-25s%s\n", "| new:", edited)
-				fmt.Println("|")
-			}
+		for _, edit := range edited {
+			fmt.Printf("# %-10s %s --> %s\n", edit.title, edit.old, edit.new)
 		}
 	}
-	fmt.Println("------------------------------------------------------------------------------------")
 	return log
 }
 
@@ -540,14 +553,12 @@ func (log ConfigLogger) RunSettings(
 	opacity float32,
 	stretch string,
 ) ConfigLogger {
-	fmt.Println("| editing", profile, "profile")
-	fmt.Println("| image collection:", filepath.Dir(imagePath))
-	fmt.Println("|   image:", filepath.Base(imagePath))
-	fmt.Println("------------------------------------------------------------------------------------")
-	fmt.Printf("%-25s%d%s\n", "| change image every: ", interval, " minutes")
-	fmt.Printf("%-25s%s\n", "| alignment:", alignment)
-	fmt.Printf("%-25s%s\n", "| stretch:", stretch)
-	fmt.Printf("%-25s%f\n", "| opacity:", opacity)
-	fmt.Println("------------------------------------------------------------------------------------")
+	fmt.Println("# editing", profile, "profile")
+	fmt.Println("# image collection:", filepath.Dir(imagePath))
+	fmt.Println("#   image:", filepath.Base(imagePath))
+	fmt.Printf("%-5s%d%s\n", "# change image every: ", interval, " minutes")
+	fmt.Printf("%-5s%s\n", "# alignment:", alignment)
+	fmt.Printf("%-5s%s\n", "# stretch:", stretch)
+	fmt.Printf("%-5s%f\n", "# opacity:", opacity)
 	return log
 }
