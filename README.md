@@ -39,13 +39,16 @@ cd tbg
 - build it:
 ```
 go mod tidy
-go build -ldflags '-s'
+go build -ldflags "-X main.TbgVersion=$(git describe --tags --dirty --always)-dev"
+
+## or build it without debug information to make the executable smaller
+# go build -ldflags "-s -w -X main.TbgVersion=$(git describe --tags --dirty --always)"
 ```
 **Optionally** add the `tbg` executable to your PATH
 
 *oneliner for copy pasting*
 ```bash
-git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go build -ldflags '-s'
+git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go build -ldflags "-X main.TbgVersion=$(git describe --tags --dirty --always)-dev"
 ```
 
 ---
