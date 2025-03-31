@@ -223,7 +223,7 @@ func (cfg *Config) RemovePath(
 	}
 	err = template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("Error writing to config at %s: %s", configPath, err.Error())
+		return fmt.Errorf("Error writing to config at %s: %s", shrinkHome(configPath), err.Error())
 	}
 	cfg.Log(configPath).Removed(removed)
 	return nil
@@ -253,7 +253,7 @@ func (cfg *Config) EditConfig(
 	template.Content, _ = yaml.Marshal(cfg)
 	err := template.WriteFile()
 	if err != nil {
-		return fmt.Errorf("error writing to config at %s: %s", configPath, err.Error())
+		return fmt.Errorf("error writing to config at %s: %s", shrinkHome(configPath), err.Error())
 	}
 	cfg.Log(configPath).Edited(edited)
 	return nil
@@ -321,16 +321,7 @@ type ConfigLogger struct{}
 func (cfg *Config) Log(configPath string) ConfigLogger {
 	fmt.Println(`
 ------------------------------------------------------------------------------------
-| ` + func() string {
-		homeDir, err := os.UserHomeDir()
-		if err != nil {
-			return configPath
-		}
-		if strings.HasPrefix(configPath, homeDir) {
-			return filepath.Join("~", strings.TrimPrefix(configPath, homeDir))
-		}
-		return configPath
-	}() + `
+| ` + shrinkHome(configPath) + `
 ------------------------------------------------------------------------------------
 | paths:` + func() string {
 		var ret strings.Builder

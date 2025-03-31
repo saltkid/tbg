@@ -56,7 +56,10 @@ func expandEnv(s string) string {
 	return os.ExpandEnv(expandWin)
 }
 
-// Expands prefixed tilde to the user's home directory
+// Expands a path containing prefixed tilde to the user's home directory.
+// Opposite of shrinkHome
+//
+// ~/Pictures --> C:/Users/username/Pictures
 func expandTilde(path string) string {
 	if strings.HasPrefix(filepath.ToSlash(path), "~/") {
 		homeDir, err := os.UserHomeDir()
@@ -64,6 +67,21 @@ func expandTilde(path string) string {
 			return path
 		}
 		return filepath.Join(homeDir, path[2:])
+	}
+	return path
+}
+
+// Shrinks the user home directory path to a "~"
+// Opposite of expandTilde
+//
+// C:/Users/username/Pictures --> ~/Pictures
+func shrinkHome(path string) string {
+	homeDir, err := os.UserHomeDir()
+	if err != nil {
+		return path
+	}
+	if strings.HasPrefix(filepath.ToSlash(path), filepath.ToSlash(homeDir)) {
+		return filepath.Join("~", strings.TrimPrefix(path, homeDir))
 	}
 	return path
 }

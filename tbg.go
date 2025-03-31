@@ -81,7 +81,7 @@ func NewTbgState(config *Config, configPath string, alignment string, stretch st
 
 func (tbg *TbgState) Start(port *uint16) error {
 	if len(tbg.Config.Paths) == 0 {
-		return fmt.Errorf(`config at "%s" has no paths`, tbg.ConfigPath)
+		return fmt.Errorf(`config at "%s" has no paths`, shrinkHome(tbg.ConfigPath))
 	}
 	go tbg.imageUpdateTicker()
 	go tbg.startServer(port)

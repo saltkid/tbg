@@ -13,7 +13,7 @@ type ConfigTemplate struct {
 
 func (cfg *ConfigTemplate) WriteFile() error {
 	if err := os.WriteFile(cfg.Path, cfg.Content, 0666); err != nil {
-		return fmt.Errorf("Error writing to config at %s: %s", cfg.Path, err.Error())
+		return fmt.Errorf("Error writing to config at %s: %s", shrinkHome(cfg.Path), err.Error())
 	}
 	return nil
 }

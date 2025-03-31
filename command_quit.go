@@ -53,7 +53,7 @@ func (cmd *QuitCommand) Execute() error {
 	}
 	yamlFile, err := os.ReadFile(configPath)
 	if err != nil {
-		return fmt.Errorf("Failed to read config file %s: %s", configPath, err)
+		return fmt.Errorf("Failed to read config at %s: %s", shrinkHome(configPath), err)
 	}
 	config := new(Config)
 	err = config.Unmarshal(yamlFile)
