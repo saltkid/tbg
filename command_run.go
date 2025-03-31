@@ -127,15 +127,16 @@ func (cmd *RunCommand) Execute() error {
 
 	config.Profile = Option(cmd.Profile).Or(config.Profile).val
 	config.Interval = Option(cmd.Interval).Or(config.Interval).val
+	config.Port = Option(cmd.Port).Or(config.Port).val
 	tbgState, err := NewTbgState(
 		config,
 		configPath,
-		Option(cmd.Alignment).UnwrapOr(DefaultAlignment),
-		Option(cmd.Stretch).UnwrapOr(DefaultStretch),
-		Option(cmd.Opacity).UnwrapOr(DefaultOpacity),
+		cmd.Alignment,
+		cmd.Opacity,
+		cmd.Stretch,
 	)
 	if err != nil {
 		return err
 	}
-	return tbgState.Start(cmd.Port)
+	return tbgState.Start()
 }

@@ -3,10 +3,17 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"io"
+	"log/slog"
 	"math/rand/v2"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
+
+	"gopkg.in/natefinch/lumberjack.v2"
 )
 
 type TbgState struct {
@@ -20,6 +27,15 @@ type TbgState struct {
 	Config *Config
 	// Used for logging the config with the current execution state
 	ConfigPath string
+	// passed through --alignment flag. will override all alignment values,
+	// regardless of what is in the config
+	OverrideAlignment *string
+	// passed through --opacity flag. will override all opacity values,
+	// regardless of what is in the config
+	OverrideOpacity *float32
+	// passed through --stretch flag. will override all stretch values,
+	// regardless of what is in the config
+	OverrideStretch *string
 	// Events for TbgState goroutines to communicate with each other
 	Events *TbgEvents
 	// Used to call the WTSettings.Write() method to update WT's settings.json
@@ -59,16 +75,19 @@ type SetImageEvent struct {
 	Stretch   *string
 }
 
-func NewTbgState(config *Config, configPath string, alignment string, stretch string, opacity float32) (*TbgState, error) {
+func NewTbgState(config *Config, configPath string, alignment *string, opacity *float32, stretch *string) (*TbgState, error) {
 	wtSettings, err := NewWTSettings()
 	if err != nil {
 		return nil, err
 	}
 	return &TbgState{
-		Images:     make([]string, 2),
-		Paths:      config.Paths,
-		Config:     config,
-		ConfigPath: configPath,
+		Images:            make([]string, 2),
+		Paths:             config.Paths,
+		Config:            config,
+		ConfigPath:        configPath,
+		OverrideAlignment: alignment,
+		OverrideOpacity:   opacity,
+		OverrideStretch:   stretch,
 		Events: &TbgEvents{
 			Done:      make(chan struct{}),
 			NextImage: make(chan NextImageEvent),
@@ -79,12 +98,34 @@ func NewTbgState(config *Config, configPath string, alignment string, stretch st
 	}, nil
 }
 
-func (tbg *TbgState) Start(port *uint16) error {
+func (tbg *TbgState) Start() error {
 	if len(tbg.Config.Paths) == 0 {
 		return fmt.Errorf(`config at "%s" has no paths`, shrinkHome(tbg.ConfigPath))
 	}
+	logFile := &lumberjack.Logger{
+		Filename:   filepath.Join(filepath.Dir(tbg.ConfigPath), "tbg.log"),
+		MaxSize:    5,
+		MaxAge:     7,
+		MaxBackups: 2,
+		LocalTime:  true,
+		Compress:   true,
+	}
+	multiHandler := slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), nil)
+	slog.SetDefault(slog.New(multiHandler))
+	slog.Info("Start tbg...Config used",
+		"paths", func() string {
+			var ret strings.Builder
+			for _, path := range tbg.Config.Paths {
+				ret.WriteString(path.String())
+			}
+			return ret.String()
+		}(),
+		"interval", tbg.Config.IntervalOrDefault(),
+		"port", tbg.Config.PortOrDefault(),
+		"profile", tbg.Config.ProfileOrDefault(),
+	)
 	go tbg.imageUpdateTicker()
-	go tbg.startServer(port)
+	go tbg.startServer()
 	return tbg.eventHandler()
 }
 
@@ -95,6 +136,7 @@ func (tbg *TbgState) imageUpdateTicker() {
 	for {
 		select {
 		case <-ticker:
+			slog.Info("Image change tick")
 			tbg.Events.NextImage <- NextImageEvent{
 				Alignment: nil,
 				Opacity:   nil,
@@ -105,12 +147,23 @@ func (tbg *TbgState) imageUpdateTicker() {
 }
 
 // may emit TbgState.Events.Error (e.g. port is taken)
-func (tbg *TbgState) startServer(port *uint16) {
+func (tbg *TbgState) startServer() {
 	http.HandleFunc("POST /next-image", func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Recieved next-image request")
 		var reqBody NextImageRequestBody
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 			tbg.Events.Error <- fmt.Errorf("Failed to decode request body: %s", err)
 			return
+		}
+		slog.Info("next-image body decoded")
+		if reqBody.Alignment != nil {
+			slog.Info("alignment", "value", *reqBody.Alignment)
+		}
+		if reqBody.Opacity != nil {
+			slog.Info("opacity", "value", *reqBody.Opacity)
+		}
+		if reqBody.Stretch != nil {
+			slog.Info("stretch", "value", *reqBody.Stretch)
 		}
 		tbg.Events.NextImage <- NextImageEvent{
 			Alignment: reqBody.Alignment,
@@ -119,11 +172,24 @@ func (tbg *TbgState) startServer(port *uint16) {
 		}
 		fmt.Fprint(w, "next-image: changed image successfully")
 	})
+
 	http.HandleFunc("POST /set-image", func(w http.ResponseWriter, r *http.Request) {
+		slog.Info("Recieved set-image request")
 		var reqBody SetImageRequestBody
 		if err := json.NewDecoder(r.Body).Decode(&reqBody); err != nil {
 			tbg.Events.Error <- fmt.Errorf("Failed to decode request body: %s", err)
 			return
+		}
+		slog.Info("set-image body decoded")
+		slog.Info("Path", "value", reqBody.Path)
+		if reqBody.Alignment != nil {
+			slog.Info("Alignment", "value", *reqBody.Alignment)
+		}
+		if reqBody.Opacity != nil {
+			slog.Info("Opacity", "value", *reqBody.Opacity)
+		}
+		if reqBody.Stretch != nil {
+			slog.Info("Stretch", "value", *reqBody.Stretch)
 		}
 		tbg.Events.SetImage <- SetImageEvent{
 			Path:      reqBody.Path,
@@ -133,11 +199,27 @@ func (tbg *TbgState) startServer(port *uint16) {
 		}
 		fmt.Fprint(w, "set-image: changed image successfully")
 	})
+
 	http.HandleFunc("POST /quit", func(w http.ResponseWriter, _ *http.Request) {
+		slog.Info("Recieved quit request")
 		fmt.Fprint(w, "quit: stopped server successfully. Goodbye!")
 		close(tbg.Events.Done)
 	})
-	tbgPort := ":" + strconv.FormatUint(uint64(Option(port).UnwrapOr(tbg.Config.PortOrDefault())), 10)
+
+	tbgPort := ":" + strconv.FormatUint(uint64(tbg.Config.PortOrDefault()), 10)
+	slog.Info("Starting server...",
+		"interval", tbg.Config.IntervalOrDefault(),
+		"port", tbgPort,
+		"profile", tbg.Config.ProfileOrDefault(),
+		"override-alignment", Option(tbg.OverrideAlignment).UnwrapOr("no override"),
+		"override-opacity", func() string {
+			if tbg.OverrideOpacity != nil {
+				return strconv.FormatFloat(float64(*tbg.OverrideOpacity), 'f', -1, 32)
+			}
+			return "no override"
+		}(),
+		"override-stretch", Option(tbg.OverrideStretch).UnwrapOr("no override"),
+	)
 	err := http.ListenAndServe(tbgPort, nil)
 	if err != nil {
 		tbg.Events.Error <- err
@@ -149,7 +231,7 @@ func (tbg *TbgState) eventHandler() error {
 	for {
 		select {
 		case <-tbg.Events.Done:
-			fmt.Println("Goodbye!")
+			slog.Info("Goodbye!")
 			return nil
 		case err := <-tbg.Events.Error:
 			return err
@@ -206,13 +288,12 @@ func (tbg *TbgState) setImage(
 	if err != nil {
 		return err
 	}
-	tbg.Config.Log(tbg.ConfigPath).RunSettings(
-		imagePath,
-		tbg.Config.ProfileOrDefault(),
-		tbg.Config.IntervalOrDefault(),
-		alignment,
-		opacity,
-		stretch,
+	slog.Info("Changed image",
+		"image", imagePath,
+		"profile", tbg.Config.ProfileOrDefault(),
+		"alignment", alignment,
+		"opacity", opacity,
+		"stretch", stretch,
 	)
 	return nil
 }
@@ -226,8 +307,8 @@ func (tbg *TbgState) randomImage() (string, string, float32, string, error) {
 		return "", "", 0.0, "", err
 	}
 	return tbg.Images[uint16(rand.IntN(len(tbg.Images)))],
-		Option(randomPath.Alignment).UnwrapOr(DefaultAlignment),
-		Option(randomPath.Opacity).UnwrapOr(DefaultOpacity),
-		Option(randomPath.Stretch).UnwrapOr(DefaultStretch),
+		Option(tbg.OverrideAlignment).Or(randomPath.Alignment).UnwrapOr(DefaultAlignment),
+		Option(tbg.OverrideOpacity).Or(randomPath.Opacity).UnwrapOr(DefaultOpacity),
+		Option(tbg.OverrideStretch).Or(randomPath.Stretch).UnwrapOr(DefaultStretch),
 		nil
 }
