@@ -52,7 +52,7 @@ func (cmd *AddCommand) ValidateValue(val *string) error {
 			return filepath.SkipDir
 		}
 		// find at least one
-		if IsImageFile(d.Name()) {
+		if IsImageFile(filepath.Join(absPath, d.Name())) {
 			hasImageFile = true
 			return filepath.SkipAll
 		}

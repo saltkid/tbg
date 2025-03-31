@@ -1,7 +1,6 @@
 package main
 
 import (
-	"path/filepath"
 	"strings"
 )
 
@@ -51,11 +50,4 @@ func (s *Styled) Underline() *Styled {
 
 func (s *Styled) Italic() *Styled {
 	return s.Format(Italic)
-}
-
-func IsImageFile(f string) bool {
-	f = strings.ToLower(filepath.Ext(f))
-	return f == ".png" ||
-		f == ".jpg" ||
-		f == ".jpeg"
 }

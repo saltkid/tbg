@@ -2,20 +2,37 @@ package main
 
 import (
 	"fmt"
-	"math/rand/v2"
+	"net/http"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 )
 
-// shuffles the slice from the current index up to the end
-//
-// it does not affect the elements before the current index
-func ShuffleFrom[T any](currentIndex int, slice []T) {
-	for range slice[currentIndex:] {
-		i := rand.IntN(len(slice)-currentIndex) + currentIndex
-		slice[i], slice[currentIndex] = slice[currentIndex], slice[i]
+// Specifically, checks if the given path points to an image file that is
+// supported by Windows Terminal (png, jpeg, gif)
+func IsImageFile(path string) bool {
+	handle, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer handle.Close()
+	buf := make([]byte, 512) // 512 according to docs
+	if _, err := handle.Read(buf); err != nil {
+		return false
+	}
+	mime := strings.Split(http.DetectContentType(buf), "/")
+	if len(mime) != 2 {
+		return false
+	}
+	if mime[0] != "image" {
+		return false
+	}
+	switch mime[1] {
+	case "png", "jpeg", "gif":
+		return true
+	default:
+		return false
 	}
 }
 
@@ -53,7 +70,8 @@ func expandEnv(s string) string {
 		}
 		return str
 	})
-	return os.ExpandEnv(expandWin)
+	expandUnix := os.ExpandEnv(expandWin)
+	return expandUnix
 }
 
 // Expands a path containing prefixed tilde to the user's home directory.
