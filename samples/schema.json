@@ -1,0 +1,76 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "title": "tbg config definition",
+  "type": "object",
+  "properties": {
+    "paths": {
+      "type": "array",
+      "description": "List of directories that contain images",
+      "items": {
+        "type": "object",
+        "properties": {
+          "path": {
+            "type": "string",
+            "description": "A directory that contains images to choose from when changing the background image."
+          },
+          "alignment": {
+            "type": "string",
+            "description": "The image alignment in Windows Terminal. Default is center.",
+            "enum": [
+              "topLeft",
+              "top",
+              "topRight",
+              "left",
+              "center",
+              "right",
+              "bottomLeft",
+              "bottom",
+              "bottomRight"
+            ],
+            "nullable": true
+          },
+          "opacity": {
+            "type": "number",
+            "description": "The opacity of background images in Windows Terminal. Default is 1.0.",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "nullable": true
+          },
+          "stretch": {
+            "type": "string",
+            "description": "The image stretch option in Windows Terminal. Default is uniformToFill.",
+            "enum": [
+              "fill",
+              "none",
+              "uniform",
+              "uniformToFill"
+            ],
+            "nullable": true
+          }
+        },
+        "required": ["path"]
+      }
+    },
+    "port": {
+      "type": "integer",
+      "description": "The port used by the tbg server to send POST requests to trigger actions such as changing the background image or quitting the server. Default is 9545.",
+      "minimum": 1,
+      "maximum": 65535,
+      "default": 9545,
+      "nullable": true
+    },
+    "profile": {
+      "type": "string",
+      "description": "The profile used in Windows Terminal. It can be referenced by index (starting at 1) or by profile name (e.g., 'pwsh'). Default is 'default'.",
+      "default": "default",
+      "nullable": true
+    },
+    "interval": {
+      "type": "integer",
+      "description": "The time in minutes between each image change. Default is 30 minutes.",
+      "default": 30,
+      "nullable": true
+    }
+  },
+  "required": ["paths"]
+}

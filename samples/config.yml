@@ -1,0 +1,14 @@
+# yaml-language-server: $schema=./schema.json
+
+# All optional fields here are assigned their default values
+# The only requirement is that paths must have at least one entry,
+# hence the "~/Pictures"
+
+paths:
+  - path: "~/Pictures"
+    alignment: "center"
+    opacity: 1.0
+    stretch: uniformToFill
+port: 9545
+profile: default
+interval: 30

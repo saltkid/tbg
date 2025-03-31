@@ -10,15 +10,14 @@
 # `tbg run`
 
 `run` command edits the `settings.json` used by *Windows Terminal* using
-settings from `.tbg.yml`. **tbg** will keep running, editing the
+settings from **tbg**'s config. **tbg** will keep running, editing the
 `settings.json` of *Windows Terminal*, replacing the background image. The 
-background image is chosen randomly from the images under each path specified
-in `.tbg.yml`.
+background image is chosen randomly from the images under each `path` specified
+in the config.
 
-On initial execution of **tbg**, it will create a `.tbg.yml` in the same
-directory as the **tbg** executable if it does not exist already. **There can
-only be one `.tbg.yml`**. For more information, see documentation on
-[tbg.yml](https://github.com/saltkid/tbg/blob/main/docs/tbg.yml.md).
+On initial execution of **tbg**, it will create a config at
+`$env:LOCALAPPDATA/tbg/config.yml` if it does not exist already.
+For more information, see documentation on [config.yml](/docs/config.yml.md).
 
 # Executing with flags
 #### Valid Flags: `--profile`, `--interval`, `--port`, `--alignment`, `--opacity`, `--stretch`
@@ -116,7 +115,7 @@ tbg run --alignment right --opacity 0.35 --stretch none
 ```
 
 The `--alignment`, `--opacity`, and `--stretch` flags will override the values
-in `.tbg.yml`. This means instead of `path/to/dir1`'s images having the default
+in the config. This means instead of `path/to/dir1`'s images having the default
 alignment `center`, default stretch `uniformToFill`, and default opacity `1.0`, the
 images instead use the values specified by the flags (`right`, `none`, `0.35`)
 

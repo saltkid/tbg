@@ -10,7 +10,7 @@
 
 # `tbg add [arg] [--flags]`
 #### args: `path/to/images/dir`
-`add` command adds a path to `.tbg.yml`.
+`add` command adds a path to **tbg**'s config.
 You can add options to a path to be added using flags
 
 # Valid Flags
@@ -26,7 +26,7 @@ You can add options to a path to be added using flags
 
 # Usage
 ### Adding a path
-Let's say this is `.tbg.yml`:
+Let's say this is the config:
 ```yml
 paths: []
 
@@ -38,7 +38,7 @@ If we run:
 ```bash
 tbg add path/to/images/dir1
 ```
-It will add `path/to/images/dir1` to `.tbg.yml`'s `paths` field
+It will add `path/to/images/dir1` to the config's `paths` field
 like this:
 ```yml
 paths:

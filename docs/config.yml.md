@@ -4,8 +4,7 @@
 
 # Config
 This is what is used by **tbg** to edit the `settings.json` *Windows Terminal*
-uses. **tbg** creates a `.tbg.yml` in the same path as the **tbg** executable
-on initial execution. This is what it should look like:
+uses. **tbg** creates a config at `$env:LOCALAPPDATA/tbg/config.yml` initial execution. This is what it should look like:
 ```
 #------------------------------------------
 # this is a tbg config. Whenver tbg is ran, it will load this config file
@@ -49,7 +48,7 @@ interval: 30
 #------------------------------------------
 ```
 ## Fields
-Although you can edit the fields in the config directly, it is recommended to use the [`config` command](https://github.com/saltkid/tbg/blob/main/docs/config_command_usage.md) to edit them.
+Although you can edit the fields in the config directly, it is recommended to use the [`config` command](/docs/config_command_usage.md) to edit them.
 1. **profile**
     - *args*: `default`, `1`, `2`, ..., `n`, any string
     - target profile in *Windows Terminal*.

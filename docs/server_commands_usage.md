@@ -8,7 +8,7 @@
 ```zsh
 tbg <server-command>
 ```
-These commands only work when there's a **tbg** server active. See [run](https://github.com/saltkid/tbg/blob/main/docs/run_command_usage.md)
+These commands only work when there's a **tbg** server active. See [run](/docs/run_command_usage.md)
 to learn more about starting a **tbg** server. Usage is the same as other
 commands.
 

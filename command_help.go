@@ -142,7 +142,7 @@ func RunHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg run
-     This will use .tbg.yml's values to edit Windows Terminal's settings.json
+     This will use tbg's config values to edit Windows Terminal's settings.json
 
   2. tbg run --profile 2 --interval 5 --alignment center
       used_config                      values used to edit settings.json
@@ -171,7 +171,7 @@ func RunHelp(verbose bool) {
 func AddHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  add").Bold(),
-		"Adds a path containing images to .tbg.yml\n",
+		"Adds a path containing images to tbg's config\n",
 	)
 	if verbose {
 		fmt.Print(`
@@ -246,7 +246,7 @@ func AddHelp(verbose bool) {
 func RemoveHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  remove").Bold(),
-		"Removes a path from .tbg.yml\n",
+		"Removes a path from tbg's config\n",
 	)
 	if verbose {
 		fmt.Print(`
@@ -309,7 +309,7 @@ func RemoveHelp(verbose bool) {
 func ConfigHelp(verbose bool) {
 	fmt.Printf("%-33s%s",
 		Decorate("  config").Bold(),
-		"Prints .tbg.yml if no flags.\n",
+		"Prints tbg's config if no flags.\n",
 	)
 	if verbose {
 		fmt.Print(`
@@ -329,7 +329,7 @@ func ConfigHelp(verbose bool) {
 
   `, Decorate("Examples").Bold(), `:
   1. tbg config
-      print .tbg.yml:
+      print tbg's config:
       --------------------------
       | paths:
       |   - path: /path/to/images/dir

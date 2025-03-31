@@ -11,7 +11,7 @@
 #### args: no arg
 
 `config` command prints the `config.yaml` if no arg is specified.
-If any of the flags are specified, it will edit the fields of `.tbg.yml`
+If any of the flags are specified, it will edit the fields of **tbg**'s config
 based on flags passed to it. 
 
 # Valid Flags
@@ -24,7 +24,7 @@ based on flags passed to it.
 
 # Usage
 #### Printing config
-To print the `.tbg.yml`, just do
+To print the config, just do
 ```bash
 tbg config
 ```
