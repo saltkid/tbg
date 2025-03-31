@@ -91,6 +91,7 @@ func (cfg *Config) Unmarshal(data []byte) error {
 func (cfg *Config) AddPath(
 	configPath string,
 	pathToAdd string,
+	cleanPathToAdd string,
 	align *string,
 	stretch *string,
 	opacity *float32,
@@ -101,8 +102,11 @@ func (cfg *Config) AddPath(
 	var edited *pathEditForLogs
 	errors := make([]string, 1)
 	for i, path := range cfg.Paths {
-		cleanPath := filepath.ToSlash(path.Path)
-		if strings.EqualFold(pathToAdd, cleanPath) {
+		cleanPath, err := NormalizePath(path.Path)
+		if err != nil {
+			return fmt.Errorf("Failed to normalize path in config %s: %s", path.Path, err)
+		}
+		if strings.EqualFold(cleanPathToAdd, cleanPath) {
 			pathExists = true
 			if !isEditingOptions {
 				errors = append(errors, fmt.Sprintf("'%s' already exists in config as '%s'", pathToAdd, path.Path))
@@ -143,7 +147,7 @@ func (cfg *Config) AddPath(
 		added = &addedPath
 	}
 	template := NewConfigTemplate(configPath)
-	template.YamlContents, _ = yaml.Marshal(cfg)
+	template.Content, _ = yaml.Marshal(cfg)
 	if err := template.WriteFile(); err != nil {
 		return err
 	}
@@ -175,14 +179,18 @@ func getEditedIfChanged[T comparable](old, edited *T) *T {
 func (cfg *Config) RemovePath(
 	configPath string,
 	pathToRemove string,
+	cleanPathToRemove string,
 	align bool,
 	stretch bool,
 	opacity bool,
 ) error {
 	var removed *string
 	for i, path := range cfg.Paths {
-		cleanPath := filepath.ToSlash(path.Path)
-		if strings.EqualFold(pathToRemove, cleanPath) {
+		cleanPath, err := NormalizePath(path.Path)
+		if err != nil {
+			return fmt.Errorf("Failed to normalize path in config %s: %s", path.Path, err)
+		}
+		if strings.EqualFold(cleanPathToRemove, cleanPath) {
 			removePath := !align && !stretch && !opacity
 			if removePath {
 				removed = &pathToRemove
@@ -198,10 +206,10 @@ func (cfg *Config) RemovePath(
 				if opacity {
 					removedFlags += OpacityFlag.String() + ", "
 				}
-				tmp := fmt.Sprintf("'%s' from '%s'", strings.TrimSuffix(removedFlags, ", "), cleanPath)
+				tmp := fmt.Sprintf("'%s' from '%s'", strings.TrimSuffix(removedFlags, ", "), path.Path)
 				removed = &tmp
 				cfg.Paths[i] = ImagesPath{
-					Path: cleanPath,
+					Path: path.Path,
 				}
 			}
 			break
@@ -209,7 +217,6 @@ func (cfg *Config) RemovePath(
 	}
 	template := NewConfigTemplate(configPath)
 	var err error
-	template.YamlContents, err = yaml.Marshal(cfg)
 	template.Content, err = yaml.Marshal(cfg)
 	if err != nil {
 		return fmt.Errorf("Failed to marshal yaml contents: %s", err.Error())

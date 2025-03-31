@@ -3,11 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
-	"path/filepath"
 )
 
 type RemoveCommand struct {
 	Path      string
+	CleanPath string
 	Alignment bool
 	Stretch   bool
 	Opacity   bool
@@ -33,11 +33,12 @@ func (cmd *RemoveCommand) ValidateValue(val *string) error {
 	if val == nil {
 		return fmt.Errorf("'remove' must have an argument. got none")
 	}
-	absPath, err := filepath.Abs(*val)
+	absPath, err := NormalizePath(*val)
 	if err != nil {
-		return fmt.Errorf("Failed to get absolute path of %s: %s", *val, err)
+		return fmt.Errorf("Failed to normalize path %s: %s", *val, err)
 	}
-	cmd.Path = filepath.ToSlash(absPath)
+	cmd.Path = *val
+	cmd.CleanPath = absPath
 	return nil
 }
 
@@ -87,7 +88,7 @@ func (cmd *RemoveCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	err = configContents.RemovePath(configPath, cmd.Path, cmd.Alignment, cmd.Stretch, cmd.Opacity)
+	err = configContents.RemovePath(configPath, cmd.Path, cmd.CleanPath, cmd.Alignment, cmd.Stretch, cmd.Opacity)
 	if err != nil {
 		return err
 	}

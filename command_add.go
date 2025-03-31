@@ -8,6 +8,7 @@ import (
 
 type AddCommand struct {
 	Path      string
+	CleanPath string
 	Alignment *string
 	Stretch   *string
 	Opacity   *float32
@@ -34,9 +35,9 @@ func (cmd *AddCommand) ValidateValue(val *string) error {
 	if val == nil {
 		return fmt.Errorf("'add' must have an argument. got none")
 	}
-	absPath, err := filepath.Abs(*val)
+	absPath, err := NormalizePath(*val)
 	if err != nil {
-		return fmt.Errorf("Failed to get absolute path of %s: %s", *val, err)
+		return fmt.Errorf("Failed to normalize path %s: %s", *val, err)
 	}
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
 		return fmt.Errorf("%s does not exist: %s", *val, err.Error())
@@ -63,7 +64,8 @@ func (cmd *AddCommand) ValidateValue(val *string) error {
 	if !hasImageFile {
 		return fmt.Errorf("No image files found in %s", *val)
 	}
-	cmd.Path = filepath.ToSlash(absPath)
+	cmd.Path = *val
+	cmd.CleanPath = absPath
 	return nil
 }
 
@@ -116,7 +118,7 @@ func (cmd *AddCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	err = config.AddPath(configPath, cmd.Path, cmd.Alignment, cmd.Stretch, cmd.Opacity)
+	err = config.AddPath(configPath, cmd.Path, cmd.CleanPath, cmd.Alignment, cmd.Stretch, cmd.Opacity)
 	if err != nil {
 		return err
 	}
