@@ -60,7 +60,7 @@ func (cmd *QuitCommand) Execute() error {
 	if err != nil {
 		return err
 	}
-	url := fmt.Sprintf("http://127.0.0.1:%d/quit", Option(cmd.Port).UnwrapOr(config.Port))
+	url := fmt.Sprintf("http://127.0.0.1:%d/quit", Option(cmd.Port).UnwrapOr(config.PortOrDefault()))
 	resp, err := http.Post(url, "application/json", nil)
 	if err != nil {
 		return err

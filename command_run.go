@@ -122,8 +122,8 @@ func (cmd *RunCommand) Execute() error {
 }
 
 func (config *Config) determineExecutionFlags(cmd *RunCommand) (string, string, float32) {
-	config.Profile = Option(cmd.Profile).UnwrapOr(config.Profile)
-	config.Interval = Option(cmd.Interval).UnwrapOr(config.Interval)
+	config.Profile = Option(cmd.Profile).Or(config.Profile).val
+	config.Interval = Option(cmd.Interval).Or(config.Interval).val
 	return Option(cmd.Alignment).UnwrapOr(DefaultAlignment),
 		Option(cmd.Stretch).UnwrapOr(DefaultStretch),
 		Option(cmd.Opacity).UnwrapOr(DefaultOpacity)

@@ -113,7 +113,7 @@ func (cmd *SetImageCommand) Execute() error {
 	if err != nil {
 		return fmt.Errorf("failed to marshal request body: %s", err)
 	}
-	url := fmt.Sprintf("http://127.0.0.1:%d/set-image", Option(cmd.Port).UnwrapOr(config.Port))
+	url := fmt.Sprintf("http://127.0.0.1:%d/set-image", Option(cmd.Port).UnwrapOr(config.PortOrDefault()))
 	resp, err := http.Post(url, "application/json", bytes.NewReader(reqBody))
 	if err != nil {
 		return err

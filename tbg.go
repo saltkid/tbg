@@ -91,7 +91,7 @@ func (tbg *TbgState) Start(port *uint16) error {
 // Creates a ticker that emits a NextImage Event every *interval* minutes where
 // interval is defined in the tbg config (.tbg.yml)
 func (tbg *TbgState) imageUpdateTicker() {
-	ticker := time.Tick(time.Duration(tbg.Config.Interval) * time.Minute)
+	ticker := time.Tick(time.Duration(tbg.Config.IntervalOrDefault()) * time.Minute)
 	for {
 		select {
 		case <-ticker:
@@ -137,7 +137,7 @@ func (tbg *TbgState) startServer(port *uint16) {
 		fmt.Fprint(w, "quit: stopped server successfully. Goodbye!")
 		close(tbg.Events.Done)
 	})
-	tbgPort := ":" + strconv.FormatUint(uint64(Option(port).UnwrapOr(tbg.Config.Port)), 10)
+	tbgPort := ":" + strconv.FormatUint(uint64(Option(port).UnwrapOr(tbg.Config.PortOrDefault())), 10)
 	err := http.ListenAndServe(tbgPort, nil)
 	if err != nil {
 		tbg.Events.Error <- err
@@ -198,7 +198,7 @@ func (tbg *TbgState) setImage(
 ) error {
 	err := tbg.Settings.Write(
 		imagePath,
-		tbg.Config.Profile,
+		tbg.Config.ProfileOrDefault(),
 		alignment,
 		opacity,
 		stretch,
@@ -208,8 +208,8 @@ func (tbg *TbgState) setImage(
 	}
 	tbg.Config.Log(tbg.ConfigPath).RunSettings(
 		imagePath,
-		tbg.Config.Profile,
-		tbg.Config.Interval,
+		tbg.Config.ProfileOrDefault(),
+		tbg.Config.IntervalOrDefault(),
 		alignment,
 		opacity,
 		stretch,
