@@ -381,17 +381,16 @@ type ImagesPath struct {
 }
 
 func (path *ImagesPath) String() string {
-	return fmt.Sprint(`
-       Path: `, path.Path, `
-       Alignment: `, Option(path.Alignment).UnwrapOr("not set"),
-		`; Stretch: `, Option(path.Stretch).UnwrapOr("not set"),
-		`; Opacity: `, func() string {
-			if path.Opacity == nil {
-				return "not set"
-			}
+	return fmt.Sprint(`Path: `, path.Path, `
+  Alignment: `, Option(path.Alignment).UnwrapOr("not set"), `
+  Stretch: `, Option(path.Stretch).UnwrapOr("not set"), `
+  Opacity: `, func() string {
+		if path.Opacity != nil {
 			return strconv.FormatFloat(float64(*path.Opacity), 'f', -1, 32)
-		}(),
-	)
+		}
+		return "not set"
+	}(), `
+`)
 }
 
 // get alignment if set, otherwise the default value
@@ -423,13 +422,16 @@ func (path *ImagesPath) Images() ([]string, error) {
 		if d.IsDir() && d.Name() != filepath.Base(dir) {
 			return filepath.SkipDir
 		}
-		if IsImageFile(d.Name()) {
+		if IsImageFile(filepath.Join(dir, d.Name())) {
 			images = append(images, path)
 		}
 		return nil
 	})
 	if err != nil {
 		return nil, fmt.Errorf("Failed to walk directory %s: %s", dir, err)
+	}
+	if len(images) == 0 {
+		return nil, fmt.Errorf("Found no image files at %s", dir)
 	}
 	return images, nil
 }
@@ -542,23 +544,5 @@ func (log ConfigLogger) Edited(edited []configEdits) ConfigLogger {
 			fmt.Printf("# %-10s %s --> %s\n", edit.title, edit.old, edit.new)
 		}
 	}
-	return log
-}
-
-func (log ConfigLogger) RunSettings(
-	imagePath string,
-	profile string,
-	interval uint16,
-	alignment string,
-	opacity float32,
-	stretch string,
-) ConfigLogger {
-	fmt.Println("# editing", profile, "profile")
-	fmt.Println("# image collection:", filepath.Dir(imagePath))
-	fmt.Println("#   image:", filepath.Base(imagePath))
-	fmt.Printf("%-5s%d%s\n", "# change image every: ", interval, " minutes")
-	fmt.Printf("%-5s%s\n", "# alignment:", alignment)
-	fmt.Printf("%-5s%s\n", "# stretch:", stretch)
-	fmt.Printf("%-5s%f\n", "# opacity:", opacity)
 	return log
 }

@@ -10,7 +10,6 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
-	"strings"
 	"time"
 
 	"gopkg.in/natefinch/lumberjack.v2"
@@ -113,12 +112,23 @@ func (tbg *TbgState) Start() error {
 	multiHandler := slog.NewJSONHandler(io.MultiWriter(logFile, os.Stdout), nil)
 	slog.SetDefault(slog.New(multiHandler))
 	slog.Info("Start tbg...Config used",
-		"paths", func() string {
-			var ret strings.Builder
-			for _, path := range tbg.Config.Paths {
-				ret.WriteString(path.String())
+		"paths", func() []map[string]any {
+			ret := make([]map[string]any, len(tbg.Config.Paths))
+			for i, path := range tbg.Config.Paths {
+				entry := make(map[string]any, 0)
+				entry["path"] = path.Path
+				if path.Alignment != nil {
+					entry["alignment"] = path.Alignment
+				}
+				if path.Opacity != nil {
+					entry["opacity"] = path.Opacity
+				}
+				if path.Stretch != nil {
+					entry["stretch"] = path.Stretch
+				}
+				ret[i] = entry
 			}
-			return ret.String()
+			return ret
 		}(),
 		"interval", tbg.Config.IntervalOrDefault(),
 		"port", tbg.Config.PortOrDefault(),
