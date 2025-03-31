@@ -13,7 +13,7 @@ func ValidateAlignment(val *string) (*string, error) {
 	case "topLeft", "top", "topRight", "left", "center", "right", "bottomLeft", "bottom", "bottomRight":
 		return val, nil
 	default:
-		return nil, fmt.Errorf("invalid arg '%s' for --alignment: unknown alignment", *val)
+		return nil, fmt.Errorf("invalid arg '%s' for --alignment: unknown alignment [topLeft top topRight left center right bottomLeft bottom bottomRight]", *val)
 	}
 }
 
@@ -84,6 +84,6 @@ func ValidateStretch(val *string) (*string, error) {
 	case "none", "fill", "uniform", "uniformToFill":
 		return val, nil
 	default:
-		return nil, fmt.Errorf("invalid arg '%s' for --stretch: unknown stretch", *val)
+		return nil, fmt.Errorf("invalid arg '%s' for --stretch: unknown stretch [fill uniform uniformToFill none]", *val)
 	}
 }
