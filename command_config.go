@@ -16,10 +16,8 @@ func (cmd *ConfigCommand) Type() CommandType { return ConfigCommandType }
 
 func (cmd *ConfigCommand) String() {
 	fmt.Println("Config Command:", cmd.Type())
+	fmt.Println("Config File:", Option(cmd.Config).UnwrapOr("default config"))
 	fmt.Println("Flags:")
-	if cmd.Config != nil {
-		fmt.Println(" ", ConfigFlag, *cmd.Config)
-	}
 	if cmd.Interval != nil {
 		fmt.Println(" ", IntervalFlag, *cmd.Interval)
 	}
@@ -33,9 +31,15 @@ func (cmd *ConfigCommand) String() {
 
 func (cmd *ConfigCommand) ValidateValue(val *string) error {
 	if val == nil || *val == "" {
+		// use default config
 		return nil
 	}
-	return fmt.Errorf("'config' takes no arguments. got: '%s'", *val)
+	absPath, err := ValidateConfig(val)
+	if err != nil {
+		return err
+	}
+	cmd.Config = absPath
+	return nil
 }
 
 func (cmd *ConfigCommand) ValidateFlag(f Flag) error {
@@ -46,12 +50,6 @@ func (cmd *ConfigCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Interval = val
-	case ConfigFlag:
-		val, err := ValidateConfig(f.Value)
-		if err != nil {
-			return err
-		}
-		cmd.Config = val
 	case PortFlag:
 		val, err := ValidatePort(f.Value)
 		if err != nil {

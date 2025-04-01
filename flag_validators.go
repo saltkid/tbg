@@ -31,7 +31,7 @@ func ValidateConfig(val *string) (*string, error) {
 	if _, err := os.Stat(absPath); os.IsNotExist(err) {
 		return nil, fmt.Errorf("%s does not exist: %s", *val, err.Error())
 	}
-	return val, nil
+	return &absPath, nil
 }
 
 func ValidateInterval(val *string) (*uint16, error) {

@@ -24,7 +24,7 @@ func (r *SetImageCommand) String() {
 }
 
 func (cmd *SetImageCommand) ValidateValue(val *string) error {
-	if val == nil {
+	if val == nil || *val == "" {
 		return fmt.Errorf("'set-image' must have an argument. got none")
 	}
 	absPath, err := filepath.Abs(*val)

@@ -41,7 +41,7 @@ func (cmd *AddCommand) String() {
 }
 
 func (cmd *AddCommand) ValidateValue(val *string) error {
-	if val == nil {
+	if val == nil || *val == "" {
 		return fmt.Errorf("'add' must have an argument. got none")
 	}
 	absPath, err := NormalizePath(*val)

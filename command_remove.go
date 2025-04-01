@@ -38,7 +38,7 @@ func (cmd *RemoveCommand) String() {
 }
 
 func (cmd *RemoveCommand) ValidateValue(val *string) error {
-	if val == nil {
+	if val == nil || *val == "" {
 		return fmt.Errorf("'remove' must have an argument. got none")
 	}
 	absPath, err := NormalizePath(*val)
