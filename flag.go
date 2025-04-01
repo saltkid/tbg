@@ -9,6 +9,7 @@ type FlagType uint8
 const (
 	NoFlag FlagType = iota
 	AlignmentFlag
+	ConfigFlag
 	IntervalFlag
 	OpacityFlag
 	PortFlag
@@ -20,6 +21,8 @@ func (f FlagType) String() string {
 	switch f {
 	case AlignmentFlag:
 		return "--alignment"
+	case ConfigFlag:
+		return "--config"
 	case IntervalFlag:
 		return "--interval"
 	case NoFlag:
@@ -46,6 +49,8 @@ func ToFlag(s string) (*Flag, error) {
 	switch s {
 	case "--alignment", "-a":
 		return &Flag{Type: AlignmentFlag}, nil
+	case "--config", "-c":
+		return &Flag{Type: ConfigFlag}, nil
 	case "--interval", "-i":
 		return &Flag{Type: IntervalFlag}, nil
 	case "--opacity", "-o":

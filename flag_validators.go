@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strconv"
 )
 
@@ -16,6 +17,21 @@ func ValidateAlignment(val *string) (*string, error) {
 		return nil, fmt.Errorf(`invalid arg '%s' for --alignment: unknown alignment
 [topLeft top topRight left center right bottomLeft bottom bottomRight]`, *val)
 	}
+}
+
+// validates only that the file exists
+func ValidateConfig(val *string) (*string, error) {
+	if val == nil {
+		return nil, fmt.Errorf("--interval must have an argument. got none")
+	}
+	absPath, err := NormalizePath(*val)
+	if err != nil {
+		return nil, fmt.Errorf("Failed to normalize path %s: %s", *val, err)
+	}
+	if _, err := os.Stat(absPath); os.IsNotExist(err) {
+		return nil, fmt.Errorf("%s does not exist: %s", *val, err.Error())
+	}
+	return val, nil
 }
 
 func ValidateInterval(val *string) (*uint16, error) {
