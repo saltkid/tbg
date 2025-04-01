@@ -4,23 +4,26 @@
 - [Usage](#usage)
     - [Printing config](#printing-config)
     - [Editing fields of config](#editing-fields-of-config)
-
+    - [Printing and editing fields of a custom config](#printing-and-editing-fields-of-a-custom-config)
 ---
-
 # `tbg config [--flags]`
-#### args: no arg
+#### args: no arg, `path/to/config/file.yml`
 
-`config` command prints the `config.yaml` if no arg is specified.
-If any of the flags are specified, it will edit the fields of **tbg**'s config
-based on flags passed to it. 
+`config` command prints the `config.yaml` if no flags are specified. Pass in a
+path to a custom config file to use that instead. If any of the flags are
+specified, it will edit the fields of the config based on flags passed to
+it. 
 
 # Valid Flags
-1. `--profile [arg]`
-    - args: `default`, `1`, `2`, ..., `<n>`, `"profile name"`
-    - edits: `profile`
-2. `--interval [arg]`
+1. `--interval [arg]`
+    - edits: interval field
     - args: `topRight`, `top`, `topLeft`, `left`, `center`, `right`, `bottomLeft`, `bottom`, `bottomRight`
-    - edits: `interval`
+2. `--port [arg]`
+    - edits: port field
+    - args: any positive integer up to 65535 (unsigned 16 byte int)
+3. `--profile [arg]`
+    - edits: profile field
+    - args: `default`, `1`, `2`, ..., `<n>`, `"profile name"`
 
 # Usage
 #### Printing config
@@ -30,57 +33,93 @@ tbg config
 ```
 Output on console should look something like this
 ```bash
-------------------------------------------------------------------------------------
-| abs/path/to/currently/used/config.yaml
-------------------------------------------------------------------------------------
-| paths:
-| - path: path/to/images/dir
-|   alignment: right
-|   stretch: fill
-|   opacity: 0.250000
-|
-| profile:               default
-| port:                  9545
-| interval:              30
-------------------------------------------------------------------------------------
+## /path/to/config.yml
+paths:
+    - path: path/to/images/dir
+      alignment: right
+      stretch: fill
+      opacity: 0.25
+profile:  default
+port:     9545
+interval: 30
 ```
 
+---
 #### Editing fields of config
 To edit fields of config, specify any fields you want to edit with flags like this this:
 ```bash
 tbg config --profile pwsh
 ```
+output:
 ```bash
-------------------------------------------------------------------------------------
-| abs/path/to/currently/used/config.yaml
-------------------------------------------------------------------------------------
-| paths:
-| - path: path/to/images/dir
-|   alignment: right
-|   stretch: fill
-|   opacity: 0.250000
-|
-| profile:               pwsh # used to be default
-| port:                  9545
-| interval:              30
-------------------------------------------------------------------------------------
+## /path/to/config.yml
+paths:
+    - path: path/to/images/dir
+      alignment: right
+      stretch: fill
+      opacity: 0.25
+profile:  pwsh
+port:     9545
+interval: 30
+## EDITED
+# profile    default --> pwsh
+
 ```
-You can do this with interval as well
+You can do this with interval and port as well
 ```bash
-tbg config --interval 5
+tbg config --interval 5 --port 9000
 ```
+output:
 ```bash
-------------------------------------------------------------------------------------
-| abs/path/to/currently/used/config.yaml
-------------------------------------------------------------------------------------
-| paths:
-| - path: path/to/images/dir
-|   alignment: right
-|   stretch: fill
-|   opacity: 0.250000
-|
-| profile:               1        
-| port:                  9545
-| interval:              5 # used to be 30
-------------------------------------------------------------------------------------
+## /path/to/config.yml
+paths:
+    - path: path/to/images/dir
+      alignment: right
+      stretch: fill
+      opacity: 0.25
+profile:  1        
+port:     9545
+interval: 5
+## EDITED
+# interval   30 --> 5
+# port       9545 --> 9000
+```
+
+---
+#### Printing and editing fields of a custom config
+Just specify a path to a custom config to print/edit its fields:
+```bash
+tbg config /path/to/custom/config.yml
+```
+output:
+```bash
+## /path/to/custom/config.yml
+paths:
+    - path: path/to/images/dir1
+      opacity: 0.250000
+    - path: path/to/images/dir2
+      alignment: right
+profile:  Arch
+port:     8000
+interval: 1
+```
+Editing fields is just the same as before:
+```bash
+tbg config /path/to/custom/config.yml -p Debian -P 8090 -i 100
+```
+output:
+```bash
+## /path/to/custom/config.yml
+paths:
+    - path: path/to/images/dir1
+      opacity: 0.250000
+    - path: path/to/images/dir2
+      alignment: right
+profile:  Arch
+port:     8000
+interval: 1
+## EDITED
+# interval   1 --> 100
+# port       8000 --> 8090
+# profile    Arch --> Debian
 ```

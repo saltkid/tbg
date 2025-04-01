@@ -3,7 +3,6 @@
 - [Installation](#installation)
     - [Building from source](#building-from-source)
 - [Usage](#usage)
-    - [Automatically change background image at a set interval](#automatically-change-background-image-at-a-set-interval)
     - [tbg server](#tbg-server)
         - [Logging](#logging)
 - [Config](#config)
@@ -21,7 +20,7 @@
 **tbg** (*pronounced /ˈtiːbæɡ/*) is a tool for Windows Terminal that allows you
 to cycle through multiple background images at a set interval. The image
 sources, interval of changing, image alignment, etc. can be configured
-via **tbg**'s config file.
+via a [config file](#config).
 
 This edits the `settings.json` used by *Windows Terminal*; specifically, the
 `backgroundImage` on the default profile by default but user can specify which
@@ -55,7 +54,7 @@ git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go buil
 ```
 
 ---
-## Automatically change background image at a set interval
+# Usage
 ```
 tbg run
 ```
@@ -89,13 +88,16 @@ A log file is in the same directory as the config file:
 See [logs](/docs/logs.md) for all log types and their structure.
 
 ---
-# Config
-**tbg** uses `config.yml` located at `$env:LOCALAPPDATA/tbg/config.yml` to edit
-the `settings.json` *Windows Terminal* uses. On initial execution of `tbg
-config`, a default config is created at that path. See example config at
-[samples](./samples/config.yml). A `schema.json` is also given for some basic
-autocomplete with
+# [Config](/docs/config.yml.md)
+To edit the `settings.json` *Windows Terminal* uses, **tbg** uses `config.yml`
+located at `$env:LOCALAPPDATA/tbg/config.yml` by default . On initial execution
+of `tbg config`, a default config is created at that path. See example config
+at [samples](./samples/config.yml). A `schema.json` is also given for some
+basic autocomplete with
 [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)
+
+To use a different config in a command, use the `-c, --config` flag and pass in
+a path to a config file.
 
 ## Fields
 Although you can edit the fields in the config directly, it is recommended to
@@ -135,26 +137,30 @@ For a more detailed explanation on each command, follow the command name links
     **tbg**'s config. If any of the flags are specified, it will use those
     values in editing `settings.json` instead of what's specified in **tbg**'s
     config
-    - *arg*: none 
-    - *flags*: `-p, --profile`, `-i, --interval`, `-a, --alignment`,
-    `-o, --opacity`, `-s, --stretch`
+    - use `--config` to use a custom config over the default one
+    - *arg*: no arg 
+    - *flags*: `-a, --alignment`, `-c, --config`, `-i, --interval`, 
+    `-o, --opacity`, `-p, --profile`, `-s, --stretch`
 2. [config](/docs/config_command_usage.md) 
     - If no flags are present, it will print out **tbg** config  to console. If
     any of the flags are present, it will edit the fields of the config based on
     the flags and values passed
-    - *arg*: none 
-    - *flags*: `-p, --profile`, `-P, --port`, `-i, --interval`
+    - Uses the default config when no arg is given
+    - *arg*: no arg, `/path/to/config/file.yml` 
+    - *flags*: `-i, --interval`, `-p, --profile`, `-P, --port`
 3. [add](/docs/add_command_usage.md) 
     - Add a directory containing images to **tbg**'s config
+    - use `--config` to target a custom config
     - If any flags are present, this will add those options to that path,
     regardless of whether the path already exists in the config or not
     - *arg*: `/path/to/dir` 
-    - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
+    - *flags*: `-c, --config`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
 4. [remove](/docs/remove_command_usage.md) 
     - Remove a path from **tbg**'s config
+    - use `--config` to target a custom config
     - If any flags are present, it will remove only those options of that path
     - *arg*: `/path/to/dir` 
-    - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
+    - *flags*: `-c, --config`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch` 
 5. help
     - Prints the general help message when no arg is given
     - Prints the help message/s of command/s if specified
@@ -166,11 +172,11 @@ same as other commands.
 1. next-image
     - triggers an image change
     - *arg*: `/path/to/dir` 
-- *flags*: `-P, --port`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
+- *flags*: `-a, --alignment`, `-o, --opacity`, `-P, --port`, `-s, --stretch`
 2. set-image
     - sets a specified image as the background image
     - *arg*: `/path/to/image/file` 
-    - *flags*: `-P, --port`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
+    - *flags*: `-a, --alignment`, `-o, --opacity`, `-P, --port`, `-s, --stretch`
 3. quit
     - stops the server
     - *arg*: none
@@ -185,8 +191,7 @@ of the same type. For example, all `pwsh` shells start a server on port `9545`.
 Since there can only be one server on port `9545`, servers spawned from other
 `pwsh` instances will fail and will not overlap with the first one that spawed.
 This means that as long as one `pwsh` instance exists, a **tbg** server for the
-`pwsh` profile to change background images will exist. Keybinds will continue
-to work as well.
+`pwsh` profile to change background images will exist.
 
 In the following section, I'll give examples on how to:
 1. start tbg server in the background on each shell instance
@@ -194,7 +199,8 @@ In the following section, I'll give examples on how to:
 3. map `ctrl+alt+i` to stop the server (`tbg quit`)
 
 for both pwsh and wsl. This way, two **tbg** servers can run simultaneously
-without conflict.
+without conflict. Keybinds will target the correct **tbg** server instance too
+by specifing the same port used in starting it.
 
 ## pwsh
 For example, in your `$env:PROFILE`, do:
@@ -248,10 +254,10 @@ bindkey '^I' __tbg_next_image
 # quit server through Ctrl+Alt+i
 bindkey '^[^I' __tbg_quit
 ```
+
 ---
-You can have a separate server for wsl and pwsh this way, not conflicting with
-each other since they use different ports. Keybinds target the correct **tbg**
-server instance too by specifing the same port used in starting it.
+_Note: as an alternative to this approach, you can also pass in a custom config
+for each shell instead of specifying the port and profile_
 
 ---
 # Credits

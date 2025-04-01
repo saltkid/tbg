@@ -2,9 +2,10 @@
 - [Overview](#tbg-run)
 - [Executing with flags](#executing-with-flags)
 - [Usage](#usage)
-    - [Normal Execution, key events, and path specific options](#normal-execution)
+    - [Normal Execution, and path specific options](#normal-execution)
+    - [Using a custom config](#using-a-custom-config)
     - [Overriding `profile`, `port`, and `interval` fields](#overriding-profile-port-and-interval-fields)
-    - [Overriding default values](#overriding-default-values)
+    - [Overriding per-path options](#overriding-per-path-options)
 ---
 
 # `tbg run`
@@ -20,7 +21,7 @@ On initial execution of **tbg**, it will create a config at
 For more information, see documentation on [config.yml](/docs/config.yml.md).
 
 # Executing with flags
-#### Valid Flags: `--profile`, `--interval`, `--port`, `--alignment`, `--opacity`, `--stretch`
+### Valid Flags: `--profile`, `--interval`, `--port`, `--alignment`, `--opacity`, `--stretch`
 
 The flags specified will override any per path options specified. So if there is
 a `path/to/dir` with the alignment `center`, **tbg** will use whatever value
@@ -35,7 +36,7 @@ For an example, see [overriding default flags walkthrough](#overriding-default-o
 
 # Usage
 ### Normal Execution
-This will delve on and key events and path specific options.
+This section will delve on path specific options.
 
 Let's do:
 ```bash
@@ -57,11 +58,23 @@ interval: 30
 This just means that when we do `tbg run`, we want to change the background
 image of the **default** *Windows Terminal* profile every **30 minutes**. The
 image is chosen randomly from images under `/path/to/dir1` and `/path/to/dir2`.
+The server will use the port `9545`
 
 You can quit **tbg** by running:
 ```bash
 tbg quit
 ```
+
+---
+### Using a custom config
+To use a custom config instead of the default one, use the `-c, --config` flag:
+```bash
+tbg run --config /path/to/custom/config.yml
+```
+This will use the values in the custom config instead of the default one when
+editing. This is useful if you want, for example, to have a separate config for
+your pwsh, command prompt and various wsl distros, and you do not want to have
+to specify all the flags/have different paths to choose images from.
 
 ---
 ### Overriding `profile`, `port`, and `interval` fields
@@ -70,6 +83,7 @@ Instead of `tbg run`, let's do:
 ```bash
 tbg run --profile 1 --interval 5 --port 8000
 ```
+Let's say this is the default config:
 ```yml
 paths:
 - path: path/to/dir1
@@ -92,9 +106,9 @@ tbg quit --port 8000
 ```
 
 ---
-### Overriding default values
-This will delve on overriding default values on the config using flags. This
-will also override the per-path options.
+### Overriding per-path options
+This will delve on overriding default alignment, opacity, and stretch values.
+This will also override the per-path options.
 
 Let's use this config:
 ```yml
@@ -116,8 +130,9 @@ tbg run --alignment right --opacity 0.35 --stretch none
 
 The `--alignment`, `--opacity`, and `--stretch` flags will override the values
 in the config. This means instead of `path/to/dir1`'s images having the default
-alignment `center`, default stretch `uniformToFill`, and default opacity `1.0`, the
-images instead use the values specified by the flags (`right`, `none`, `0.35`)
+alignment of `center`, default stretch of `uniformToFill`, and default opacity
+of `1.0`, the images instead use the values specified by the flags (`right`,
+`none`, `0.35`)
 
 Notice that `path/to/dir2` has options that should override the default options
 fields. However, since we specified `--alignment right --opacity 0.35 --stretch
