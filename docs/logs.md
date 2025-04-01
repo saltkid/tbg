@@ -35,7 +35,7 @@ these two out.
       "stretch": "fill"
     }
   ],
-  "interval": 20,
+  "interval": 1200,
   "port": 8000,
   "profile": "default"
 }
@@ -49,7 +49,7 @@ e.g. `tbg run --alignment center`
 ```json
 {
   "msg": "Starting server...",
-  "interval": 20,
+  "interval": 1200,
   "port": ":8000",
   "profile": "default",
   "override-alignment": "center",

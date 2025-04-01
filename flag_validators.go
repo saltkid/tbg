@@ -45,6 +45,12 @@ func ValidateInterval(val *string) (*uint16, error) {
 	if num < 1 {
 		return nil, fmt.Errorf("invalid arg '%s' for --interval: must be greater than 0", *val)
 	}
+	if num > 65536 {
+		return nil, fmt.Errorf(
+			"invalid arg '%d' for --interval: can only be up to 65535 seconds (18.2 hours).",
+			num,
+		)
+	}
 	ret := uint16(num)
 	return &ret, nil
 }
@@ -76,7 +82,10 @@ func ValidatePort(val *string) (*uint16, error) {
 		return nil, fmt.Errorf("invalid arg '%d' for --port: must be positive.", valNum)
 	}
 	if valNum > 65535 {
-		return nil, fmt.Errorf("invalid arg '%d' for --port: ports can only be up to 65535.", valNum)
+		return nil, fmt.Errorf(
+			"invalid arg '%d' for --port: ports can only be up to 65535.",
+			valNum,
+		)
 	}
 	ret := uint16(valNum)
 	return &ret, nil

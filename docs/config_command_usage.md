@@ -41,7 +41,7 @@ paths:
       opacity: 0.25
 profile:  default
 port:     9545
-interval: 30
+interval: 1800
 ```
 
 ---
@@ -60,14 +60,14 @@ paths:
       opacity: 0.25
 profile:  pwsh
 port:     9545
-interval: 30
+interval: 1800
 ## EDITED
 # profile    default --> pwsh
 
 ```
 You can do this with interval and port as well
 ```bash
-tbg config --interval 5 --port 9000
+tbg config --interval 300 --port 9000
 ```
 output:
 ```bash
@@ -79,9 +79,9 @@ paths:
       opacity: 0.25
 profile:  1        
 port:     9545
-interval: 5
+interval: 300
 ## EDITED
-# interval   30 --> 5
+# interval   1800 --> 300
 # port       9545 --> 9000
 ```
 
@@ -101,11 +101,11 @@ paths:
       alignment: right
 profile:  Arch
 port:     8000
-interval: 1
+interval: 60
 ```
 Editing fields is just the same as before:
 ```bash
-tbg config /path/to/custom/config.yml -p Debian -P 8090 -i 100
+tbg config /path/to/custom/config.yml -p Debian -P 8090 -i 6000
 ```
 output:
 ```bash
@@ -117,9 +117,9 @@ paths:
       alignment: right
 profile:  Arch
 port:     8000
-interval: 1
+interval: 6000
 ## EDITED
-# interval   1 --> 100
+# interval   60 --> 6000
 # port       8000 --> 8090
 # profile    Arch --> Debian
 ```

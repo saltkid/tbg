@@ -64,10 +64,10 @@ paths:
 #: }}}
 
 #: interval {{{
-#: time in minutes between each image change
-#: default: 30
+#: time in seconds between each image change
+#: default: 1800 (30 minutes)
 
-# interval: 30
+# interval: 1800
 
 #: }}} `)
 

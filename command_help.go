@@ -118,20 +118,23 @@ func RunHelp(verbose bool) {
   These will override the values in the used config (not edit)
   1. -a, --alignment [arg]
          [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
-  2. -o, --opacity   [arg]
+  2. -c, --config [arg]
+         [/path/to/custom/config.yml]
+         Use the custom config instead of the default one.
+  3. -o, --opacity   [arg]
          [any float between 0 and 1 (inclusive)]
-  3. -s, --stretch   [arg]
+  4. -s, --stretch   [arg]
          [fill, none, uniform, uniformToFill]
-  4. -p, --profile   [arg]
+  5. -p, --profile   [arg]
          [default, n, profile name]
          Where n is the list index Windows Terminal uses to identify the profile (starting from 1).
          Can specify profile name as well: e.g. "pwsh" (case insensitive)
-  5. -P, --port   [arg]
+  6. -P, --port   [arg]
          [any positive integer]
-         port to be used by tbg server to listen to POST requests
-  6. -i, --interval  [arg]
+         Port to be used by tbg server to listen to POST requests
+  7. -i, --interval  [arg]
          [any positive integer]
-         note that this is in minutes
+         Note that this is in seconds
 
   `, Decorate("Key Events").Bold(), `:
   while tbg is running, it accepts optional key events.
@@ -144,7 +147,7 @@ func RunHelp(verbose bool) {
   1. tbg run
      This will use tbg's config values to edit Windows Terminal's settings.json
 
-  2. tbg run --profile 2 --interval 5 --alignment center
+  2. tbg run --profile 2 --interval 300 --alignment center
       used_config                      values used to edit settings.json
       --------------------------       --------------------------------
       | paths:                         | paths:
@@ -153,11 +156,11 @@ func RunHelp(verbose bool) {
       |                                |
       | profile: default               | profile: 2
       | port: 9545                     | port: 9545
-      | interval: 30                   | interval: 5
+      | interval: 1800                 | interval: 300
       --------------------------       --------------------------------
      This means that instead of editing the default profile, it will edit the
-     2nd profile in Windows Terminal's list. The interval will be 5 minutes
-     instead of 30 minutes.
+     2nd profile in Windows Terminal's list. The interval will be 300 seconds (5 minutes)
+     instead of 1800 seconds (30 minutes).
      The alignment is set to center instead of right which was the value
      earlier. The stretch and opacity stay the same since it was not
      specified by the user.
@@ -185,9 +188,12 @@ func AddHelp(verbose bool) {
   You can specify alignment, stretch, and opacity using flags. See example 2 and 3
   1. -a, --alignment [arg]
          [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
-  2. -o, --opacity   [arg]
+  2. -c, --config [arg]
+         [/path/to/custom/config.yml]
+         Add the path to the custom config instead of the default one.
+  3. -o, --opacity   [arg]
          [any float between 0 and 1 (inclusive)]
-  3. -s, --stretch   [arg]
+  4. -s, --stretch   [arg]
          [fill, none, uniform, uniformToFill]
 
   `, Decorate("Examples").Bold(), `:
@@ -259,9 +265,12 @@ func RemoveHelp(verbose bool) {
   See example 2 and 3
   1. -a, --alignment [arg]
          [top, topLeft, topRight, left, center, right, bottomLeft, bottom, bottomRight]
-  2. -o, --opacity   [arg]
+  2. -c, --config [arg]
+         [/path/to/custom/config.yml]
+         Remove the path from the custom config instead of the default one.
+  3. -o, --opacity   [arg]
          [any float between 0 and 1 (inclusive)]
-  3. -s, --stretch   [arg]
+  4. -s, --stretch   [arg]
          [fill, none, uniform, uniformToFill]
 
   `, Decorate("Examples").Bold(), `:
@@ -316,16 +325,19 @@ func ConfigHelp(verbose bool) {
   `, Decorate("Args").Bold(), `: config takes no args
   `, Decorate("Subcommands").Bold(), `: config takes no sub-commands
   `, Decorate("Flags").Bold(), `:
-  1. -p, --profile   [arg]
+  1. -i, --interval  [arg]
+         [any positive integer]
+         Note that this is in seconds.
+  2. -c, --config [arg]
+         [/path/to/custom/config.yml]
+         Print/edit the custom config instead of the default one.
+  3. -P, --port   [arg]
+         [any positive integer]
+         Edit the port to be used by tbg server to listen to POST requests
+  4. -p, --profile   [arg]
          [default, n, profile name]
          Where n is the list index Windows Terminal uses to identify the profile (starting from 1).
          Can specify profile name as well: e.g. "pwsh" (case insensitive)
-  2. -P, --port   [arg]
-         [any positive integer]
-         port to be used by tbg server to listen to POST requests
-  3. -i, --interval  [arg]
-         [any positive integer]
-         note that this is in minutes.
 
   `, Decorate("Examples").Bold(), `:
   1. tbg config
@@ -336,7 +348,7 @@ func ConfigHelp(verbose bool) {
       |
       | profile: default
       | port: 9545
-      | interval: 30
+      | interval: 1800
       |
       --------------------------
 

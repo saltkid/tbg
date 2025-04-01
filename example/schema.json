@@ -67,8 +67,8 @@
     },
     "interval": {
       "type": "integer",
-      "description": "The time in minutes between each image change. Default is 30 minutes.",
-      "default": 30,
+      "description": "The time in seconds between each image change. Default is 1800 seconds (30 minutes).",
+      "default": 1800,
       "nullable": true
     }
   },

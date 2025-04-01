@@ -53,12 +53,12 @@ paths:
 
 profile: default
 port: 9545
-interval: 30
+interval: 1800
 ```
 This just means that when we do `tbg run`, we want to change the background
-image of the **default** *Windows Terminal* profile every **30 minutes**. The
-image is chosen randomly from images under `/path/to/dir1` and `/path/to/dir2`.
-The server will use the port `9545`
+image of the **default** *Windows Terminal* profile every **1800 seconds (30
+minutes)**. The image is chosen randomly from images under `/path/to/dir1` and
+`/path/to/dir2`. The server will use the port `9545`
 
 You can quit **tbg** by running:
 ```bash
@@ -81,7 +81,7 @@ to specify all the flags/have different paths to choose images from.
 
 Instead of `tbg run`, let's do:
 ```bash
-tbg run --profile 1 --interval 5 --port 8000
+tbg run --profile 1 --interval 300 --port 8000
 ```
 Let's say this is the default config:
 ```yml
@@ -90,15 +90,15 @@ paths:
 
 profile: default
 port: 9545
-interval: 30
+interval: 1800
 ```
 
 The `--profile`, `--port`, and `--interval` flags will override the values in
 the config. Again, not edit them. This means instead of changing the background
-image of the `default` profile every 30 minutes, it will change the background
-image of the first profile under `list` field in `settings.json` every 5
-minutes instead. The server will run in port 8000 instead of what is defined
-in the config (9545)
+image of the `default` profile every 1800 seconds (30 minutes), it will change
+the background image of the first profile under `list` field in `settings.json`
+every 300 seconds (5 minutes) instead. The server will run in port 8000 instead
+of what is defined in the config (9545)
 
 To quit, make sure to put the same port specified in `tbg run`:
 ```bash
@@ -121,7 +121,7 @@ paths:
 
 profile: default
 port: 9545
-interval: 30
+interval: 1800
 ```
 Let's do:
 ```bash

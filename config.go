@@ -14,7 +14,7 @@ import (
 
 const (
 	DefaultAlignment string  = "center"
-	DefaultInterval  uint16  = 30
+	DefaultInterval  uint16  = 30 * 60
 	DefaultOpacity   float32 = 1.0
 	DefaultPort      uint16  = 9545
 	DefaultProfile   string  = "default"

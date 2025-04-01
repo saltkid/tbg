@@ -139,10 +139,10 @@ func (tbg *TbgState) Start() error {
 	return tbg.eventHandler()
 }
 
-// Creates a ticker that emits a NextImage Event every *interval* minutes where
+// Creates a ticker that emits a NextImage Event every *interval* seconds where
 // interval is defined in the tbg config
 func (tbg *TbgState) imageUpdateTicker() {
-	ticker := time.Tick(time.Duration(tbg.Config.IntervalOrDefault()) * time.Minute)
+	ticker := time.Tick(time.Duration(tbg.Config.IntervalOrDefault()) * time.Second)
 	for {
 		select {
 		case <-ticker:

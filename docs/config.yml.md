@@ -51,10 +51,10 @@ paths:
 #: }}}
 
 #: interval {{{
-#: time in minutes between each image change
-#: default: 30
+#: time in seconds between each image change
+#: default: 1800
 
-# interval: 30
+# interval: 1800
 
 #: }}} 
 ```
@@ -93,7 +93,7 @@ use the [`config` command](/docs/config_command_usage.md) to edit them.
         - Can be overriden on a per-path basis
 2. **interval**
     - *args*: any positive integer 
-    - time in minutes between each image change.
+    - time in seconds between each image change.
 3. **port**
     - *args*: any positive integer
     - port that the tbg server uses to listen to POST requests

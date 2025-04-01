@@ -11,4 +11,4 @@ paths:
     stretch: uniformToFill
 port: 9545
 profile: default
-interval: 30
+interval: 1800

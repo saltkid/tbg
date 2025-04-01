@@ -108,7 +108,7 @@ command to edit the file.
     - specify either the index used by Windows Terminal, or the profile name
     - *args*: `default`, `1`, `2`, ... `"profile name"`
 2. **interval**
-    - time in minutes between each image change.
+    - time in seconds between each image change.
     - *args*: any positive integer 
 3. **port**
     - port that the tbg server uses
