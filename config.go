@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -60,6 +61,46 @@ func (cfg *Config) ProfileOrDefault() string {
 	return Option(cfg.Profile).UnwrapOr(DefaultProfile)
 }
 
+// Common config initialization for all commands accepting --config flag.
+//
+// Reads the config file at the given path and validates it.
+// If passed in a nil config path, the default one will be used instead.
+//
+// returns: config instance, config path, error
+func ConfigInit(optConfigPath *string) (*Config, string, error) {
+	var configPath string
+	if optConfigPath != nil {
+		configPath = *optConfigPath
+	} else {
+		defaultPath, err := ConfigPath()
+		if err != nil {
+			return nil, "", err
+		}
+		configPath = defaultPath
+	}
+	yamlFile, err := os.ReadFile(configPath)
+	if err != nil {
+		return nil, "", fmt.Errorf("Failed to read config at %s: %s", shrinkHome(configPath), err)
+	}
+	config := new(Config)
+	err = config.Unmarshal(yamlFile)
+	if err != nil {
+		return nil, "", err
+	}
+	errs := config.Validate()
+	if len(errs) != 0 {
+		var errMsg strings.Builder
+		fmt.Fprintln(&errMsg, Decorate("CONFIG ERRORS").Bold(), "\n",
+			Decorate("Please resolve the ff:").Italic(),
+		)
+		for _, err := range errs {
+			fmt.Fprintln(&errMsg, " ", err)
+		}
+		return nil, "", fmt.Errorf(errMsg.String())
+	}
+	return config, configPath, nil
+}
+
 func ConfigPath() (string, error) {
 	localAppData := os.Getenv("LOCALAPPDATA")
 	if localAppData == "" {
@@ -88,13 +129,34 @@ func (cfg *Config) Unmarshal(data []byte) error {
 	return nil
 }
 
+// helper struct for AddPath for easier logging changes to a path in the config
+type pathEdit struct {
+	old ImagesPath
+	new ImagesPath
+}
+
+// helper function for AddPath to return the edited value if and only if it is
+// not equal to the old value
+func getEditedIfChanged[T comparable](old, edited *T) *T {
+	if edited != nil {
+		if old != nil {
+			if *edited != *old {
+				return edited
+			}
+		} else {
+			return edited
+		}
+	}
+	return nil
+}
+
 func (cfg *Config) AddPath(
 	configPath string,
 	pathToAdd string,
 	cleanPathToAdd string,
 	align *string,
-	stretch *string,
 	opacity *float32,
+	stretch *string,
 ) error {
 	isEditingOptions := align != nil || stretch != nil || opacity != nil
 	pathExists := false
@@ -155,34 +217,13 @@ func (cfg *Config) AddPath(
 	return nil
 }
 
-// helper struct for easier logging changes to a path in the config
-type pathEdit struct {
-	old ImagesPath
-	new ImagesPath
-}
-
-// helper function to return the edited value if and only if it is not equal to
-// the old value
-func getEditedIfChanged[T comparable](old, edited *T) *T {
-	if edited != nil {
-		if old != nil {
-			if *edited != *old {
-				return edited
-			}
-		} else {
-			return edited
-		}
-	}
-	return nil
-}
-
 func (cfg *Config) RemovePath(
 	configPath string,
 	pathToRemove string,
 	cleanPathToRemove string,
 	align bool,
-	stretch bool,
 	opacity bool,
+	stretch bool,
 ) error {
 	var removed *string
 	for i, path := range cfg.Paths {
@@ -231,7 +272,8 @@ func (cfg *Config) RemovePath(
 	return nil
 }
 
-// contains edits info when changing config through the `config` command
+// helper struct for EditConfig that contains edits info when changing config
+// through the `config` command
 type configEdits struct {
 	title string
 	old   string
@@ -297,14 +339,15 @@ func (cfg *Config) EditConfig(
 
 // always initializes the returned error messages so no need to check against
 // nil
-func (cfg *Config) Validate() []string {
-	errs := make([]string, 0)
+func (cfg *Config) Validate() []error {
+	errs := make([]error, 0)
 	if len(cfg.Paths) == 0 {
-		errs = append(errs, fmt.Sprint("paths: must have at least one path entry"))
+		errs = append(errs, errors.New("paths: must have at least one path entry"))
 	}
 	leftPad := "\n           "
 	for i, path := range cfg.Paths {
 		var errStr strings.Builder
+		// validate if path exists
 		absPath, err := NormalizePath(path.Path)
 		if err != nil {
 			fmt.Fprint(&errStr,
@@ -312,7 +355,7 @@ func (cfg *Config) Validate() []string {
 				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
 				leftPad, err,
 			)
-			errs = append(errs, errStr.String())
+			errs = append(errs, errors.New(errStr.String()))
 			errStr.Reset()
 		} else if _, err = os.Stat(absPath); os.IsNotExist(err) {
 			fmt.Fprint(&errStr,
@@ -320,9 +363,10 @@ func (cfg *Config) Validate() []string {
 				" (", filepath.Join("..", filepath.Base(path.Path)), ")",
 				leftPad, path.Path, "does not exist",
 			)
-			errs = append(errs, errStr.String())
+			errs = append(errs, errors.New(errStr.String()))
 			errStr.Reset()
 		}
+		// validate path alignment if set
 		alignment := path.AlignmentOrDefault()
 		if _, err = ValidateAlignment(&alignment); err != nil {
 			fmt.Fprint(&errStr,
@@ -331,9 +375,10 @@ func (cfg *Config) Validate() []string {
 				leftPad, strings.ReplaceAll(err.Error(), "\n", leftPad),
 				"\n",
 			)
-			errs = append(errs, errStr.String())
+			errs = append(errs, errors.New(errStr.String()))
 			errStr.Reset()
 		}
+		// validate path opacity if set
 		opacity := strconv.FormatFloat(float64(path.OpacityOrDefault()), 'f', -1, 32)
 		if _, err = ValidateOpacity(&opacity); err != nil {
 			fmt.Fprint(&errStr,
@@ -342,9 +387,10 @@ func (cfg *Config) Validate() []string {
 				leftPad, strings.ReplaceAll(err.Error(), "\n", leftPad),
 				"\n",
 			)
-			errs = append(errs, errStr.String())
+			errs = append(errs, errors.New(errStr.String()))
 			errStr.Reset()
 		}
+		// validate path stretch if set
 		stretch := path.StretchOrDefault()
 		if _, err = ValidateStretch(&stretch); err != nil {
 			fmt.Fprint(&errStr,
@@ -353,22 +399,25 @@ func (cfg *Config) Validate() []string {
 				leftPad, strings.ReplaceAll(err.Error(), "\n", leftPad),
 				"\n",
 			)
-			errs = append(errs, errStr.String())
+			errs = append(errs, errors.New(errStr.String()))
 			errStr.Reset()
 		}
 	}
 
+	// validate config interval if set
 	interval := strconv.FormatUint(uint64(cfg.IntervalOrDefault()), 10)
 	if _, err := ValidateInterval(&interval); err != nil {
-		errs = append(errs, fmt.Sprintf("interval: %s", err))
+		errs = append(errs, fmt.Errorf("interval: %s", err))
 	}
+	// validate config port if set
 	port := strconv.FormatUint(uint64(cfg.PortOrDefault()), 10)
 	if _, err := ValidatePort(&port); err != nil {
-		errs = append(errs, fmt.Sprintf("port: %s", err))
+		errs = append(errs, fmt.Errorf("port: %s", err))
 	}
+	// validate config profile if set
 	profile := cfg.ProfileOrDefault()
 	if _, err := ValidateProfile(&profile); err != nil {
-		errs = append(errs, fmt.Sprintf("profile: %s", err))
+		errs = append(errs, fmt.Errorf("profile: %s", err))
 	}
 	return errs
 }
@@ -472,7 +521,7 @@ interval: `, cfg.IntervalOrDefault(), `
 		if errs := cfg.Validate(); len(errs) > 0 {
 			fmt.Fprintln(&ret, "## ERRORS:")
 			for _, err := range errs {
-				fmt.Fprintln(&ret, "#", strings.ReplaceAll(err, "\n", "\n#"))
+				fmt.Fprintln(&ret, "#", strings.ReplaceAll(err.Error(), "\n", "\n#"))
 			}
 			return ret.String()
 		}
