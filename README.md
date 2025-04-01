@@ -166,15 +166,15 @@ same as other commands.
 1. next-image
     - triggers an image change
     - *arg*: `/path/to/dir` 
-    - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
+- *flags*: `-P, --port`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
 2. set-image
     - sets a specified image as the background image
     - *arg*: `/path/to/image/file` 
-    - *flags*: `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
+    - *flags*: `-P, --port`, `-a, --alignment`, `-o, --opacity`, `-s, --stretch`
 3. quit
     - stops the server
     - *arg*: none
-    - *flags*: none
+    - *flags*: `-P, --port`
 
 *Tip: you can assign these commands to keybinds*
 

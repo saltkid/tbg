@@ -43,9 +43,9 @@ these two out.
 
 ---
 ### Starting tbg server
-    - override-[alignment,opacity,stretch] is set through their respective
-    flags
-    - e.g. `tbg run --alignment center`
+`override-[alignment,opacity,stretch]` is set through their respective flags
+
+e.g. `tbg run --alignment center`
 ```json
 {
   "msg": "Starting server...",
@@ -62,7 +62,7 @@ these two out.
 ### Edited Windows Terminal's `settings.json` to change the background image
 ```json
 {
-  "msg": "Starting server...",
+  "msg": "Changed image",
   "image": "/path/to/image/file.png",
   "profile": "default",
   "alignment": "center",
