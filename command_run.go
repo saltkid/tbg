@@ -2,17 +2,17 @@ package main
 
 import (
 	"fmt"
-	"os"
-	"strings"
 )
 
 type RunCommand struct {
-	Profile   *string
-	Interval  *uint16
 	Alignment *string
-	Stretch   *string
-	Opacity   *float32
-	Port      *uint16
+	// path to a custom config file
+	Config   *string
+	Interval *uint16
+	Opacity  *float32
+	Port     *uint16
+	Profile  *string
+	Stretch  *string
 }
 
 func (cmd *RunCommand) Type() CommandType { return RunCommandType }
@@ -23,6 +23,9 @@ func (cmd *RunCommand) String() {
 	if cmd.Alignment != nil {
 		fmt.Println(" ", AlignmentFlag, *cmd.Alignment)
 	}
+	if cmd.Config != nil {
+		fmt.Println(" ", ConfigFlag, *cmd.Config)
+	}
 	if cmd.Interval != nil {
 		fmt.Println(" ", IntervalFlag, *cmd.Interval)
 	}
@@ -30,7 +33,7 @@ func (cmd *RunCommand) String() {
 		fmt.Println(" ", OpacityFlag, *cmd.Opacity)
 	}
 	if cmd.Port != nil {
-		fmt.Println(" ", ProfileFlag, *cmd.Profile)
+		fmt.Println(" ", PortFlag, *cmd.Port)
 	}
 	if cmd.Profile != nil {
 		fmt.Println(" ", ProfileFlag, *cmd.Profile)
@@ -55,6 +58,12 @@ func (cmd *RunCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Alignment = val
+	case ConfigFlag:
+		val, err := ValidateConfig(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Config = val
 	case IntervalFlag:
 		val, err := ValidateInterval(f.Value)
 		if err != nil {
@@ -101,30 +110,10 @@ func (cmd *RunCommand) ValidateSubCommand(sc Command) error {
 }
 
 func (cmd *RunCommand) Execute() error {
-	configPath, err := ConfigPath()
+	config, configPath, err := ConfigInit(cmd.Config)
 	if err != nil {
 		return err
 	}
-	yamlFile, err := os.ReadFile(configPath)
-	if err != nil {
-		return fmt.Errorf("Failed to read config at %s: %s", shrinkHome(configPath), err)
-	}
-	config := new(Config)
-	err = config.Unmarshal(yamlFile)
-	if err != nil {
-		return err
-	}
-
-	errs := config.Validate()
-	if len(errs) != 0 {
-		var errMsg strings.Builder
-		fmt.Fprintln(&errMsg, "CONFIG ERRORS")
-		for _, err := range errs {
-			fmt.Fprintln(&errMsg, " ", err)
-		}
-		return fmt.Errorf(errMsg.String())
-	}
-
 	config.Profile = Option(cmd.Profile).Or(config.Profile).val
 	config.Interval = Option(cmd.Interval).Or(config.Interval).val
 	config.Port = Option(cmd.Port).Or(config.Port).val

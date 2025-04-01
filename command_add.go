@@ -7,8 +7,14 @@ import (
 )
 
 type AddCommand struct {
-	Path      string
+	// raw input of user which may or may not have ~ and environment
+	// variables, both of which will be kept unexpanded.
+	Path string
+	// normalized path from user input which expands both ~ and environment
+	// variables.
 	CleanPath string
+	// path to a custom config path
+	Config    *string
 	Alignment *string
 	Stretch   *string
 	Opacity   *float32
@@ -16,18 +22,21 @@ type AddCommand struct {
 
 func (cmd *AddCommand) Type() CommandType { return AddCommandType }
 
-func (r *AddCommand) String() {
-	fmt.Println("Add Command:", r.Type())
-	fmt.Println("Path:", r.Path)
+func (cmd *AddCommand) String() {
+	fmt.Println("Add Command:", cmd.Type())
+	fmt.Println("Path:", cmd.Path)
 	fmt.Println("Flags:")
-	if r.Alignment != nil {
-		fmt.Println(" ", AlignmentFlag, *r.Alignment)
+	if cmd.Alignment != nil {
+		fmt.Println(" ", AlignmentFlag, *cmd.Alignment)
 	}
-	if r.Stretch != nil {
-		fmt.Println(" ", StretchFlag, *r.Stretch)
+	if cmd.Config != nil {
+		fmt.Println(" ", ConfigFlag, *cmd.Config)
 	}
-	if r.Opacity != nil {
-		fmt.Println(" ", OpacityFlag, *r.Opacity)
+	if cmd.Opacity != nil {
+		fmt.Println(" ", OpacityFlag, *cmd.Opacity)
+	}
+	if cmd.Stretch != nil {
+		fmt.Println(" ", StretchFlag, *cmd.Stretch)
 	}
 }
 
@@ -77,6 +86,12 @@ func (cmd *AddCommand) ValidateFlag(f Flag) error {
 			return err
 		}
 		cmd.Alignment = val
+	case ConfigFlag:
+		val, err := ValidateConfig(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Config = val
 	case OpacityFlag:
 		val, err := ValidateOpacity(f.Value)
 		if err != nil {
@@ -105,22 +120,9 @@ func (cmd *AddCommand) ValidateSubCommand(sc Command) error {
 }
 
 func (cmd *AddCommand) Execute() error {
-	configPath, err := ConfigPath()
+	config, configPath, err := ConfigInit(cmd.Config)
 	if err != nil {
 		return err
 	}
-	yamlFile, err := os.ReadFile(configPath)
-	if err != nil {
-		return fmt.Errorf("Failed to read config at %s: %s", shrinkHome(configPath), err)
-	}
-	config := new(Config)
-	err = config.Unmarshal(yamlFile)
-	if err != nil {
-		return err
-	}
-	err = config.AddPath(configPath, cmd.Path, cmd.CleanPath, cmd.Alignment, cmd.Stretch, cmd.Opacity)
-	if err != nil {
-		return err
-	}
-	return nil
+	return config.AddPath(configPath, cmd.Path, cmd.CleanPath, cmd.Alignment, cmd.Opacity, cmd.Stretch)
 }

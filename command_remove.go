@@ -2,15 +2,20 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 type RemoveCommand struct {
-	Path      string
+	// raw input of user which may or may not have ~ and environment
+	// variables, both of which will be kept unexpanded.
+	Path string
+	// normalized path from user input which expands both ~ and environment
+	// variables.
 	CleanPath string
 	Alignment bool
-	Stretch   bool
-	Opacity   bool
+	// path to a custom config path
+	Config  *string
+	Opacity bool
+	Stretch bool
 }
 
 func (cmd *RemoveCommand) Type() CommandType { return RemoveCommandType }
@@ -20,6 +25,9 @@ func (cmd *RemoveCommand) String() {
 	fmt.Println("Flags:")
 	if cmd.Alignment {
 		fmt.Println(" ", AlignmentFlag)
+	}
+	if cmd.Config != nil {
+		fmt.Println(" ", ConfigFlag, *cmd.Config)
 	}
 	if cmd.Opacity {
 		fmt.Println(" ", OpacityFlag)
@@ -49,6 +57,12 @@ func (cmd *RemoveCommand) ValidateFlag(f Flag) error {
 			return fmt.Errorf("'%s' for 'remove' does not take any arguments. got %s", AlignmentFlag, *f.Value)
 		}
 		cmd.Alignment = true
+	case ConfigFlag:
+		val, err := ValidateConfig(f.Value)
+		if err != nil {
+			return err
+		}
+		cmd.Config = val
 	case OpacityFlag:
 		if f.Value != nil {
 			return fmt.Errorf("'%s' for 'remove' does not take any arguments. got %s", OpacityFlag, *f.Value)
@@ -75,22 +89,9 @@ func (cmd *RemoveCommand) ValidateSubCommand(sc Command) error {
 }
 
 func (cmd *RemoveCommand) Execute() error {
-	configPath, err := ConfigPath()
+	config, configPath, err := ConfigInit(cmd.Config)
 	if err != nil {
 		return err
 	}
-	yamlFile, err := os.ReadFile(configPath)
-	if err != nil {
-		return fmt.Errorf("Failed to read config at %s: %s", shrinkHome(configPath), err)
-	}
-	configContents := new(Config)
-	err = configContents.Unmarshal(yamlFile)
-	if err != nil {
-		return err
-	}
-	err = configContents.RemovePath(configPath, cmd.Path, cmd.CleanPath, cmd.Alignment, cmd.Stretch, cmd.Opacity)
-	if err != nil {
-		return err
-	}
-	return nil
+	return config.RemovePath(configPath, cmd.Path, cmd.CleanPath, cmd.Alignment, cmd.Opacity, cmd.Stretch)
 }
