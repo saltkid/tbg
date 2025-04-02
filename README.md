@@ -61,13 +61,21 @@ git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go buil
 ---
 # Demo
 ### Auto change image every 3 seconds
+You can set how long until the background image is changed.
+
 https://github.com/user-attachments/assets/155c8241-dba5-4142-b388-1f6c21c75f23
+
 ### Manually changing image through a keybind
-See [example setup](#example-setup) for a guide on how to setup keybinds.
+Integrate with your shell to setup keybinds. See [example
+setup](#example-setup) for a guide.
 
 https://github.com/user-attachments/assets/1c10bef5-e188-4b3a-acb6-2ef765b49efa
+
 ### Manually changing image across multiple pwsh instances
+Affects the same shell across different processes.
+
 https://github.com/user-attachments/assets/0b3b18b5-cd69-4605-a485-44abc1f3d9c0
+
 ### Separately change image for pwsh and wsl
 See [example setup](#example-setup) for a guide on how to setup pwsh and zsh
 (wsl) to set up their own keybinds and tbg servers on shell startup.
@@ -193,7 +201,7 @@ same as other commands.
 1. next-image
     - triggers an image change
     - *arg*: `/path/to/dir` 
-- *flags*: `-a, --alignment`, `-o, --opacity`, `-P, --port`, `-s, --stretch`
+    - *flags*: `-a, --alignment`, `-o, --opacity`, `-P, --port`, `-s, --stretch`
 2. set-image
     - sets a specified image as the background image
     - *arg*: `/path/to/image/file` 
