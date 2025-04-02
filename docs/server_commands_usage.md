@@ -52,12 +52,12 @@ Start-Job -Name tbg-server -ArgumentList $TBG_PORT -ScriptBlock {
     tbg.exe run --profile pwsh --port $port
 } | Out-Null
 
-# change image through ctrl+i
-Set-PSReadLineKeyHandler -Key "Ctrl+i" -ScriptBlock {
-    tbg.exe next-image --port $TBG_PORT &
+# change image through Alt+i (case sensitive)
+Set-PSReadLineKeyHandler -Chord "Alt+i" -ScriptBlock {
+    tbg.exe next-image -P $TBG_PORT &
 }
 
-# quit server through Ctrl+Alt+i
+# quit server through Ctrl+Alt+i (case sensitive)
 Set-PSReadLineKeyHandler -Key "Ctrl+Alt+i" -ScriptBlock {
     tbg.exe quit --port $TBG_PORT &
 }
@@ -70,6 +70,8 @@ Assuming the wsl distro is Debian, in your `.zshrc`, do:
 TBG_PORT=9000
 
 # Auto start tbg server at every new wsl Debian instance.
+# Reference the exe built for windows since windows have the proper environment
+# variables needed to edit wt's settings.json
 tbg.exe run --profile Debian --port $TBG_PORT &>/dev/null &!
 
 # register functions as zle widget
@@ -82,9 +84,9 @@ function __tbg_quit() {
 zle -N __tbg_next_image
 zle -N __tbg_quit
 
-# change image through ctrl+i
-bindkey '^I' __tbg_next_image
+# change image through Alt+i
+bindkey '^[i' __tbg_next_image
 
 # quit server through Ctrl+Alt+i
-bindkey '^[^I' __tbg_quit
+bindkey '^[^i' __tbg_quit
 ```
