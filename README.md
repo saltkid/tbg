@@ -120,9 +120,9 @@ See [logs](/docs/logs.md) for all log types and their structure.
 # [Config](/docs/config.yml.md)
 To edit the `settings.json` *Windows Terminal* uses, **tbg** uses `config.yml`
 located at `$env:LOCALAPPDATA/tbg/config.yml` by default . On initial execution
-of `tbg config`, a default config is created at that path. See example config
-at [samples](./samples/config.yml). A `schema.json` is also given for some
-basic autocomplete with
+of `tbg config`, a default config is created at that path. See
+[example/config.yml](./example/config.yml). A `schema.json` is also given for
+some basic autocomplete with
 [yaml-language-server](https://github.com/redhat-developer/yaml-language-server)
 
 To use a different config in a command, use the `-c, --config` flag and pass in
@@ -292,7 +292,7 @@ have different paths for each shell_
 ---
 # Credits
 - [Windows Terminal](https://github.com/microsoft/terminal)
-- [levenshtein](github.com/agnivade/levenshtein) for suggesting similar profile names
+- [levenshtein](https://github.com/agnivade/levenshtein) for suggesting similar profile names
 - [lumberjack](https://github.com/natefinch/lumberjack) for easy rotating logs
 - [carnac](https://github.com/Code52/carnac) for showing key presses on demo
 - [saltkid](https://github.com/saltkid)
