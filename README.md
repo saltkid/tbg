@@ -2,6 +2,11 @@
 - [tbg](#tbg-Terminal-Background-Gallery)
 - [Installation](#installation)
     - [Building from source](#building-from-source)
+- [Demo](#demo)
+    - [Auto change image every 3 seconds](#auto-change-image-every-3-seconds)
+    - [Manually changing image through a keybind](#manually-changing-image-through-a-keybind)
+    - [Manually changing image across multiple pwsh instances](#manually-changing-image-across-multiple-pwsh-instances)
+    - [Separately change image for pwsh and wsl](#separately-change-image-for-pwsh-and-wsl)
 - [Usage](#usage)
     - [tbg server](#tbg-server)
         - [Logging](#logging)
@@ -34,12 +39,12 @@ or
 
 ## Building from source
 - clone the repo
-```
+```bash
 git clone https://github.com/saltkid/tbg.git
 cd tbg
 ```
 - build it:
-```
+```bash
 go mod tidy
 go build -ldflags "-X main.TbgVersion=$(git describe --tags --dirty --always)-dev"
 
@@ -52,6 +57,22 @@ go build -ldflags "-X main.TbgVersion=$(git describe --tags --dirty --always)-de
 ```bash
 git clone https://github.com/saltkid/tbg.git && cd tbg && go mod tidy && go build -ldflags "-X main.TbgVersion=$(git describe --tags --dirty --always)-dev"
 ```
+
+---
+# Demo
+### Auto change image every 3 seconds
+https://github.com/user-attachments/assets/155c8241-dba5-4142-b388-1f6c21c75f23
+### Manually changing image through a keybind
+See [example setup](#example-setup) for a guide on how to setup keybinds.
+
+https://github.com/user-attachments/assets/1c10bef5-e188-4b3a-acb6-2ef765b49efa
+### Manually changing image across multiple pwsh instances
+https://github.com/user-attachments/assets/0b3b18b5-cd69-4605-a485-44abc1f3d9c0
+### Separately change image for pwsh and wsl
+See [example setup](#example-setup) for a guide on how to setup pwsh and zsh
+(wsl) to set up their own keybinds and tbg servers on shell startup.
+
+https://github.com/user-attachments/assets/fcb32ad8-415d-4f5f-a758-f57ebaefe4fd
 
 ---
 # Usage
@@ -195,7 +216,7 @@ This means that as long as one `pwsh` instance exists, a **tbg** server for the
 
 In the following section, I'll give examples on how to:
 1. start tbg server in the background on each shell instance
-2. map `ctrl+i` to change image (`tbg next-image`)
+2. map `alt+i` to change image (`tbg next-image`)
 3. map `ctrl+alt+i` to stop the server (`tbg quit`)
 
 for both pwsh and wsl. This way, two **tbg** servers can run simultaneously
@@ -216,13 +237,13 @@ Start-Job -Name tbg-server -ArgumentList $TBG_PORT -ScriptBlock {
     tbg.exe run --profile pwsh --port $port
 } | Out-Null
 
-# change image through ctrl+i
-Set-PSReadLineKeyHandler -Key "Ctrl+i" -ScriptBlock {
-    tbg.exe next-image --port $TBG_PORT &
+# change image through Alt+i (case sensitive)
+Set-PSReadLineKeyHandler -Chord "Alt+i" -ScriptBlock {
+    tbg.exe next-image -P $TBG_PORT &
 }
 
-# quit server through Ctrl+Alt+i
-Set-PSReadLineKeyHandler -Key "Ctrl+Alt+i" -ScriptBlock {
+# quit server through Ctrl+Alt+i (case sensitive)
+Set-PSReadLineKeyHandler -Chord "Ctrl+Alt+i" -ScriptBlock {
     tbg.exe quit --port $TBG_PORT &
 }
 ```
@@ -248,20 +269,22 @@ function __tbg_quit() {
 zle -N __tbg_next_image
 zle -N __tbg_quit
 
-# change image through ctrl+i
-bindkey '^I' __tbg_next_image
+# change image through Alt+i
+bindkey '^[i' __tbg_next_image
 
 # quit server through Ctrl+Alt+i
-bindkey '^[^I' __tbg_quit
+bindkey '^[^i' __tbg_quit
 ```
 
 ---
-_Note: as an alternative to this approach, you can also pass in a custom config
-for each shell instead of specifying the port and profile_
+_Note: as an alternative to this approach, you can pass in a custom config for
+each shell instead of specifying the port and profile. This way you can even
+have different paths for each shell_
 
 ---
 # Credits
 - [Windows Terminal](https://github.com/microsoft/terminal)
 - [levenshtein](github.com/agnivade/levenshtein) for suggesting similar profile names
 - [lumberjack](https://github.com/natefinch/lumberjack) for easy rotating logs
+- [carnac](https://github.com/Code52/carnac) for showing key presses on demo
 - [saltkid](https://github.com/saltkid)
